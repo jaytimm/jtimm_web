@@ -17,6 +17,6 @@ More broadly, I am interested in:
 * the development of open source tools for text analysis; and 
 * the application of corpus & computational methods in the social sciences and humanities.
 
-This site is built with [r::blogdown](https://bookdown.org/yihui/blogdown/) and Hugo using the spartan [Cacoa Enhanced theme](https://github.com/nishanths/cocoa-hugo-theme), and deployed with [Netlify](https://www.netlify.com/). All code presented on this site is meant to be *fully reproducible*.  In this vein, all data sources utilized are available via public APIs or Git Hub.
+This site is built with [r::blogdown](https://bookdown.org/yihui/blogdown/) and Hugo, and deployed with [Netlify](https://www.netlify.com/). All code presented on this site is meant to be *fully reproducible*.  In this vein, all data sources utilized are available via public APIs or Git Hub.
 
 I live in Albuquerque, New Mexico, and mostly just bicycle about.

@@ -1,5 +1,5 @@
 ---
-title: "resources"
+title: "Resources"
 output:
   blogdown::html_page:
     toc: yes

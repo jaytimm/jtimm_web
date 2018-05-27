@@ -4,7 +4,7 @@ description: 'A simple framework for identifying and extracting keyphrases from 
 author: ''
 date: '2018-01-30'
 slug: keyphrase-extraction-from-a-corpus-of-texts
-tags: ['corpus ling', 'keyphrase', 'sotu']
+tags: ['rstats','corpus ling', 'keyphrase', 'sotu']
 output:
   blogdown::html_page:
     toc: yes
