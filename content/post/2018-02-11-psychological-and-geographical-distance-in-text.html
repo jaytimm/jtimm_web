@@ -1,0 +1,195 @@
+---
+title: 'psychological and geographical distance in text'
+description: 'An investigation into the relationship between psychological distance and geographical distance in text.'
+author: ''
+date: '2018-04-19'
+slug: psychological-and-geographical-distance-in-text
+output:
+  blogdown::html_page:
+    toc: yes
+bibliography: biblio.bib
+link-citations: yes
+tags: ['rstats', 'geo', 'corpus ling']
+banner: banners/distance.png
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#concreteness-ratings-and-the-lexvarsdatr-package">Concreteness ratings and the lexvarsdatr package</a></li>
+<li><a href="#context-concreteness-scores">Context &amp; concreteness scores</a></li>
+<li><a href="#geographical-distance">Geographical distance</a></li>
+<li><a href="#fin">FIN</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<p>This post considers a super-clever study presented in <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets.</p>
+<p>General idea/hypothesis:</p>
+<blockquote>
+<p>The more we perceive an event/entity as (geographically) proximal to self, the more concrete our language when referencing said event/entity; the more we perceive an event/entity as (geographically) distant from self, the more abstract our language when referencing said event/entity. In other words, perceived distance is reflected in the language that we use, and in a graded way.</p>
+</blockquote>
+<p>In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter’s location and the referenced location increases.</p>
+<p>In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the <code>corpusdatr</code> package.</p>
+<p>Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between Washington, DC and referenced location in the corpus; instead of the abstractness of language in a tweet, we consider the abstractness of language in the context surrounding the referenced location in the corpus. Imperfect, but sufficient to demonstrate some methodologies.</p>
+<pre class="r"><code>library(tidyverse) 
+library(sf)
+library(spacyr)</code></pre>
+<pre class="r"><code>library(corpuslingr) #devtools::install_github(&quot;jaytimm/corpuslingr&quot;)
+library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
+library(lexvarsdatr) #devtools::install_github(&quot;jaytimm/lexvarsdatr&quot;)</code></pre>
+<div id="concreteness-ratings-and-the-lexvarsdatr-package" class="section level2">
+<h2>Concreteness ratings and the lexvarsdatr package</h2>
+<p><span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span> score the abstractness of tweets in their study using concreteness ratings for 40,000 English words derived in <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>. Ratings are made available as supplemental material, and included in a data package I have developed called <code>lexvarsdatr</code>. A more complete description of the package and its contents is available <a href="https://github.com/jaytimm/lexvarsdatr#lexvarsdatr">here</a>.</p>
+<p>Per <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>, concreteness ratings range from 1 (abstract) to 5 (concrete); ratings reflect averages based on 30 participants. In the <code>lexvarsdatr</code> package, concreteness ratings (along with age-of-acquisition ratings and response times in lexical decision) are housed in the <code>lvdr_behav_data</code> table.</p>
+<pre class="r"><code>concreteness &lt;- lvdr_behav_data%&gt;%
+  select(Word, concRating)%&gt;%
+  mutate(Word = toupper(Word))%&gt;%
+  na.omit()</code></pre>
+<p>Some random examples of concreteness ratings from the dataset:</p>
+<pre class="r"><code>set.seed(111)
+concreteness%&gt;%
+  sample_n(30)%&gt;%
+  mutate(rank=rank(concRating))%&gt;%
+  ggplot(aes(x=concRating, y=rank)) +
+  geom_text(aes(label=toupper(Word)), size=2.5, check_overlap = TRUE,hjust = &quot;inward&quot;)</code></pre>
+<p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The distribution of concreteness ratings for the 40,000 word forms:</p>
+<pre class="r"><code>ggplot(concreteness, aes(concRating)) +
+  geom_histogram(binwidth = 0.1)</code></pre>
+<p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="context-concreteness-scores" class="section level2">
+<h2>Context &amp; concreteness scores</h2>
+<p>So, the goal here is to extract all corpus references to location, along with the surrounding context, and score the contexts based on the concreteness of their constituent features (akin to dictionary-based sentiment analysis, for example). Here, context is defined as the 15x15 window of words surrounding a given reference to location.</p>
+<p>As the annotated Slate Magazine corpus contains named entity tags, including geopolitical entities (GPEs), identifying references to location has already been sorted. Here we collapse multi-word entities to single tokens, and ready the corpus for search using <code>clr_set_corpus</code>.</p>
+<pre class="r"><code>slate &lt;- corpusdatr::cdr_slate_ann %&gt;%
+  spacyr::entity_consolidate() %&gt;%
+  corpuslingr::clr_set_corpus(ent_as_tag=TRUE)</code></pre>
+<p>Per a <a href="https://www.jtimm.net/blog/text-geography-and-semantic-space/">previous post</a>, GPEs in the <code>cdr_slate_ann</code> corpus have been geocoded, and included in the <code>corpusdatr</code> package as an <code>sf</code> geometry, <code>cdr_slate_gpe</code>. GPEs in <code>cdr_slate_gpe</code> are limited to those occurring in at least 1% of texts. “USA” and synonyms have been excluded as well.</p>
+<p>Using the search syntax described <a href="">here</a>, we translate the GPEs to a searchable form, and extract all GPE contexts using the <code>clr_search_context</code> from my <code>corpuslingr</code> package.</p>
+<pre class="r"><code>gpe_search &lt;- corpusdatr::cdr_slate_gpe %&gt;%
+  top_n(100,txtf)%&gt;%
+  mutate(lemma=paste0(lemma,&#39;~GPE&#39;))
+
+gpe_contexts &lt;- corpuslingr::clr_search_context(search = gpe_search$lemma, corp = slate, LW=15, RW=15) </code></pre>
+<p>Results from <code>clr_search_context</code> include both a <code>BOW</code> object and a <code>KWIC</code> object. Here, the former is aggregated by GPE, context, and lemma using the <code>clr_context_bow</code> function; concreteness ratings are then joined (by lemma). Finally, concreteness scores are calculated as the average concreteness rating of all (non-proper/non-entity) words in a given context. Words not included in the normed dataset are assigned a concreteness value of zero.</p>
+<pre class="r"><code>conc_by_eg &lt;- gpe_contexts %&gt;%
+  corpuslingr::clr_context_bow(agg_var = c(&#39;doc_id&#39;,&#39;eg&#39;,&#39;searchLemma&#39;,&#39;lemma&#39;,&#39;tag&#39;),content_only=TRUE)%&gt;%
+  left_join(concreteness,by = c(&#39;lemma&#39;=&#39;Word&#39;))%&gt;%
+  replace_na(list(concRating=0))%&gt;%
+  group_by(doc_id,eg,searchLemma) %&gt;%
+  summarise(n = n(), conc = sum(cofreq*concRating)) %&gt;%
+  mutate(ave_conc= round(conc/n,2))</code></pre>
+<p>Distribution of concreteness scores for all contexts containing reference to a GPE (n = 5,539):</p>
+<pre class="r"><code>ggplot(conc_by_eg, aes(ave_conc)) +
+  geom_histogram(binwidth = 0.1)</code></pre>
+<p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Joining these scores to the <code>KWIC</code> object from the results of our original search, we can investigate how an example set of contexts has been scored.</p>
+<pre class="r"><code>corpuslingr::clr_context_kwic(gpe_contexts,include=c(&#39;doc_id&#39;,&#39;eg&#39;,&#39;lemma&#39;)) %&gt;%
+  left_join(conc_by_eg)%&gt;%
+  sample_n(5)%&gt;%
+  select(kwic,ave_conc)%&gt;%
+  arrange(desc(ave_conc))%&gt;%
+  DT::datatable(class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::formatStyle(c(1:2),fontSize = &#39;85%&#39;)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["drug war , \" says Sam_Vagenas , spokesman for pro-reform forces in Arizona . \" <mark> Arizona <\/mark> was an explicit rejection . \" Is the result a delegitimization of the drug war","hard to imagine that closer consultations with Israel will do so either . \" In <mark> London <\/mark> , the conservative Daily_Telegraph called for a tough line against Saddam . Saying in an","to cities in western Turkey . And since 1995 , Turkish troops have invaded northern <mark> Iraq <\/mark> three times to destroy PKK bases . Iran : The Iranian Kurds are much quieter","Zen and looks back to the tradition of the scholar-aesthete hermit imported centuries earlier from <mark> China <\/mark> . Everything is pared down , black-and-white , elemental . Some of the finest of",": Do these acts of revenge undermine the humanitarian rationale of NATO 's intervention in <mark> Kosovo <\/mark> ? Does the barbarism of a few of Slobodan_Milosevic_'s victims vitiate the justness of the"],[2.74,2.19,2.18,2.1,1.74]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<p><br></p>
+<p>Lastly, we aggregate contextual concreteness scores to obtain a single concretness score for each GPE.</p>
+<pre class="r"><code>conc_by_term &lt;-  conc_by_eg%&gt;%
+  group_by(searchLemma) %&gt;%
+  summarise(n = sum(n), conc = sum(conc)) %&gt;%
+  mutate(ave_conc= round(conc/n,2))</code></pre>
+<p>Results are presented in the table below, and can be sorted using column headers.</p>
+<pre class="r"><code>conc_by_term %&gt;%
+   DT::datatable(class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::formatStyle(&#39;ave_conc&#39;,
+    background = DT::styleColorBar(conc_by_term$ave_conc, &#39;cornflowerblue&#39;),
+    backgroundSize = &#39;80% 70%&#39;,
+    backgroundRepeat = &#39;no-repeat&#39;,
+    backgroundPosition = &#39;right&#39;) %&gt;%
+  DT::formatStyle(c(1:4),fontSize = &#39;85%&#39;)</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["AFGHANISTAN","ALABAMA","ALASKA","ALBANIA","ARGENTINA","ARIZONA","ARKANSAS","ARLINGTON","ATLANTA","BAGHDAD","BEIJING","BELGRADE","BERLIN","BOSNIA","BOSTON","BRAZIL","BRITAIN","CALIFORNIA","CAMBODIA","CAMBRIDGE","CANADA","CHARLOTTE","CHECHNYA","CHICAGO","CHILE","CHINA","COLORADO","CROATIA","CUBA","DALLAS","DETROIT","EAST_TIMOR","EGYPT","ENGLAND","FLORIDA","FRANCE","GEORGIA","GERMANY","HOLLYWOOD","HONG_KONG","INDIA","INDONESIA","IOWA","IRAN","IRAQ","IRELAND","ISRAEL","ISTANBUL","ITALY","JAPAN","JORDAN","KANSAS","KENTUCKY","KOSOVO","LAS_VEGAS","LEBANON","LIBYA","LONDON","LOS_ANGELES","MAINE","MALAYSIA","MANHATTAN","MARYLAND","MEXICO","MIAMI","MICHIGAN","MILAN","MINNESOTA","MISSISSIPPI","MONTANA","MOSCOW","NEW_HAMPSHIRE","NEW_JERSEY","NEW_YORK","NEW_YORK_CITY","NORTH_KOREA","NORTHERN_IRELAND","OHIO","OKLAHOMA","OREGON","PAKISTAN","PARIS","POLAND","ROME","SAN_FRANCISCO","SAUDI_ARABIA","SEATTLE","SERBIA","SOUTH_AFRICA","SOUTH_CAROLINA","SOUTH_KOREA","SPAIN","SYRIA","TAIWAN","TENNESSEE","TEXAS","TIBET","TOKYO","TURKEY","VENTURA","VIETNAM","VIRGINIA","WASHINGTON","WISCONSIN"],[291,300,261,360,384,406,438,285,262,260,869,684,265,583,376,575,2257,1420,217,203,544,298,886,1183,329,3709,390,262,606,210,210,637,413,753,915,1727,473,1404,1919,809,1202,635,956,635,1738,430,2842,206,882,1761,337,372,210,4124,309,247,305,1936,795,208,249,536,244,468,217,246,426,252,215,212,747,897,294,3041,453,240,553,369,243,301,757,1237,251,634,293,227,796,472,296,428,210,436,624,698,344,1323,310,315,967,278,1298,468,5316,242],[670.16,791.9,694.09,867.53,972.38,1015.27,1034.85,753.17,731.39,648.66,2137.5,1575.25,615.28,1295.5,857.73,1445.06,5273.93,3421.51,537.41,480.51,1222.69,841.76,2107.96,3023.15,708.85,9101.46,1008.99,496.4,1445.26,495.5,503.38,1539.86,864.38,1781.18,2360.74,4051.27,1076.17,3179.25,4838.94,2005.21,2966.18,1584.4,2396.19,1365.59,3894.26,1006.1,6354.33,550.87,1999.58,4356.79,763.29,950.51,506.9,9504.97,835.78,561.45,710.85,4666.99,1915.24,497.12,622.86,1347.58,625.27,1119.74,526.82,622.62,742.71,570.02,547.89,575.38,1793.39,2179,718.2,7421.19,1117.93,585.87,1275.09,879.24,619.76,847.06,1890.19,3054.79,548.88,1419.88,734.57,528.26,2074.06,1114.27,656.99,1164.64,481.7,1006.56,1264.3,1736.87,891.27,3450.09,655.49,814.67,2129.06,582.33,3224.15,1187.9,12764.14,562.88],[2.3,2.64,2.66,2.41,2.53,2.5,2.36,2.64,2.79,2.49,2.46,2.3,2.32,2.22,2.28,2.51,2.34,2.41,2.48,2.37,2.25,2.82,2.38,2.56,2.15,2.45,2.59,1.89,2.38,2.36,2.4,2.42,2.09,2.37,2.58,2.35,2.28,2.26,2.52,2.48,2.47,2.5,2.51,2.15,2.24,2.34,2.24,2.67,2.27,2.47,2.26,2.56,2.41,2.3,2.7,2.27,2.33,2.41,2.41,2.39,2.5,2.51,2.56,2.39,2.43,2.53,1.74,2.26,2.55,2.71,2.4,2.43,2.44,2.44,2.47,2.44,2.31,2.38,2.55,2.81,2.5,2.47,2.19,2.24,2.51,2.33,2.61,2.36,2.22,2.72,2.29,2.31,2.03,2.49,2.59,2.61,2.11,2.59,2.2,2.09,2.48,2.54,2.4,2.33]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>searchLemma<\/th>\n      <th>n<\/th>\n      <th>conc<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'85%'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 1.74 ? '' : 'linear-gradient(90deg, transparent ' + (2.82 - value)/1.08 * 100 + '%, cornflowerblue ' + (2.82 - value)/1.08 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="geographical-distance" class="section level2">
+<h2>Geographical distance</h2>
+<p>
+<h3>
+Method
+</h3>
+</p>
+<p>The final piece is calculating how far each GPE is from the presumed epicenter of the Slate Magazine corpus, Washington, D.C. So, we first create an <code>sf</code> geometry for the nations’s capital.</p>
+<pre class="r"><code>dc = st_sfc(st_point(c(-77.0369, 38.9072)),crs=4326)</code></pre>
+<p>Then we compute distances between DC and each GPE in our dataset using the <code>st_distance</code> function from the <code>sf</code> package. Distances (in miles) are simple “as the crow flies” approximations.</p>
+<p>NOTE: Lat/Long coordinates represent the center (or centroid) of a given GPE (eg, France is represented as the geographical center of the country of France). Important as well, Paris, eg, is treated as a distinct GPE from France. This could clearly be re-thought.</p>
+<pre class="r"><code>gpe_dists &lt;- corpusdatr::cdr_slate_gpe %&gt;% 
+  mutate(miles_from_dc = round(as.numeric(st_distance(geometry,dc))*0.000621371,0)) #Convert to miles.</code></pre>
+<p>Distances from DC:</p>
+<pre><code>##         lemma miles_from_dc                   geometry
+## 1 AFGHANISTAN          6935  POINT (67.70995 33.93911)
+## 2     ALABAMA           717  POINT (-86.9023 32.31823)
+## 3      ALASKA          3333 POINT (-149.4937 64.20084)
+## 4     ALBANIA          4858  POINT (20.16833 41.15333)
+## 5   ARGENTINA          5388 POINT (-63.61667 -38.4161)
+## 6     ARIZONA          1914 POINT (-111.0937 34.04893)</code></pre>
+<p>
+<h3>
+Plot
+</h3>
+</p>
+<p>Finally, we join the concreteness scores and distances from DC, and plot the former as a function of the latter.</p>
+<pre class="r"><code>gpe_dists %&gt;%
+  inner_join(conc_by_term,by=c(&#39;lemma&#39;=&#39;searchLemma&#39;))%&gt;%
+  ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
+  #geom_point(size=.75)+
+  geom_smooth(method=&quot;loess&quot;, se=T)+
+  theme(legend.position = &quot;none&quot;)+ 
+  geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  labs(title = &quot;Concreteness scores vs. distance from Washington, D.C.&quot;, subtitle=&quot;By geo-political entity&quot;)</code></pre>
+<p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>
+<h3>
+Some observations
+</h3>
+</p>
+<ul>
+<li>Concreteness scores tend to be higher in the US, and distance from DC seems to have no effect on concreteness scores for GPEs in the US.</li>
+<li>Crossing the Atlantic into Western Europe, concreteness scores show a marked and graded decrease until ~Eastern Europe/Northern Africa.</li>
+<li>From the Middle East to locations in Southeast Asia, concreteness scores gradually return to US-like levels (although the plot gets a bit sparse at these distances).</li>
+</ul>
+<p>
+<h3>
+Some very cursory explanations
+</h3>
+</p>
+<p>Collectively, the first two observations could reflect the influence of perceived distance on language use, at least from a “here in the (concrete) USA” versus “over there in (abstract) Europe” perspective. This particular interpretation would recast the epicenter of Slate magazine narrative as the US instead of Washington DC, which probably makes sense.</p>
+<p>The up-swing in the use of concrete language in reference to ~Asian GPEs runs counter to theory, but perhaps could be explained by the content of the conversation surrounding some of these GPEs, eg, Indonesian occupation of East Timor (ca. late 20th century), in which the (presumably more concrete) language of conflict trumps the effects of perceived distance.</p>
+<p>Or any number of other interpretations.</p>
+</div>
+<div id="fin" class="section level2">
+<h2>FIN</h2>
+<p>Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small.</p>
+<p>From this perspective, hopefully we have demonstrated the utility of <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>’s cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-brysbaert2014concreteness">
+<p>Brysbaert, Marc, Amy Beth Warriner, and Victor Kuperman. 2014. “Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.” <em>Behavior Research Methods</em> 46 (3). Springer: 904–11.</p>
+</div>
+<div id="ref-snefjella2015concreteness">
+<p>Snefjella, Bryor, and Victor Kuperman. 2015. “Concreteness and Psychological Distance in Natural Language Use.” <em>Psychological Science</em> 26 (9). Sage Publications Sage CA: Los Angeles, CA: 1449–60.</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,225 @@
+---
+title: 'psychological and geographical distance in text'
+description: 'An investigation into the relationship between psychological distance and geographical distance in text.'
+author: ''
+date: '2018-04-19'
+slug: psychological-and-geographical-distance-in-text
+output:
+  blogdown::html_page:
+    toc: yes
+bibliography: biblio.bib
+link-citations: yes
+tags: ['rstats', 'geo', 'corpus ling']
+banner: banners/distance.png
+---
+
+This post considers a super-clever study presented in @snefjella2015concreteness, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets.
+
+General idea/hypothesis:
+
+>The more we perceive an event/entity as (geographically) proximal to self, the more concrete our language when referencing said event/entity; the more we perceive an event/entity as (geographically) distant from self, the more abstract our language when referencing said event/entity. In other words, perceived distance is reflected in the language that we use, and in a graded way.
+
+In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter's location and the referenced location increases.
+
+In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the `corpusdatr` package. 
+
+Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between Washington, DC and referenced location in the corpus; instead of the abstractness of language in a tweet, we consider the abstractness of language in the context surrounding the referenced location in the corpus.  Imperfect, but sufficient to demonstrate some methodologies.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse) 
+library(sf)
+library(spacyr)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(corpuslingr) #devtools::install_github("jaytimm/corpuslingr")
+library(corpusdatr) #devtools::install_github("jaytimm/corpusdatr")
+library(lexvarsdatr) #devtools::install_github("jaytimm/lexvarsdatr")
+```
+
+
+##Concreteness ratings and the lexvarsdatr package  
+
+@snefjella2015concreteness score the abstractness of tweets in their study using concreteness ratings for 40,000 English words derived in @brysbaert2014concreteness.  Ratings are made available as supplemental material, and included in a data package I have developed called `lexvarsdatr`.  A more complete description of the package and its contents is available [here](https://github.com/jaytimm/lexvarsdatr#lexvarsdatr).
+
+Per @brysbaert2014concreteness, concreteness ratings range from 1 (abstract) to 5 (concrete); ratings reflect averages based on 30 participants. In the `lexvarsdatr` package, concreteness ratings (along with age-of-acquisition ratings and response times in lexical decision) are housed in the `lvdr_behav_data` table.
+
+
+```{r}
+concreteness <- lvdr_behav_data%>%
+  select(Word, concRating)%>%
+  mutate(Word = toupper(Word))%>%
+  na.omit()
+```
+
+
+Some random examples of concreteness ratings from the dataset:
+```{r fig.height=4, message=FALSE, warning=FALSE}
+set.seed(111)
+concreteness%>%
+  sample_n(30)%>%
+  mutate(rank=rank(concRating))%>%
+  ggplot(aes(x=concRating, y=rank)) +
+  geom_text(aes(label=toupper(Word)), size=2.5, check_overlap = TRUE,hjust = "inward")
+```
+
+
+The distribution of concreteness ratings for the 40,000 word forms:
+```{r fig.height=3.5}
+ggplot(concreteness, aes(concRating)) +
+  geom_histogram(binwidth = 0.1)
+```
+
+
+
+##Context & concreteness scores
+
+So, the goal here is to extract all corpus references to location, along with the surrounding context, and score the contexts based on the concreteness of their constituent features (akin to dictionary-based sentiment analysis, for example).  Here, context is defined as the 15x15 window of words surrounding a given reference to location.
+
+As the annotated Slate Magazine corpus contains named entity tags, including geopolitical entities (GPEs), identifying references to location has already been sorted. Here we collapse multi-word entities to single tokens, and ready the corpus for search using `clr_set_corpus`. 
+
+```{r}
+slate <- corpusdatr::cdr_slate_ann %>%
+  spacyr::entity_consolidate() %>%
+  corpuslingr::clr_set_corpus(ent_as_tag=TRUE)
+```
+
+
+Per a [previous post](https://www.jtimm.net/blog/text-geography-and-semantic-space/), GPEs in the `cdr_slate_ann` corpus have been geocoded, and included in the `corpusdatr` package as an `sf` geometry, `cdr_slate_gpe`.  GPEs in `cdr_slate_gpe` are limited to those occurring in at least 1% of texts.  "USA" and synonyms have been excluded as well.  
+
+Using the search syntax described [here](), we translate the GPEs to a searchable form, and extract all GPE contexts using the `clr_search_context` from my `corpuslingr` package.
+
+```{r}
+gpe_search <- corpusdatr::cdr_slate_gpe %>%
+  top_n(100,txtf)%>%
+  mutate(lemma=paste0(lemma,'~GPE'))
+
+gpe_contexts <- corpuslingr::clr_search_context(search = gpe_search$lemma, corp = slate, LW=15, RW=15) 
+```
+
+Results from `clr_search_context` include both a `BOW` object and a `KWIC` object.  Here, the former is aggregated by GPE, context, and lemma using the `clr_context_bow` function; concreteness ratings are then joined (by lemma). Finally, concreteness scores are calculated as the average concreteness rating of all (non-proper/non-entity) words in a given context.  Words not included in the normed dataset are assigned a concreteness value of zero. 
+
+```{r}
+conc_by_eg <- gpe_contexts %>%
+  corpuslingr::clr_context_bow(agg_var = c('doc_id','eg','searchLemma','lemma','tag'),content_only=TRUE)%>%
+  left_join(concreteness,by = c('lemma'='Word'))%>%
+  replace_na(list(concRating=0))%>%
+  group_by(doc_id,eg,searchLemma) %>%
+  summarise(n = n(), conc = sum(cofreq*concRating)) %>%
+  mutate(ave_conc= round(conc/n,2))
+```
+
+
+Distribution of concreteness scores for all contexts containing reference to a GPE (n = 5,539):  
+
+```{r fig.height=3.5}
+ggplot(conc_by_eg, aes(ave_conc)) +
+  geom_histogram(binwidth = 0.1)
+```
+
+
+Joining these scores to the `KWIC` object from the results of our original search, we can investigate how an example set of contexts has been scored. 
+
+```{r message=FALSE, warning=FALSE}
+corpuslingr::clr_context_kwic(gpe_contexts,include=c('doc_id','eg','lemma')) %>%
+  left_join(conc_by_eg)%>%
+  sample_n(5)%>%
+  select(kwic,ave_conc)%>%
+  arrange(desc(ave_conc))%>%
+  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
+  DT::formatStyle(c(1:2),fontSize = '85%')
+```
+
+<br>
+
+Lastly, we aggregate contextual concreteness scores to obtain a single concretness score for each GPE.  
+
+```{r}
+conc_by_term <-  conc_by_eg%>%
+  group_by(searchLemma) %>%
+  summarise(n = sum(n), conc = sum(conc)) %>%
+  mutate(ave_conc= round(conc/n,2))
+```
+
+Results are presented in the table below, and can be sorted using column headers.
+```{r}
+conc_by_term %>%
+   DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
+  DT::formatStyle('ave_conc',
+    background = DT::styleColorBar(conc_by_term$ave_conc, 'cornflowerblue'),
+    backgroundSize = '80% 70%',
+    backgroundRepeat = 'no-repeat',
+    backgroundPosition = 'right') %>%
+  DT::formatStyle(c(1:4),fontSize = '85%')
+```
+
+
+##Geographical distance
+
+<p><h3>Method</h3></p>
+The final piece is calculating how far each GPE is from the presumed epicenter of the Slate Magazine corpus, Washington, D.C. So, we first create an `sf` geometry for the nations's capital.
+
+```{r message=FALSE, warning=FALSE}
+dc = st_sfc(st_point(c(-77.0369, 38.9072)),crs=4326)
+```
+
+Then we compute distances between DC and each GPE in our dataset using the `st_distance` function from the `sf` package. Distances (in miles) are simple "as the crow flies" approximations.
+
+NOTE: Lat/Long coordinates represent the center (or centroid) of a given GPE (eg, France is represented as the geographical center of the country of France). Important as well, Paris, eg, is treated as a distinct GPE from France.  This could clearly be re-thought.     
+
+```{r, message=FALSE, warning=FALSE}
+gpe_dists <- corpusdatr::cdr_slate_gpe %>% 
+  mutate(miles_from_dc = round(as.numeric(st_distance(geometry,dc))*0.000621371,0)) #Convert to miles.
+```
+
+Distances from DC:
+```{r echo=FALSE}
+head(gpe_dists) %>% data.frame() %>% select(lemma,miles_from_dc,geometry)
+```
+
+
+
+<p><h3>Plot</h3></p>
+
+Finally, we join the concreteness scores and distances from DC, and plot the former as a function of the latter.
+
+```{r fig.height=6.5, message=FALSE, warning=FALSE}
+gpe_dists %>%
+  inner_join(conc_by_term,by=c('lemma'='searchLemma'))%>%
+  ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
+  #geom_point(size=.75)+
+  geom_smooth(method="loess", se=T)+
+  theme(legend.position = "none")+ 
+  geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  labs(title = "Concreteness scores vs. distance from Washington, D.C.", subtitle="By geo-political entity")
+```
+
+
+<p><h3>Some observations</h3></p>
+
+* Concreteness scores tend to be higher in the US, and distance from DC seems to have no effect on concreteness scores for GPEs in the US.
+* Crossing the Atlantic into Western Europe, concreteness scores show a marked and graded decrease until ~Eastern Europe/Northern Africa. 
+* From the Middle East to locations in Southeast Asia, concreteness scores gradually return to US-like levels (although the plot gets a bit sparse at these distances).
+
+
+<p><h3>Some very cursory explanations</h3></p>
+
+Collectively, the first two observations could reflect the influence of perceived distance on language use, at least from a "here in the (concrete) USA" versus "over there in (abstract) Europe" perspective.  This particular interpretation would recast the epicenter of Slate magazine narrative as the US instead of Washington DC, which probably makes sense.  
+
+The up-swing in the use of concrete language in reference to ~Asian GPEs runs counter to theory, but perhaps could be explained by the content of the conversation surrounding some of these GPEs, eg, Indonesian occupation of East Timor (ca. late 20th century), in which the (presumably more concrete) language of conflict trumps the effects of perceived distance.   
+
+Or any number of other interpretations.
+
+
+##FIN
+
+Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small.
+
+From this perspective, hopefully we have demonstrated the utility of @snefjella2015concreteness's cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.
+
+
+
+##References
+
+
+

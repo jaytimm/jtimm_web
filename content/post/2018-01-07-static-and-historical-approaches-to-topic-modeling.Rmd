@@ -1,0 +1,272 @@
+---
+title: topic models for synchronic & diachronic corpus exploration
+description: 'A simple workflow from annotated corpus to topic model, with a focus on the exploratory utility of topic models.'
+author: ''
+date: '2018-02-26'
+slug: static-and-historical-approaches-to-topic-modeling
+tags: ['rstats','topic model', 'corpus ling']
+output:
+  blogdown::html_page:
+    toc: yes
+bibliography: biblio.bib
+link-citations: yes
+banner: banners/topic.jpg
+---
+
+This post outlines a fairly simple workflow from annotated corpus to topic model, with a focus on the exploratory utility of topic models.  We first consider some text structures relevant to topic modeling in R, and then demonstrate some approaches to visualizing model results, including variation in topic prevalence over time for a diachronic corpus.  Lastly, we consider methods for visualizing relatedness among topics.  
+
+For demonstration purposes, we utilize a set of corpora made avaiable via the `corpusdatr` package.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(topicmodels)
+library(tidytext)
+library(spacyr)
+```
+
+
+```{r}
+library(corpusdatr)#devtools::install_github("jaytimm/corpusdatr")
+library(corpuslingr)#devtools::install_github("jaytimm/corpuslingr")
+```
+
+
+##Topic models and text structures
+
+Very quickly, topic modeling is an unsupervised text classification methodology in which 
+
+* documents are modeled as composites of topics, and 
+* topics are modeled as composites of features/words.  
+
+The approach to topic modeling employed here is latent Dirichlet allocation (LDA); to fit our models, we use the `LDA` function from the `topicmodels` package [@hornik2011topicmodels]. 
+
+Like most topic modeling functions, the `topicmodels::LDA` function requires a `DocumentTermMatrix` as input. Informally, a DTM is simply a data structure in which each document in a corpus is represented in terms of its constitutent features and their frequencies (where features could be defined in terms of lemma, token, n-gram, keyphrase, etc).  
+
+As a data structure in R, however, a `DocumentTermMatrix` is awkward and not especially intuitive to work with.  Conveniently, the `cast_sparse` function from the `tidytext` package allows us to get from informal DTM to formal DTM quite easily. 
+
+
+##Synchronic application
+
+In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as `cdr_slate_ann` from the `corpusdatr` package.  The corpus has been annotated using the `spacyr` package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.
+
+Using the `clr_get_freq` function from the `corpuslingr` package, then, we create a DTM of the corpus using the lemma as our feature unit, and limit feature composition to nouns and entities.
+
+```{r}
+dtm <- corpusdatr::cdr_slate_ann %>%
+  spacyr::entity_consolidate() %>%
+  filter(tag %in% c("NN", "NNS") | pos =='ENTITY')%>%
+  corpuslingr::clr_get_freq(agg_var=c('doc_id','lemma'),toupper=FALSE)%>%
+  arrange(doc_id)
+```
+
+
+Example portion of text as a DTM:
+```{r echo=FALSE}
+head(dtm)
+```
+
+Per the output of `clr_get_freq`, we can filter out features with extreme document frequencies (ie, features with limited utility in classificaion). We then convert the DTM to a formal DTM using the `cast_sparse` function.
+
+```{r}
+static_DTM <- dtm%>%
+  filter(docf < 500 & docf > 5)%>%
+  tidytext::cast_sparse(row=doc_id,column=lemma,value=txtf)
+```
+
+
+Which has the following structure:
+```{r echo=FALSE}
+str(static_DTM)
+```
+
+
+Lastly, we fit the model, specifying an eight topic solution:
+```{r message=FALSE, warning=FALSE}
+static_topic <- topicmodels::LDA(static_DTM, k = 8, control=list(seed=12)) #11
+```
+
+
+We extract the `terms` object from the `LDA` output using the `topicmodels::posterior` function; output includes the posterior probabilities of the terms for each topic.  Focusing on the six highest probability terms per topic, the plot below summarizes model results for the Slate Magazine corpus (ca 1996-2000).
+
+```{r fig.height=6.5, message=FALSE, warning=FALSE}
+library(ggthemes)
+topicmodels::posterior(static_topic)$terms %>%
+  data.frame() %>%
+  mutate(topics = row.names(.))%>%
+  gather(key="term",value="beta", noise:wool) %>%
+  group_by(topics) %>%
+  top_n(6, beta) %>%
+  ungroup() %>%
+  arrange(topics, beta)%>%
+  mutate(order = row_number(), term=factor(paste(order,term,sep="_"), levels = paste(order, term, sep = "_")), topics = as.character(topics))%>%
+  ggplot(aes(x=term, y=beta, fill=topics)) + 
+    geom_col(show.legend = FALSE) +  
+    facet_wrap(~topics, scales = "free_y", ncol = 2) +
+    scale_x_discrete(labels = function(x) gsub("^.*_", "", x))+
+    theme_fivethirtyeight()+ scale_fill_stata() +
+    coord_flip()+
+    theme(plot.title = element_text(size=14)) +
+    labs(title="Topic composition by feature") #
+```
+
+So, some curious times, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad.  The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content. 
+
+
+##Diachronic application
+
+Next we explore topics in a diachronic corpus, and demonstrate a straightforward approach to visualizing variation in topic prevalence over time. Here we use the `cdr_gnews_historical` corpus from the `corpusdatr` package for demonstration purposes.  
+
+
+<p><h4>Corpus and some descriptives</h4></p>
+
+The corpus is comprised of web-based news articles published during a three-week time period (11-27/17 to 12/20/17).  Articles were retrieved using my `quicknews` package, which leverages Goggle News' RSS feed to direct search, and annotated using the `spacyr` package.  
+
+For the sake of avoiding copyright issues, each constituent article in the corpus is reduced to a document-term matrix (DTM).  The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.
+
+Example corpus metadata:
+```{r}
+head(cdr_gnews_meta)[1:4]
+```
+
+
+Some basic corpus descriptives:
+
+```{r fig.height=3.5, message=FALSE, warning=FALSE}
+cdr_gnews_meta%>%
+  group_by(pubdates) %>%
+  summarize_at(vars(docN),funs(sum))%>%
+  ggplot(aes(x=pubdates, group = 1)) +
+  geom_line(aes(y=docN),size=1.25, color = 'steelblue') +
+  labs(title="Daily corpus size", subtitle = "11-27-17 to 12-20-17")
+```
+
+The corpus is comprised predominantly of articles from the Washington Post, CNN, and the New York Times.  It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.  
+
+```{r fig.height=4}
+cdr_gnews_meta %>%
+  group_by(source) %>%
+  summarize_at(vars(docN),funs(sum))%>%
+  top_n(10,docN)%>%
+  ggplot(aes(x=reorder(source, docN), y=docN)) + 
+  geom_col(width=.65, fill='steelblue') +  
+  coord_flip()+
+  labs(title="Top ten news sources by text frequency", subtitle = "11-27-17 to 12-20-17")
+```
+
+
+<p><h4>Topic Model</h4></p>
+
+We follow the same procedure to fitting the topic model as we did previously:
+
+```{r message=FALSE, warning=FALSE}
+hist_topic <- corpusdatr::cdr_gnews_historical %>%
+  filter(tag %in% c("NN", "NNS") | pos =='ENTITY')%>%
+  group_by(doc_id,lemma) %>%
+  summarize_at(vars(freq),funs(sum))%>%
+  tidytext::cast_sparse(row=doc_id,column=lemma,value=freq)%>%
+  topicmodels::LDA(., k = 12, control = list(verbose = 0,seed=999))
+```
+
+
+Extract the topic summary of the model:
+```{r message=FALSE, warning=FALSE}
+topic_summary <- data.frame(topicmodels::terms(hist_topic,7)) %>%
+  gather(key='topic',value='val',Topic.1:Topic.12) %>%
+  group_by(topic)%>%
+  summarize (dims = paste(val,collapse=', '))%>%
+  mutate(topic = as.numeric(gsub('Topic.','',topic)))%>%
+  arrange(topic)
+```
+
+
+Topics over the three week period:
+```{r echo=FALSE, paged.print=TRUE}
+topic_summary[1:12,2]
+```
+
+So a busy three weeks.  The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.
+
+
+<p><h4>Topic prevalence historically</h4></p>
+
+In order to quantify the prevalence of these topics over time, we shift focus from topic composition in terms of words/features to document composition in terms of topics. So, we first extract the posterior probabilities of the topics for each document; then we join corpus metadata and topic summary details.
+
+```{r message=FALSE, warning=FALSE}
+hist_beta <- topicmodels::posterior(hist_topic)$topics %>%
+  data.frame() %>%
+  mutate(doc_id = row.names(.))%>%
+  arrange(as.numeric(doc_id))%>%
+  left_join(cdr_gnews_meta) %>%
+  gather(key="topic",value="val",X1:X12) %>%
+  mutate(topic = as.numeric(gsub('X','',topic)))%>%
+  left_join(topic_summary)
+```
+
+Based on this set of model results, each document in our corpus can be represented as a composite of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9. 
+
+```{r}
+hist_beta %>%
+  filter(doc_id %in% c('183', '631','896')) %>%
+  ggplot(aes(x=reorder(paste(topic,dims, sep=" - "), -topic), y=val,  fill = dims)) +
+  geom_col(width=.85) +  
+  coord_flip()+
+  scale_fill_stata() +
+  theme(axis.text.x = element_text(angle = 90))+
+  xlab ("topic") + ylab("beta") +
+  facet_wrap(~doc_id)+
+  labs(title="Text by topic") +
+  theme(legend.position="none")
+```
+
+Topic prevalence over time, then, is simply the aggregate of these topic probabilities for each document by publication date.   
+
+```{r message=FALSE, warning=FALSE}
+agg_hist_beta <- hist_beta %>%
+  group_by(pubdates,topic,dims) %>% 
+  summarize_at(vars(val),funs(sum))%>%
+  ungroup()
+```
+
+
+Finally, we plot the results.  The size of plot points represents aggregate posterior probabilities, which can be interpreted as the likelihood that some article **a** written on day **d** was about some topic **z**.  
+
+The top six words associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.
+
+```{r fig.height=8}
+p <- ggplot(agg_hist_beta) +
+     geom_point(aes(x = pubdates, y = reorder(topic,-topic), size = val, color=dims)) +
+  theme_fivethirtyeight() + scale_color_stata() 
+
+p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == "2017-11-27",
+     ], aes(x = pubdates, y = reorder(topic,-topic), label = dims), vjust=-1,hjust=0) +
+  labs(title="Topic prevalence over time", subtitle="11-27-2017 to 12-20-2017")+
+  theme(legend.position="none", plot.title = element_text(size=14))
+```
+
+
+##Topic clusters
+
+Lastly, we consider the relationship among topics in the `cdr_gnews_historical` corpus via cluster analysis.  The first step in this process is to create a correlation matrix of the beta values for constituent topic features.
+
+```{r message=FALSE, warning=FALSE}
+cor_mat <- data.frame(posterior(hist_topic)$topics)%>%
+   `colnames<-`(paste(topic_summary$topic,topic_summary$dims, sep=" - ")) %>%
+    cor(.)
+```
+
+
+Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform hierarchical clustering analysis on the resulting matrix.  We use the `ggdendro` package to plot results.  Per plot below, some intuitive relationships, some less so.  
+
+```{r fig.height=6, message=FALSE, warning=FALSE}
+library(ggdendro)
+hclust(dist(cor_mat)) %>%
+  ggdendrogram(., rotate=TRUE) + theme_fivethirtyeight()
+```
+
+
+##quick summary
+
+A brief outline for quick topic modeling, with some different applications for synchronic and diachronic corpora. For a smarter discussion of underlying assumptions and maths, see @hornik2011topicmodels. 
+
+
+##References

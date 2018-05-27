@@ -1,0 +1,25 @@
+---
+title: "resources"
+output:
+  blogdown::html_page:
+    toc: yes
+nodateline: true
+---
+
+This page is a bit of a repository for links to odds and ends, including R-packages, Shiny apps, code-snippets, and other on-going projects.
+
+##R-packages
+
+* [corpuslingr](https://github.com/jaytimm/corpuslingr#corpuslingr-an-r-package-for-complex-corpus-search-and-web-based-corpus-creation) -- A library of functions enabling complex corpus search in context, search aggregation, bag-of-words/KWIC building, and keyphrase extraction.
+* [corpusdatr](https://github.com/jaytimm/corpusdatr#corpusdatr-a-collection-of-corpora-for-linguists-and-digital-humanists) -- A collection of linguistic resources, including an abridged version of the Slate Magazine corpus (ca 1996-2000, 1K texts, ~1m words), derived from data made available via the [OANC]().  The corpus has been annotated using `spacyr`, includes named-entity tags, and is perfectly sized for demo and pedagogical purposes.
+* [sotuAnn](https://github.com/jaytimm/sotuAnn) --  An annotated version of the State of the Union corpus (ca 1790-2016, ~2m words). 
+* [lexvarsdatr](https://github.com/jaytimm/lexvarsdatr#lexvarsdatr) -- A collection of behavioral data resources (via supplemental materials), including concreteness ratings, age-of-acquisition ratings, response times in lexical decision, some CELEX measures, and word association data, along with some search functionality.
+* [quicknews](https://github.com/jaytimm/quicknews) --  A simple library of functions for building/scraping multi-lingual corpora based on GoogleNews' RSS feed. 
+ 
+All packages are presently in development.
+
+
+##Shiny apps
+
+* [Corpus Search](https://jasontimm.shinyapps.io/corpusQuery/) -- An application built on the search functionality of `corpuslingr` for interactive corpus search. At present, the demo app makes available for search the Slate Magazine corpus from `corpusdatr`.  Swapping out the corpus with a personal one would be straightforward.
+* [School Locator](https://jasontimm.shinyapps.io/school_locator/) for Albuquerque Public Schools -- Retrieve school locations, driving times, and school characteristics based on user-specified address in Bernalillo County.

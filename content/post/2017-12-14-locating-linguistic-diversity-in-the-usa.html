@@ -1,0 +1,205 @@
+---
+title: locating linguistic diversity in the usa
+description: 'A census-based investigation into linguistic diversity in the US.'
+author: ''
+date: '2018-02-10'
+slug: locating-linguistic-diversity-in-the-usa
+tags: ['rstats','census', 'entropy', 'language', 'geo']
+output:
+  blogdown::html_page:
+    toc: yes
+    df_print: paged
+banner: banners/diversity.jpg
+---
+
+<link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
+<script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#language-data-and-the-census">Language data and the census</a></li>
+<li><a href="#languages-in-the-us">Languages in the US</a></li>
+<li><a href="#linguistic-diversity-as-entropy">Linguistic diversity as entropy</a></li>
+<li><a href="#locating-linguistic-diversity">Locating linguistic diversity</a></li>
+<li><a href="#fin">FIN</a></li>
+</ul>
+</div>
+
+<p>This post investigates linguistic diversity in the United States utilizing data made available by the US Census. We consider census language classifications, and introduce a simple methodology for quantifying linguistic diversity using entropy scores.</p>
+<p>The post is largely exploratory, and a bit of an excuse to play with some different data visualization packages, including <code>ggridges</code> and <code>treemapify</code>, and to see about America some.</p>
+<pre class="r"><code>library(tidycensus)
+options(tigris_use_cache = TRUE)
+library(tidyverse)
+library(sf)
+library(DT)</code></pre>
+<div id="language-data-and-the-census" class="section level2">
+<h2>Language data and the census</h2>
+<p>Language data in the US census live in census table <code>B16001</code>, which provides summary counts of speakers by language spoken at home. The <code>load_variables</code> function of the <code>tidycensus</code> package allows for nice and easy interaction with census tables and their constituent variables; using this function, then, we gather the relevant language variables included in table <code>B16001</code>,</p>
+<pre class="r"><code>langs &lt;- load_variables(2015, &quot;acs5&quot;, cache = FALSE) %&gt;%
+  filter(grepl(&quot;B16001&quot;,name) &amp; !grepl(&quot;Margin|Speak English|Total$&quot;,label)) %&gt;%
+  mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),label=gsub(&quot;^.*!!&quot;,&quot;&quot;,label))%&gt;%
+  select(-concept)</code></pre>
+<p>The US census provides counts of speakers for the following language categories:</p>
+<pre><code>## [1] &quot;Speak only English | Spanish or Spanish Creole | French (incl. Patois, Cajun) | French Creole | Italian | Portuguese or Portuguese Creole | German | Yiddish | Other West Germanic languages | Scandinavian languages | Greek | Russian | Polish | Serbo-Croatian | Other Slavic languages | Armenian | Persian | Gujarati | Hindi | Urdu | Other Indic languages | Other Indo-European languages | Chinese | Japanese | Korean | Mon-Khmer, Cambodian | Hmong | Thai | Laotian | Vietnamese | Other Asian languages | Tagalog | Other Pacific Island languages | Navajo | Other Native North American languages | Hungarian | Arabic | Hebrew | African languages | Other and unspecified languages&quot;</code></pre>
+<p>These 40 languages/language categories are cleaned up some in the table below, where we add some details implicit in the census’ classification scheme. While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine. <br/> <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["IE","IE","IE","IE","IE","IE","IE","IE","IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE"],["Armenian","English","Greek","Indic languages","Other Indo-European languages","Romance languages","Scandanavian languages","Slavic languages","West Germanic languages","African languages","Arabic","Asian languages","Hebrew","Hungarian","Native North American languages","Other","Pacific Island Languages"],["Armenian","Speak only English","Greek","Persian, Gujarati, Hindi, Urdu, Other Indic languages","Other Indo-European languages","Spanish or Spanish Creole, French (incl. Patois, Cajun), French Creole, Italian, Portuguese or Portuguese Creole","Scandinavian languages","Russian, Polish, Serbo-Croatian, Other Slavic languages","German, Yiddish, Other West Germanic languages","African languages","Arabic","Chinese, Japanese, Korean, Mon-Khmer, Cambodian, Hmong, Thai, Laotian, Vietnamese, Other Asian languages","Hebrew","Hungarian","Navajo, Other Native North American languages","Other and unspecified languages","Tagalog, Other Pacific Island languages"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>indo<\/th>\n      <th>type<\/th>\n      <th>languages<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script></p>
+<p><br/> Using <code>tidycensus</code>, we pull counts of speakers for the languages listed above for each county in the US, along with the <code>summary_var</code> (or denominator), which amounts to the population over 5.</p>
+<pre class="r"><code>langData &lt;- tidycensus::get_acs(geography = &quot;county&quot;,variables = langs$name, summary_var=&quot;B16001_001&quot;, survey=&quot;acs5&quot;, year=2015) %&gt;%
+  left_join(sumLangs,by=c(&quot;variable&quot;=&quot;name&quot;))</code></pre>
+<p>As an example to explore the data some, we consider languages spoken at home for a county famous for its linguistic diversity: Queens County, New York. Of the 40 language classifications included in the census, Queens is home to speakers of 39 (per 2011-15 5-year estimates).</p>
+<p>Using the <code>treemapify</code> package, the plot below summarizes languages spoken in Queens. Rectangle areas represent the proportion of total speakers, colors reflect language types/families, and sub-tiles reflect within-type languages. While only exploratory, the plot nicely captures how diverse Queens is in terms of languages spoken by its residents.</p>
+<pre class="r"><code>library(treemapify)
+library(ggthemes)
+
+langData%&gt;%
+  filter(NAME==&#39;Queens County, New York&#39;)%&gt;%
+    ggplot(aes(area = estimate,fill = reorder(type,-estimate),label = label,subgroup = type))+
+      geom_treemap()+
+      geom_treemap_subgroup_border() +
+      geom_treemap_subgroup_text(place = &quot;bottom&quot;, grow = F, alpha = 0.5, colour =&quot;gray&quot;,  min.size = 0)+ 
+      geom_treemap_text(colour = &quot;white&quot;, place = &quot;topleft&quot;, reflow = T)+
+      scale_fill_stata()+ theme_fivethirtyeight()+
+      theme(legend.position = &quot;none&quot;,plot.title = element_text(size=14))+ 
+      labs(title = &quot;Queens County, New York&quot;, subtitle = &quot;Composition of languages spoken at home by census language classification&quot;,
+    caption=&quot;Source: American Community Survey 2011-15, Table B16001&quot;)</code></pre>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="languages-in-the-us" class="section level2">
+<h2>Languages in the US</h2>
+<p>Next, we take a quick look at languages with the largest speaker-bases in the US. While English and Spanish clearly rank first and second, respectively, the plot below illustrates the languages with the eighteen next largest speaker-bases.</p>
+<pre class="r"><code>langData %&gt;%
+  data.frame()%&gt;%
+  group_by(label)%&gt;%
+  summarise(pop=sum(estimate))%&gt;%
+  arrange(desc(pop))%&gt;%
+  slice(3:20)%&gt;%
+  ggplot(aes(x=label, y=pop)) + 
+    geom_segment(aes(x=reorder(label,pop), xend=label, y=0, yend=pop)) + xlab(&quot;&quot;)+
+    geom_point(size=3.5, color=&#39;steelblue&#39;) +
+    labs(title=&quot;Languages spoken at home in the US: ranks 3-20&quot;) +
+    coord_flip()+
+    theme_bw()</code></pre>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="linguistic-diversity-as-entropy" class="section level2">
+<h2>Linguistic diversity as entropy</h2>
+<p>To get a better sense of where the linguistic diversity attested in the plot above distributes geographically, we calculate <em>entropy scores</em> for each county within the US. Entropy, <span class="math inline">\(E\)</span>, for a given county, <span class="math inline">\(i\)</span>, is calculated as <span class="math display">\[E_i = \sum_{r=1}^n Q_r ln\frac{1}{Q_r}\]</span> where <span class="math inline">\(Q_r\)</span> is the proportion of speakers of language <span class="math inline">\(r\)</span>, and <span class="math inline">\(n\)</span> is the total number of languages spoken (also know as <em>Richness</em>).</p>
+<p>Per this metric, maximum entropy would mean that each of the 4o census language types were spoken by equal numbers of people within a given county; minimum entropy would mean that all speakers within a given county spoke the same language .</p>
+<p>This metric (and like-minded variants) is often used in socio-demographic research to assess racial/ethnic diversity, as well as in ecological research to evaluate species diversity and richness.</p>
+<pre class="r"><code>byCounty &lt;- langData %&gt;%
+  data.frame%&gt;%
+  mutate(prop = estimate/summary_est)%&gt;%
+  mutate(eIndex = prop *  log(1/(prop)) )%&gt;%
+  filter(!is.na(eIndex)&amp; grepl(&quot;Hawaii$|Alaska$&quot;,NAME)==FALSE)%&gt;%  
+  group_by(GEOID,NAME)%&gt;%
+  summarize(entropy=sum(eIndex))%&gt;%
+  mutate(entropy=round(entropy/log(40),3))%&gt;% #scale to max entropy
+  ungroup()</code></pre>
+</div>
+<div id="locating-linguistic-diversity" class="section level2">
+<h2>Locating linguistic diversity</h2>
+<p>Based on these derived entropy scores, the table below summarizes the fifty most linguistically diverse counties in the US. As can be noted, Queens tops the list. A close second is Santa Clara County, California, which is home to Silicon Valley. Alameda and San Mateo counties are part of the SF Bay Area. As such, it would seem that entropy scores align well with intuition.</p>
+<pre class="r"><code>byCounty%&gt;%
+  data.frame()%&gt;%
+  arrange(desc(entropy))%&gt;%
+  slice(1:50)%&gt;%
+  select(NAME,entropy)%&gt;%
+  DT::datatable(selection=&quot;none&quot;,class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::formatStyle(&#39;entropy&#39;,
+    background = DT::styleColorBar(byCounty$entropy, &#39;steelblue&#39;),
+    backgroundSize = &#39;80% 70%&#39;,
+    backgroundRepeat = &#39;no-repeat&#39;,
+    backgroundPosition = &#39;right&#39;) %&gt;%
+  DT::formatStyle(c(1:2),fontSize = &#39;85%&#39;)</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Queens County, New York","Santa Clara County, California","Kings County, New York","Middlesex County, New Jersey","Alameda County, California","Hudson County, New Jersey","San Mateo County, California","Montgomery County, Maryland","Bergen County, New Jersey","Fairfax County, Virginia","San Francisco County, California","Rockland County, New York","Los Angeles County, California","Orange County, California","Suffolk County, Massachusetts","Fort Bend County, Texas","New York County, New York","Fairfax city, Virginia","Loudoun County, Virginia","Union County, New Jersey","Sacramento County, California","Passaic County, New Jersey","Somerset County, New Jersey","Richmond County, New York","Contra Costa County, California","San Joaquin County, California","Yolo County, California","Alexandria city, Virginia","Gwinnett County, Georgia","Cook County, Illinois","King County, Washington","Essex County, New Jersey","Middlesex County, Massachusetts","Broward County, Florida","Manassas Park city, Virginia","Westchester County, New York","Arlington County, Virginia","San Diego County, California","Mercer County, New Jersey","Bronx County, New York","Nassau County, New York","McKinley County, New Mexico","DuPage County, Illinois","Fairfield County, Connecticut","Fresno County, California","Prince William County, Virginia","Cibola County, New Mexico","Falls Church city, Virginia","Sutter County, California","Merced County, California"],[0.531,0.511,0.477,0.462,0.452,0.448,0.445,0.445,0.445,0.44,0.432,0.41,0.409,0.405,0.405,0.395,0.39,0.389,0.379,0.377,0.375,0.373,0.373,0.37,0.363,0.363,0.361,0.36,0.358,0.357,0.357,0.353,0.35,0.349,0.346,0.345,0.345,0.343,0.341,0.339,0.339,0.337,0.334,0.332,0.324,0.324,0.322,0.321,0.317,0.315]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>NAME<\/th>\n      <th>entropy<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background':isNaN(parseFloat(value)) || value <= 0 ? '' : 'linear-gradient(90deg, transparent ' + (0.531 - value)/0.531 * 100 + '%, steelblue ' + (0.531 - value)/0.531 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<p><br/> For a more comprehensive perspective on this geospatial variation, we plot entropy scores for the entire US by county using the <code>leaflet</code> package. Using the <code>tigris</code> package, we first pull US county and division shapefiles, the latter to provide a more macro-geospatial lens on variation.</p>
+<pre class="r"><code>library(rmapshaper)
+library(tigris)
+options(tigris_class = &quot;sf&quot;)
+
+cts &lt;- tigris::counties(cb=TRUE)%&gt;%
+  select(GEOID,geometry) %&gt;%
+  rmapshaper::ms_simplify()
+
+divs &lt;- tigris::divisions(cb=TRUE)%&gt;%
+  st_transform(crs = &quot;+init=epsg:4326&quot;)</code></pre>
+<p>Divisions include:</p>
+<pre><code>## [1] &quot;New England&quot;        &quot;Middle Atlantic&quot;    &quot;East North Central&quot;
+## [4] &quot;West North Central&quot; &quot;South Atlantic&quot;     &quot;Mountain&quot;          
+## [7] &quot;Pacific&quot;            &quot;East South Central&quot; &quot;West South Central&quot;</code></pre>
+<p>Call to <code>leaflet</code>:</p>
+<pre class="r"><code>library(leaflet)
+library(widgetframe)
+
+pal &lt;- colorNumeric(palette = &quot;RdPu&quot;, domain = byCounty$entropy)
+
+x &lt;- byCounty %&gt;%
+  left_join(cts)%&gt;%
+  st_as_sf()%&gt;%
+  st_transform(crs = &quot;+init=epsg:4326&quot;)%&gt;%
+  leaflet(width=&quot;100%&quot;,height=&#39;400&#39;) %&gt;%
+      setView(lng = -98.35, lat = 39.5, zoom = 4) %&gt;%
+      addProviderTiles (&quot;CartoDB.Positron&quot;, options = providerTileOptions(minZoom = 4, maxZoom = 7))%&gt;%
+      addPolygons(popup = ~ NAME,
+                fill = TRUE, 
+                stroke = TRUE,weight=1,
+                fillOpacity = 1,
+                color=&quot;white&quot;,
+                fillColor=~pal(entropy))%&gt;%
+      addPolygons(data=divs,fill=FALSE,color=&quot;gray&quot;,stroke = TRUE,weight=1)%&gt;%
+      addCircleMarkers(data=st_centroid(divs), 
+                       radius=0,
+                       label=~NAME,
+                       labelOptions = labelOptions(noHide = T, textOnly = TRUE, offset=c(-25,-10)))%&gt;% 
+      addLegend(&quot;bottomright&quot;, 
+              pal = pal, 
+              values = ~ entropy,
+              title = &quot;Entropy&quot;,
+              opacity = 1)
+frameWidget(x)</code></pre>
+<div id="htmlwidget-3" style="width:100%;height:400px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html//widgets/widget_unnamed-chunk-13.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<p><br/> Perhaps unsurprisingly, linguistic diversity as approximated by entropy scores is highest in major metropolitan areas in the northeast, southern Florida, the southwest, Bay Area &amp; southern California, and the Pacific Northwest.<br />
+—</p>
+<p>Lastly, we consider the distribution of county entropy scores within each division. The <code>ggridges</code> package makes this task relatively straightforward. The figure below, then, illustrates density plots for county-level entropy scores by division.</p>
+<p>While the plot is comprised of the same data as the choropleth map above, I think it provides a more succinct perspective on variation in linguistic diversity across divisions, as well as a nice ‘profile’ of linguistic diversity within divisions.</p>
+<pre class="r"><code>#devtools::install_github(&quot;jaytimm/geodatr&quot;)
+library(geodatr)
+library(ggridges)
+
+byCounty %&gt;%
+  mutate(State=as.character(gsub(&quot;^.+, &quot;,&quot;&quot;,NAME)))%&gt;%
+  left_join((geodatr::us_regions)) %&gt;%
+  na.omit()%&gt;%
+    ggplot(aes(entropy, Div_Name, fill = Div_Name)) +
+      scale_fill_stata()+ theme_fivethirtyeight()+
+      geom_density_ridges(rel_min_height = 0.01) +
+      theme(legend.position = &quot;none&quot;, plot.title = element_text(size=14)) + ylab(&quot;&quot;)+
+      labs(title = &quot;Linguistic diversity density plots&quot;, subtitle = &quot;By US Division, 2011-15&quot;)</code></pre>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="fin" class="section level2">
+<h2>FIN</h2>
+<p>So, some different perspectives on linguistic diversity in the United States via US Census (ACS) data, and some different approaches to visualizing variation across distributions. Despite the focus on linguistic diversity in this post, the US is still very much a monolingual, English speaking country in the aggregate.</p>
+<pre class="r"><code>langData%&gt;%
+  filter(label==&#39;Speak only English&#39;) %&gt;%
+  summarise_at(vars(estimate,summary_est),sum)%&gt;%
+  mutate(perEnglishOnly=round(estimate/summary_est,3)*100)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["estimate"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["summary_est"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["perEnglishOnly"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"234352363","2":"299990740","3":"78.1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
