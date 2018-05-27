@@ -189,8 +189,8 @@ gpe_dists %>%
   ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
   #geom_point(size=.75)+
   geom_smooth(method="loess", se=T)+
-  theme(legend.position = "none")+ 
   geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  theme(legend.position = "none")+
   labs(title = "Concreteness scores vs. distance from Washington, D.C.", subtitle="By geo-political entity")
 ```
 

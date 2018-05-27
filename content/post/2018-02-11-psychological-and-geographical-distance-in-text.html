@@ -154,8 +154,8 @@ Plot
   ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
   #geom_point(size=.75)+
   geom_smooth(method=&quot;loess&quot;, se=T)+
-  theme(legend.position = &quot;none&quot;)+ 
   geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  theme(legend.position = &quot;none&quot;)+
   labs(title = &quot;Concreteness scores vs. distance from Washington, D.C.&quot;, subtitle=&quot;By geo-political entity&quot;)</code></pre>
 <p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 <p>
