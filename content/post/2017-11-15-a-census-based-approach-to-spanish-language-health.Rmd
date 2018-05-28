@@ -141,10 +141,11 @@ summaryData %>%
   select(-HispPopOver5, -GEOID, -HispPop)%>%
   mutate(TotalPop=round(TotalPop/ 1000))%>%
   arrange(desc(PerHisp))%>%
-  DT::datatable(options = list(pageLength = length(geoSample),
+  DT::datatable(extensions = 'FixedColumns',
+                options = list(pageLength = length(geoSample),
                                dom = 't',
                                scrollX = TRUE,
-                               scrollCollapse = TRUE), 
+                               fixedColumns = list(leftColumns = 1)), 
                 rownames = FALSE,
                 width="100%", 
                 escape=FALSE) %>%
