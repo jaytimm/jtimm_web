@@ -52,9 +52,7 @@ library(DT)</code></pre>
   mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),
          label=gsub(&quot;^.*!!&quot;,&quot;&quot;,label))%&gt;%
   select(-concept)</code></pre>
-<p>The US census provides counts of speakers for the following language categories:</p>
-<pre><code>## [1] &quot;Speak only English | Spanish or Spanish Creole | French (incl. Patois, Cajun) | French Creole | Italian | Portuguese or Portuguese Creole | German | Yiddish | Other West Germanic languages | Scandinavian languages | Greek | Russian | Polish | Serbo-Croatian | Other Slavic languages | Armenian | Persian | Gujarati | Hindi | Urdu | Other Indic languages | Other Indo-European languages | Chinese | Japanese | Korean | Mon-Khmer, Cambodian | Hmong | Thai | Laotian | Vietnamese | Other Asian languages | Tagalog | Other Pacific Island languages | Navajo | Other Native North American languages | Hungarian | Arabic | Hebrew | African languages | Other and unspecified languages&quot;</code></pre>
-<p>These 40 languages/language categories are cleaned up some in the table below, where we add some details implicit in the census’ classification scheme. While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine. <br/> <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<p>The US census provides counts of speakers for 40 languages/language categories; these categories are cleaned up some in the table below, where we add some details implicit in the census’ classification scheme. While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine. <br/> <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["IE","IE","IE","IE","IE","IE","IE","IE","IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE"],["Armenian","English","Greek","Indic languages","Other Indo-European languages","Romance languages","Scandanavian languages","Slavic languages","West Germanic languages","African languages","Arabic","Asian languages","Hebrew","Hungarian","Native North American languages","Other","Pacific Island Languages"],["Armenian","Speak only English","Greek","Persian, Gujarati, Hindi, Urdu, Other Indic languages","Other Indo-European languages","Spanish or Spanish Creole, French (incl. Patois, Cajun), French Creole, Italian, Portuguese or Portuguese Creole","Scandinavian languages","Russian, Polish, Serbo-Croatian, Other Slavic languages","German, Yiddish, Other West Germanic languages","African languages","Arabic","Chinese, Japanese, Korean, Mon-Khmer, Cambodian, Hmong, Thai, Laotian, Vietnamese, Other Asian languages","Hebrew","Hungarian","Navajo, Other Native North American languages","Other and unspecified languages","Tagalog, Other Pacific Island languages"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>indo<\/th>\n      <th>type<\/th>\n      <th>languages<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'95%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'95%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'95%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script></p>
 <p><br/> Using <code>tidycensus</code>, we pull counts of speakers for the languages listed above for each county in the US, along with the <code>summary_var</code> (or denominator), which amounts to the population over 5.</p>
 <pre class="r"><code>langData &lt;- tidycensus::get_acs(
@@ -85,7 +83,7 @@ langData%&gt;%
       labs(title = &quot;Queens County, New York&quot;, 
            subtitle = &quot;Composition of languages spoken at home by census language classification&quot;,
            caption=&quot;Source: American Community Survey 2011-15, Table B16001&quot;)</code></pre>
-<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
 <div id="languages-in-the-us" class="section level2">
 <h2>Languages in the US</h2>
@@ -105,7 +103,7 @@ langData%&gt;%
     labs(title=&quot;Languages spoken at home in the US: ranks 3-20&quot;) +
     coord_flip()+
     theme_bw()</code></pre>
-<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
 <div id="linguistic-diversity-as-entropy" class="section level2">
 <h2>Linguistic diversity as entropy</h2>
@@ -190,7 +188,7 @@ x &lt;- byCounty %&gt;%
               opacity = 1)
 frameWidget(x)</code></pre>
 <div id="htmlwidget-3" style="width:100%;height:400px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html//widgets/widget_unnamed-chunk-13.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html//widgets/widget_unnamed-chunk-12.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 <p><br/> Perhaps unsurprisingly, linguistic diversity as approximated by entropy scores is highest in major metropolitan areas in the northeast, southern Florida, the southwest, Bay Area &amp; southern California, and the Pacific Northwest.<br />
 —</p>
 <p>Lastly, we consider the distribution of county entropy scores within each division. The <code>ggridges</code> package makes this task relatively straightforward. The figure below, then, illustrates density plots for county-level entropy scores by division.</p>
@@ -211,7 +209,7 @@ byCounty %&gt;%
       ylab(&quot;&quot;)+
       labs(title = &quot;Linguistic diversity density plots&quot;, 
            subtitle = &quot;By US Division, 2011-15&quot;)</code></pre>
-<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 <div id="fin" class="section level2">
 <h2>FIN</h2>

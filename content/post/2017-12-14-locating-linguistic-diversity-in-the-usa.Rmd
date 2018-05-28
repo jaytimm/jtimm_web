@@ -44,12 +44,7 @@ langs <- load_variables(2015, "acs5", cache = FALSE) %>%
   select(-concept)
 ```
 
-The US census provides counts of speakers for the following language categories:
-```{r echo=FALSE}
-unique(langs$label) %>% unlist() %>% paste(sep= " ",collapse= " | ")
-```
-
-These 40 languages/language categories are cleaned up some in the table below, where we add some details implicit in the census' classification scheme.  While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine.
+The US census provides counts of speakers for 40 languages/language categories; these categories are cleaned up some in the table below, where we add some details implicit in the census' classification scheme.  While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine.
 <br/>
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 type <- c('English',rep('Romance languages',5),rep('West Germanic languages',3),'Scandanavian languages','Greek',rep('Slavic languages',4),'Armenian',rep('Indic languages',5),'Other Indo-European languages', rep('Asian languages',9),rep('Pacific Island Languages',2),rep('Native North American languages',2),'Hungarian','Arabic','Hebrew','African languages','Other')

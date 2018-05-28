@@ -83,8 +83,7 @@ slate_gpe_geo &lt;- ggmap::geocode(slate_gpe$lemma,
   bind_cols(slate_gpe)%&gt;%
   filter(complete.cases(.))%&gt;%
   sf::st_as_sf(coords = c(&quot;lon&quot;, &quot;lat&quot;), 
-               crs = 4326, 
-               agr = &quot;constant&quot;)</code></pre>
+               crs = 4326)</code></pre>
 <p>We then map the geolocated GPEs using the <code>leaflet</code> package; circle radius reflects frequency of occurrence in the slate corpus.</p>
 <pre class="r"><code>library(leaflet)
 library(widgetframe)
@@ -93,7 +92,7 @@ x &lt;- slate_gpe_geo %&gt;%
   leaflet(width=&quot;100%&quot;) %&gt;%
   setView(lng = -5, lat = 31, zoom = 2) %&gt;%
   addProviderTiles (&quot;CartoDB.Positron&quot;,
-                    options = providerTileOptions (minZoom = 2, maxZoom = 3.5))%&gt;%
+                    options = providerTileOptions (minZoom = 2, maxZoom = 4))%&gt;%
   addCircleMarkers(
     radius = ~txtf/25,
     stroke = FALSE, fillOpacity = .75,
@@ -157,7 +156,7 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
                 escape=FALSE)%&gt;%
   DT::formatStyle(c(1:2),fontSize = &#39;90%&#39;)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["933","928","304","705","999"],["an author who has based his biography of Washington on a guide to etiquette . <mark> Washington <\/mark> 's Rule No . 2_proclaims ( in the_Library_of_America_'s superior 18 th -century version ) ,","two hits to stay profitable . In addition , the lack of accountability that dominates <mark> Hollywood <\/mark> encourages the managerial pursuit of self-interest . A studio executive who wants to safeguard his","Gov. Jesse_Ventura , the_Reform_Party_'s only elected official and Perot 's rival as unofficial leader . <mark> Ventura <\/mark> 's interest is in keeping a seat warm until he 's ready to run for",", than the farcical death by a thousand cuts process that 's currently underway in <mark> Washington <\/mark> . R.J._Reynolds Chairman Steven_Goldstone probably would n't opt for the firing squad . But his","Santa_Barbara , Calif. , as the family had originally stated . Newspapers around Europe attacked <mark> France <\/mark> over the ticketing arrangements for this year 's soccer World_Cup . When a telephone hot"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'90%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'90%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["567","732","505","612","899"],["through \" a reasonable revolution . \" Michnik forged the worker-intellectual-church alliance that peacefully overturned <mark> Poland <\/mark> 's Communist regime . As the \" conscience of the new Poland \" and the","away and join their comrades in Chechnya 's southern mountains . Chechnya has been fighting <mark> Moscow <\/mark> for 217_years and has n't surrendered yet . It wo n't stop now . When","desperation . NYT_Moscow bureau chief Michael_Gordon reports from North_Ossetia , a Russian republic west of <mark> Chechnya <\/mark> : \" It is impossible to verify either side 's claims since the Russian military","stake . For the press , there will be self-censorship , but heavy-handed interference from <mark> Beijing <\/mark> seems unlikely . One important check against any abuse of power by Beijing toward Hong_Kong","minister , Ehud_Barak , signed another deal , terrorists struck again . This time , <mark> Israel <\/mark> 's minister of justice vouched for Arafat 's \" commitment to fighting terror \" and"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'90%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'90%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 </div>
 <div id="lsa-mds-and-semantic-space" class="section level2">
 <h2>LSA, MDS, and semantic space</h2>
