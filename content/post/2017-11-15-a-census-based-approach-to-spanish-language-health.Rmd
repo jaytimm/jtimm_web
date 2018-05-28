@@ -9,7 +9,7 @@ output:
   blogdown::html_page:
     toc: yes
     df_print: paged
-    bibliography: biblio.bib
+bibliography: biblio.bib
 link-citations: yes
 banner: banners/spanish.jpg
 ---
@@ -69,20 +69,33 @@ In addition to maintenance rates, we characterize each community/geography in te
 
 To gather these two sets of data for the most recent 5-year ACS estimates (2011-15), we use the the `tidycensus` package. Our query is comprised of seven variables from three tables:
 ```{r}
-langVars <- c("B16006_001", "B16006_002", "B16006_003", "B16006_004", "B16006_005", "B16006_006", "B16006_007", "B01001I_001", "B01001_001")
+langVars <- c("B16006_001", 
+              "B16006_002", 
+              "B16006_003", 
+              "B16006_004", 
+              "B16006_005", 
+              "B16006_006", 
+              "B16006_007", 
+              "B01001I_001", 
+              "B01001_001")
 ```
 
 
 Relevant geographies include all metropolitan statistical areas (MSAs), all US States, and the US.  
 ```{r}
-geos <- c("us", "metropolitan statistical area/micropolitan statistical area", "state")
+geos <- c("us", 
+          "metropolitan statistical area/micropolitan statistical area", 
+          "state")
 ```
 
 
 We then apply the `tidycensus::get_acs` function across each geography to obtain our data set. 
 ```{r message=FALSE, warning=FALSE}
 summaryData <- lapply(geos, function (x) {
-  tidycensus::get_acs (geography= x, variables=langVars, output="wide", year=2015)}) %>%
+  tidycensus::get_acs (geography= x, 
+                       variables=langVars, 
+                       output="wide", 
+                       year=2015)}) %>%
   bind_rows() 
 ```
 
@@ -108,7 +121,14 @@ summaryData<- summaryData %>%
 So, we first take a comparative look at rates of Spanish language maintenance in New Mexico and some other MSAs rich in Hispanic heritage. Geographies in this subset, then, include the US, the state of New Mexico, all MSAs in New Mexico, and ten additional MSAs from around the country.
 
 ```{r}
-geoSample <- c("1","35","10740", "29740", "22140", "42140", "26420", "12060", "38060", "16980", "19740", "31080", "12420", "27260", "33100", "46060")
+geoSample <- c("1","35","10740", 
+               "29740", "22140", 
+               "42140", "26420", 
+               "12060", "38060", 
+               "16980", "19740", 
+               "31080", "12420", 
+               "27260", "33100", 
+               "46060")
 ```
 
 The table below summarizes these results.  The total population (`TotalPop`) is in 1K units. `PerHisp` = percentage of the population that identifies as Hispanic (ie, Hispanic population density), `EngMono` = percentage of Hispanic population that speaks only English, `BiLing` = percentage of Hispanic population that speaks both Spanish and English, and `SpanMono` = percentage of Hispanic population that speaks only Spanish.
@@ -121,7 +141,10 @@ summaryData %>%
   select(-HispPopOver5, -GEOID, -HispPop)%>%
   mutate(TotalPop=round(TotalPop/ 1000))%>%
   arrange(desc(PerHisp))%>%
-  DT::datatable(options = list( pageLength = length(geoSample),dom = 't'), rownames = FALSE,width="100%", escape=FALSE)%>%
+  DT::datatable(options = list( pageLength = length(geoSample),dom = 't'), 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE) %>%
   DT::formatStyle(names(summaryData[6:9]),
     background = styleColorBar(range(summaryData[6:9]), "cornflowerblue"),
     backgroundSize = '80% 70%',
@@ -183,7 +206,7 @@ divs <- tigris::divisions(cb=TRUE)%>%
 
 US divisions include:
 ```{r echo=FALSE}
-paste(divs$NAME, sep="",collapse=", ")
+unique(divs$NAME)
 ```
 
 Next, we import a MSA polygon, get the centroids of each polygon, and spatially join the US division polygon to the centroids. All of this can be accomplished in the following pipe with the help of the `sf` package. 
@@ -225,10 +248,22 @@ pal <- colorQuantile(palette = 'RdYlBu', domain = msas_w_divs$speak_span, n = 9)
 
 mp <- leaflet(divs,width="100%",height='400') %>%
       setView(lng = -98.35, lat = 39.5, zoom = 4) %>%
-      addProviderTiles ("CartoDB.Positron", options = providerTileOptions(minZoom = 4, maxZoom = 5))%>%
-      addPolygons(color="gray",stroke = TRUE,weight=1,fillOpacity = 0.1) %>%
-      addCircleMarkers(data=msas_w_divs, radius=3.5,fillColor=~pal(speak_span),stroke = FALSE, fillOpacity = 1,label=~paste(div,' - ',NAME))%>% 
-      addLegend("bottomright", pal = pal, values = ~ msas_w_divs$speak_span, title = "Quantiles", opacity = 1)
+      addProviderTiles ("CartoDB.Positron", 
+                        options = providerTileOptions(minZoom = 4, maxZoom = 5))%>%
+      addPolygons(color="gray",
+                  stroke = TRUE,
+                  weight=1,
+                  fillOpacity = 0.1) %>%
+      addCircleMarkers(data=msas_w_divs, 
+                       radius=3.5, 
+                       fillColor=~pal(speak_span),
+                       stroke = FALSE, fillOpacity = 1,
+                       label=~paste(div,' - ',NAME))%>% 
+      addLegend("bottomright", 
+                pal = pal, 
+                values = ~ msas_w_divs$speak_span, 
+                title = "Quantiles", 
+                opacity = 1)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -252,7 +287,10 @@ msas_w_divs%>%
   gather(key= langVar,value = val,c(PerHisp,TotalPop))%>%
   ggplot(aes(x=val, y=BiLing+SpanMono)) + 
   geom_smooth(method="loess", se=T) +  
-  geom_text(aes(label=NAME,col=div), size=2.5, check_overlap = TRUE,hjust = "inward")+
+  geom_text(aes(label=NAME,col=div), 
+            size=2.5, 
+            check_overlap = TRUE,
+            hjust = "inward")+
   facet_wrap(~langVar, ncol=1,scales = "free_x") +
   scale_colour_stata() + theme_fivethirtyeight() +
   theme(legend.position = "bottom") 
@@ -267,7 +305,8 @@ For a more comprehensive perspective on these relationships, we build a simple m
 
 
 ```{r}
-summary(lm(SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + div, data=msas_w_divs))
+summary(lm(SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + div,
+           data=msas_w_divs))
 ```
 
 <p><h4>Model results</h4></p>

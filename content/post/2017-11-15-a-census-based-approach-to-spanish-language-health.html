@@ -9,7 +9,7 @@ output:
   blogdown::html_page:
     toc: yes
     df_print: paged
-    bibliography: biblio.bib
+bibliography: biblio.bib
 link-citations: yes
 banner: banners/spanish.jpg
 ---
@@ -40,7 +40,7 @@ banner: banners/spanish.jpg
 </div>
 
 <p>In this post we investigate Spanish language maintenance within Hispanic communities in the US utilizing data from the US Census. Spanish language maintenance refers to the rate at which Hispanics within a given community speak Spanish.</p>
-<p>Here, we consider a census-based methodology presented in <span class="citation">@bills1989us</span> and <span class="citation">@bills1995geography</span> to assess rates of Spanish language maintenance in metropolitan statistical areas (MSAs) in the US, as well as some geographic and demographic factors that may influence such rates. Ultimately, the goal is to provide a simple characterization of MSAs where Hispanics are more likely to be speaking Spanish.</p>
+<p>Here, we consider a census-based methodology presented in <span class="citation">Bills (<a href="#ref-bills1989us">1989</a>)</span> and <span class="citation">Bills, Chávez, and Hudson (<a href="#ref-bills1995geography">1995</a>)</span> to assess rates of Spanish language maintenance in metropolitan statistical areas (MSAs) in the US, as well as some geographic and demographic factors that may influence such rates. Ultimately, the goal is to provide a simple characterization of MSAs where Hispanics are more likely to be speaking Spanish.</p>
 <p>First, we take a look at Spanish language maintenance in New Mexico in comparison to some other MSAs rich in Hispanic heritage. Then we explore some macro-level relationships between language maintenance rates, geography, and a set of population-based metrics for all MSAs in the US.</p>
 <pre class="r"><code>library(tidyverse)
 library(tidycensus)
@@ -63,7 +63,7 @@ Approximating Spanish language maintenance
 </h4>
 </p>
 <p>As the table details, we can use census variables to identify Spanish speaking Hispanics as either <em>bilingual English-Spanish</em> speakers or <em>monolingual Spanish</em> speakers. Hispanics that “speak only English” at home are assumed here to be <em>monolingual English</em> speakers. Rates of each speaker type can then be calculated using the Hispanic population over 5 as denominator.</p>
-<p>Based on these distributions, we follow <span class="citation">@bills1989us</span> in approximating the language maintenance rate for a given community as the sum of rates of monolingual Spanish speakers and bilingual speakers.</p>
+<p>Based on these distributions, we follow <span class="citation">Bills (<a href="#ref-bills1989us">1989</a>)</span> in approximating the language maintenance rate for a given community as the sum of rates of monolingual Spanish speakers and bilingual speakers.</p>
 <p>In addition to maintenance rates, we characterize each community/geography in terms of its overall population and its Hispanic population density, ie, the percentage of a community that identifies as Hispanic. This very simple demographic profile can be derived from variables included in census tables <code>B01001I</code> and <code>B01001</code>.</p>
 <p>
 <h4>
@@ -71,12 +71,25 @@ Gathering ACS data
 </h4>
 </p>
 <p>To gather these two sets of data for the most recent 5-year ACS estimates (2011-15), we use the the <code>tidycensus</code> package. Our query is comprised of seven variables from three tables:</p>
-<pre class="r"><code>langVars &lt;- c(&quot;B16006_001&quot;, &quot;B16006_002&quot;, &quot;B16006_003&quot;, &quot;B16006_004&quot;, &quot;B16006_005&quot;, &quot;B16006_006&quot;, &quot;B16006_007&quot;, &quot;B01001I_001&quot;, &quot;B01001_001&quot;)</code></pre>
+<pre class="r"><code>langVars &lt;- c(&quot;B16006_001&quot;, 
+              &quot;B16006_002&quot;, 
+              &quot;B16006_003&quot;, 
+              &quot;B16006_004&quot;, 
+              &quot;B16006_005&quot;, 
+              &quot;B16006_006&quot;, 
+              &quot;B16006_007&quot;, 
+              &quot;B01001I_001&quot;, 
+              &quot;B01001_001&quot;)</code></pre>
 <p>Relevant geographies include all metropolitan statistical areas (MSAs), all US States, and the US.</p>
-<pre class="r"><code>geos &lt;- c(&quot;us&quot;, &quot;metropolitan statistical area/micropolitan statistical area&quot;, &quot;state&quot;)</code></pre>
+<pre class="r"><code>geos &lt;- c(&quot;us&quot;, 
+          &quot;metropolitan statistical area/micropolitan statistical area&quot;, 
+          &quot;state&quot;)</code></pre>
 <p>We then apply the <code>tidycensus::get_acs</code> function across each geography to obtain our data set.</p>
 <pre class="r"><code>summaryData &lt;- lapply(geos, function (x) {
-  tidycensus::get_acs (geography= x, variables=langVars, output=&quot;wide&quot;, year=2015)}) %&gt;%
+  tidycensus::get_acs (geography= x, 
+                       variables=langVars, 
+                       output=&quot;wide&quot;, 
+                       year=2015)}) %&gt;%
   bind_rows() </code></pre>
 <p>Lastly, we perform some data cleaning &amp; transformation processes.</p>
 <pre class="r"><code>summaryData&lt;- summaryData %&gt;%
@@ -93,7 +106,14 @@ Gathering ACS data
 <div id="new-mexico-the-us" class="section level2">
 <h2>New Mexico &amp; the US</h2>
 <p>So, we first take a comparative look at rates of Spanish language maintenance in New Mexico and some other MSAs rich in Hispanic heritage. Geographies in this subset, then, include the US, the state of New Mexico, all MSAs in New Mexico, and ten additional MSAs from around the country.</p>
-<pre class="r"><code>geoSample &lt;- c(&quot;1&quot;,&quot;35&quot;,&quot;10740&quot;, &quot;29740&quot;, &quot;22140&quot;, &quot;42140&quot;, &quot;26420&quot;, &quot;12060&quot;, &quot;38060&quot;, &quot;16980&quot;, &quot;19740&quot;, &quot;31080&quot;, &quot;12420&quot;, &quot;27260&quot;, &quot;33100&quot;, &quot;46060&quot;)</code></pre>
+<pre class="r"><code>geoSample &lt;- c(&quot;1&quot;,&quot;35&quot;,&quot;10740&quot;, 
+               &quot;29740&quot;, &quot;22140&quot;, 
+               &quot;42140&quot;, &quot;26420&quot;, 
+               &quot;12060&quot;, &quot;38060&quot;, 
+               &quot;16980&quot;, &quot;19740&quot;, 
+               &quot;31080&quot;, &quot;12420&quot;, 
+               &quot;27260&quot;, &quot;33100&quot;, 
+               &quot;46060&quot;)</code></pre>
 <p>The table below summarizes these results. The total population (<code>TotalPop</code>) is in 1K units. <code>PerHisp</code> = percentage of the population that identifies as Hispanic (ie, Hispanic population density), <code>EngMono</code> = percentage of Hispanic population that speaks only English, <code>BiLing</code> = percentage of Hispanic population that speaks both Spanish and English, and <code>SpanMono</code> = percentage of Hispanic population that speaks only Spanish.</p>
 <p>Columns can be sorted by clicking on the column name.</p>
 <pre class="r"><code>summaryData %&gt;%
@@ -101,7 +121,10 @@ Gathering ACS data
   select(-HispPopOver5, -GEOID, -HispPop)%&gt;%
   mutate(TotalPop=round(TotalPop/ 1000))%&gt;%
   arrange(desc(PerHisp))%&gt;%
-  DT::datatable(options = list( pageLength = length(geoSample),dom = &#39;t&#39;), rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::datatable(options = list( pageLength = length(geoSample),dom = &#39;t&#39;), 
+                rownames = FALSE,
+                width=&quot;100%&quot;, 
+                escape=FALSE) %&gt;%
   DT::formatStyle(names(summaryData[6:9]),
     background = styleColorBar(range(summaryData[6:9]), &quot;cornflowerblue&quot;),
     backgroundSize = &#39;80% 70%&#39;,
@@ -153,7 +176,9 @@ divs &lt;- tigris::divisions(cb=TRUE)%&gt;%
   st_transform(crs = &quot;+init=epsg:4326&quot;)%&gt;%
   select(NAME)</code></pre>
 <p>US divisions include:</p>
-<pre><code>## [1] &quot;New England, Middle Atlantic, East North Central, West North Central, South Atlantic, Mountain, Pacific, East South Central, West South Central&quot;</code></pre>
+<pre><code>## [1] &quot;New England&quot;        &quot;Middle Atlantic&quot;    &quot;East North Central&quot;
+## [4] &quot;West North Central&quot; &quot;South Atlantic&quot;     &quot;Mountain&quot;          
+## [7] &quot;Pacific&quot;            &quot;East South Central&quot; &quot;West South Central&quot;</code></pre>
 <p>Next, we import a MSA polygon, get the centroids of each polygon, and spatially join the US division polygon to the centroids. All of this can be accomplished in the following pipe with the help of the <code>sf</code> package.</p>
 <pre class="r"><code>metros &lt;- tigris::core_based_statistical_areas(cb=TRUE)%&gt;% #import poly
   rename(msa_name=NAME)%&gt;%
@@ -183,10 +208,22 @@ pal &lt;- colorQuantile(palette = &#39;RdYlBu&#39;, domain = msas_w_divs$speak_s
 
 mp &lt;- leaflet(divs,width=&quot;100%&quot;,height=&#39;400&#39;) %&gt;%
       setView(lng = -98.35, lat = 39.5, zoom = 4) %&gt;%
-      addProviderTiles (&quot;CartoDB.Positron&quot;, options = providerTileOptions(minZoom = 4, maxZoom = 5))%&gt;%
-      addPolygons(color=&quot;gray&quot;,stroke = TRUE,weight=1,fillOpacity = 0.1) %&gt;%
-      addCircleMarkers(data=msas_w_divs, radius=3.5,fillColor=~pal(speak_span),stroke = FALSE, fillOpacity = 1,label=~paste(div,&#39; - &#39;,NAME))%&gt;% 
-      addLegend(&quot;bottomright&quot;, pal = pal, values = ~ msas_w_divs$speak_span, title = &quot;Quantiles&quot;, opacity = 1)</code></pre>
+      addProviderTiles (&quot;CartoDB.Positron&quot;, 
+                        options = providerTileOptions(minZoom = 4, maxZoom = 5))%&gt;%
+      addPolygons(color=&quot;gray&quot;,
+                  stroke = TRUE,
+                  weight=1,
+                  fillOpacity = 0.1) %&gt;%
+      addCircleMarkers(data=msas_w_divs, 
+                       radius=3.5, 
+                       fillColor=~pal(speak_span),
+                       stroke = FALSE, fillOpacity = 1,
+                       label=~paste(div,&#39; - &#39;,NAME))%&gt;% 
+      addLegend(&quot;bottomright&quot;, 
+                pal = pal, 
+                values = ~ msas_w_divs$speak_span, 
+                title = &quot;Quantiles&quot;, 
+                opacity = 1)</code></pre>
 <p><div id="htmlwidget-3" style="width:100%;height:400px;" class="widgetframe html-widget"></div>
 <script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html//widgets/widget_unnamed-chunk-18.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script> <br/></p>
 <p>The map illustrates higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates.</p>
@@ -203,7 +240,10 @@ Geo-demographic variation
   gather(key= langVar,value = val,c(PerHisp,TotalPop))%&gt;%
   ggplot(aes(x=val, y=BiLing+SpanMono)) + 
   geom_smooth(method=&quot;loess&quot;, se=T) +  
-  geom_text(aes(label=NAME,col=div), size=2.5, check_overlap = TRUE,hjust = &quot;inward&quot;)+
+  geom_text(aes(label=NAME,col=div), 
+            size=2.5, 
+            check_overlap = TRUE,
+            hjust = &quot;inward&quot;)+
   facet_wrap(~langVar, ncol=1,scales = &quot;free_x&quot;) +
   scale_colour_stata() + theme_fivethirtyeight() +
   theme(legend.position = &quot;bottom&quot;) </code></pre>
@@ -213,7 +253,8 @@ Geo-demographic variation
 <div id="a-simple-model" class="section level2">
 <h2>A simple model</h2>
 <p>For a more comprehensive perspective on these relationships, we build a simple model with maintenance rates as the dependent variable, and Hispanic population density, total population, and US Division as independent variables.</p>
-<pre class="r"><code>summary(lm(SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + div, data=msas_w_divs))</code></pre>
+<pre class="r"><code>summary(lm(SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + div,
+           data=msas_w_divs))</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + 
@@ -260,13 +301,21 @@ Some cursory explanations
 </h4>
 </p>
 <p>In terms of accounting for the independent effects of the two population-based metrics, on one hand, densely Hispanic MSAs imply a more pervasive Hispanic culture; on the other hand, highly populated MSAs imply an overall culture of diversity. In theory, each account provides a distinct “mechanism” for continued language use.</p>
-<p>Higher rates of Spanish language maintenance in the South likely reflect more recent immigration patterns. In contrast, lower rates in the Mountain division (including the Southwest) could reflect a combination of higher levels of acculturation among these Hispanic populations and lower immigration rates <span class="citation">[as suggested in @bills1989us]</span>.</p>
+<p>Higher rates of Spanish language maintenance in the South likely reflect more recent immigration patterns. In contrast, lower rates in the Mountain division (including the Southwest) could reflect a combination of higher levels of acculturation among these Hispanic populations and lower immigration rates <span class="citation">(as suggested in Bills <a href="#ref-bills1989us">1989</a>)</span>.</p>
 </div>
 <div id="some-final-notes" class="section level2">
 <h2>Some final notes</h2>
 <p>So, a quick and very much exploratory investigation into Spanish language maintenance in the US, using census data as an imperfect proxy. Grains of salt abound for sure. Factors influencing whether or not speakers continue to use a minority language are many and complex, and are only superficially addressed here.</p>
 <p>Many of these patterns (at least in the Southwest) have been observed previously; the goal of this post was simply to demonstrate an innovative methodology based in previous research using a reproducible example.</p>
 </div>
-<div id="references" class="section level2">
+<div id="references" class="section level2 unnumbered">
 <h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-bills1989us">
+<p>Bills, Garland D. 1989. “The Us Census of 1980 and Spanish in the Southwest.” <em>International Journal of the Sociology of Language</em> 1989 (79). Walter de Gruyter, Berlin/New York: 11–28.</p>
+</div>
+<div id="ref-bills1995geography">
+<p>Bills, Garland D, Eduardo Hernández Chávez, and Alan Hudson. 1995. “The Geography of Language Shift: Distance from the Mexican Border and Spanish Language Claiming in the Southwestern Us.” <em>International Journal of the Sociology of Language</em> 114 (1). De Gruyter: 9–28.</p>
+</div>
+</div>
 </div>
