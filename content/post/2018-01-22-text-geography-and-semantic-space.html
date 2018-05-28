@@ -16,17 +16,9 @@ banner: banners/geotext.png
 <link href="/rmarkdown-libs/pagedtable/css/pagedtable.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/pagedtable/js/pagedtable.js"></script>
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
+<script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
 <script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
-<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
-<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
-<link href="/rmarkdown-libs/leaflet-label/leaflet.label.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/leaflet-label/leaflet.label.js"></script>
-<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
-<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
-<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
-<script src="/rmarkdown-libs/leaflet-providers/leaflet-providers.js"></script>
-<script src="/rmarkdown-libs/leaflet-providers-plugin/leaflet-providers-plugin.js"></script>
 <link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
 <link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
@@ -85,23 +77,31 @@ Geocoding
 <pre class="r"><code>library(ggmap)
 library(sf)
 
-slate_gpe_geo &lt;- ggmap::geocode(slate_gpe$lemma, output = c(&quot;latlon&quot;), messaging = FALSE)%&gt;%
+slate_gpe_geo &lt;- ggmap::geocode(slate_gpe$lemma, 
+                                output = c(&quot;latlon&quot;), 
+                                messaging = FALSE) %&gt;%
   bind_cols(slate_gpe)%&gt;%
   filter(complete.cases(.))%&gt;%
-  sf::st_as_sf(coords = c(&quot;lon&quot;, &quot;lat&quot;), crs = 4326, agr = &quot;constant&quot;)</code></pre>
+  sf::st_as_sf(coords = c(&quot;lon&quot;, &quot;lat&quot;), 
+               crs = 4326, 
+               agr = &quot;constant&quot;)</code></pre>
 <p>We then map the geolocated GPEs using the <code>leaflet</code> package; circle radius reflects frequency of occurrence in the slate corpus.</p>
 <pre class="r"><code>library(leaflet)
+library(widgetframe)
 
-slate_gpe_geo %&gt;%
+x &lt;- slate_gpe_geo %&gt;%
   leaflet(width=&quot;100%&quot;) %&gt;%
   setView(lng = -5, lat = 31, zoom = 2) %&gt;%
-  addProviderTiles (&quot;CartoDB.Positron&quot;,options = providerTileOptions(minZoom = 2, maxZoom = 3.5))%&gt;%
+  addProviderTiles (&quot;CartoDB.Positron&quot;,
+                    options = providerTileOptions (minZoom = 2, maxZoom = 3.5))%&gt;%
   addCircleMarkers(
     radius = ~txtf/25,
     stroke = FALSE, fillOpacity = .75,
-    label=~lemma)</code></pre>
-<div id="htmlwidget-1" style="width:100%;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[31,-5],2,[]],"calls":[{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"minZoom":2,"maxZoom":3.5}]},{"method":"addCircleMarkers","args":[[33.93911,32.3182314,64.2008413,41.153332,-38.416097,34.0489281,35.20105,38.8816208,37.9838096,33.7489954,40.143105,33.3128057,39.9041999,44.786568,52.5200066,43.915886,42.3600825,-14.235004,55.378051,30.0444196,36.778261,12.565679,52.205337,56.130366,35.2270869,43.4023301,41.8781136,-35.675147,35.86166,4.570868,39.5500507,41.6032207,45.1,21.521757,32.7766642,39.7392358,42.331427,-8.874217,26.820553,52.3555177,27.6648274,46.227638,38.9076089,32.1656221,51.165691,39.074208,52.132633,34.0928092,22.396428,44.0682019,40.6331249,20.593684,40.2671941,-0.789275,41.8780025,32.427908,33.223191,53.1423672,31.046051,41.0082376,41.87194,36.204824,30.585164,39.011902,37.8393332,37.6639976,42.6026359,29.31166,36.1699412,33.854721,26.3351,51.5073509,35.8800364,34.0522342,45.253783,4.210484,40.7830603,39.0457549,23.634501,25.7616798,44.3148443,45.4642035,46.729553,32.3546679,37.9642529,46.8796822,55.755826,38.8026097,43.1938516,40.0583238,40.7127753,40.7127753,9.081999,35.7595731,40.339852,54.7877149,49.4521018,40.4172871,35.0077519,35.4675602,43.8041334,30.375321,31.952162,48.856614,41.2033216,39.9525839,33.4483771,40.4406248,51.919438,42.6629138,41.9027835,-1.940278,37.7749295,23.885942,47.6062095,44.016521,5.152149,-30.559482,33.836081,43.9695148,35.907757,40.463667,12.862807,-33.8688197,34.802075,23.69781,35.5174913,31.9685988,31.9465703,30.1533605,35.6894875,45.070312,38.963745,39.3209801,34.274646,14.058324,37.4315734,38.9072,43.7844397],[67.709953,-86.902298,-149.4936733,20.168331,-63.616672,-111.0937311,-91.8318334,-77.0909809,23.7275388,-84.3879824,47.576927,44.3614875,116.4073963,20.4489216,13.404954,17.679076,-71.0588801,-51.92528,-3.435973,31.2357116,-119.4179324,104.990963,0.121817,-106.346771,-80.8431267,45.7187468,-87.6297982,-71.542969,104.195397,-74.297333,-105.7820674,-73.087749,15.2000001,-77.781167,-96.7969879,-104.990251,-83.0457538,125.727539,30.802498,-1.1743197,-81.5157535,2.213749,-77.0722585,-82.9000751,10.451526,21.824312,5.291266,-118.3286614,114.109497,-114.7420408,-89.3985283,78.96288,-86.1349019,113.921327,-93.097702,53.688046,43.679291,-7.6920536,34.851612,28.9783589,12.56738,138.252924,36.238414,-98.4842465,-84.2700179,127.9784585,20.902977,47.481766,-115.1398296,35.862285,17.228331,-0.1277583,-106.3031138,-118.2436849,-69.4454689,101.975766,-73.9712488,-76.6412712,-102.552784,-80.1917902,-85.6023643,9.189982,-94.6858998,-89.3985283,-91.8318334,-110.3625658,37.6172999,-116.419389,-71.5723953,-74.4056612,-74.0059728,-74.0059728,8.675277,-79.0192997,127.510093,-6.4923145,11.0766654,-82.907123,-97.092877,-97.5164276,-120.5542012,69.345116,35.233154,2.3522219,-77.1945247,-75.1652215,-112.0740373,-79.9958864,19.145136,21.1655028,12.4963655,29.873888,-122.4194155,45.079162,-122.3320708,21.005859,46.199616,22.937506,-81.1637245,-99.9018131,127.766922,-3.74922,30.217636,151.2092955,38.996815,120.960515,-86.5804473,-99.9018131,35.3027226,88.7878678,139.6917064,7.6868565,35.243322,-111.0937311,-119.2290316,108.277199,-78.6568942,-77.0369,-88.7878678],[0.84,0.8,0.76,1,1.16,1.2,1.24,0.8,0.52,0.76,0.44,0.68,2.32,1.92,0.72,1.76,1.12,1.72,6.44,0.56,3.88,0.64,0.6,1.6,0.92,2.52,3.52,0.96,10.44,0.56,1.04,0.4,0.76,1.8,0.6,0.48,0.6,1.76,1.16,2.2,2.56,5.08,0.44,1.32,4,0.56,0.56,5.68,2.16,0.44,0.44,3.44,0.48,1.84,2.76,1.76,4.8,1.24,8.2,0.6,2.56,5.08,1,1.08,0.6,0.48,11.96,0.48,0.92,0.72,0.88,5.44,0.56,2.28,0.6,0.84,1.64,0.72,1.36,0.68,0.72,1.12,0.68,0.6,0.44,0.6,2.04,0.48,2.64,0.84,8.92,1.32,0.4,0.44,0.68,1.6,0.4,1.08,0.68,0.48,0.84,2.2,0.56,3.6,0.56,0.48,0.56,0.4,0.76,0.44,1.8,0.44,0.88,0.64,2.28,1.32,0.48,0.84,1.2,0.44,0.6,1.28,0.4,0.4,1.72,1.96,0.92,3.8,0.48,0.88,0.88,0.56,2.72,0.48,0.76,3.88,1.36,15.68,0.72],null,null,{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":false,"color":"#03F","weight":5,"opacity":0.5,"fill":true,"fillColor":"#03F","fillOpacity":0.75,"dashArray":null},null,null,null,null,["AFGHANISTAN","ALABAMA","ALASKA","ALBANIA","ARGENTINA","ARIZONA","ARKANSAS","ARLINGTON","ATHENS","ATLANTA","AZERBAIJAN","BAGHDAD","BEIJING","BELGRADE","BERLIN","BOSNIA","BOSTON","BRAZIL","BRITAIN","CAIRO","CALIFORNIA","CAMBODIA","CAMBRIDGE","CANADA","CHARLOTTE","CHECHNYA","CHICAGO","CHILE","CHINA","COLOMBIA","COLORADO","CONNECTICUT","CROATIA","CUBA","DALLAS","DENVER","DETROIT","EAST_TIMOR","EGYPT","ENGLAND","FLORIDA","FRANCE","GEORGETOWN","GEORGIA","GERMANY","GREECE","HOLLAND","HOLLYWOOD","HONG_KONG","IDAHO","ILLINOIS","INDIA","INDIANA","INDONESIA","IOWA","IRAN","IRAQ","IRELAND","ISRAEL","ISTANBUL","ITALY","JAPAN","JORDAN","KANSAS","KENTUCKY","KOREA","KOSOVO","KUWAIT","LAS_VEGAS","LEBANON","LIBYA","LONDON","LOS_ALAMOS","LOS_ANGELES","MAINE","MALAYSIA","MANHATTAN","MARYLAND","MEXICO","MIAMI","MICHIGAN","MILAN","MINNESOTA","MISSISSIPPI","MISSOURI","MONTANA","MOSCOW","NEVADA","NEW_HAMPSHIRE","NEW_JERSEY","NEW_YORK","NEW_YORK_CITY","NIGERIA","NORTH_CAROLINA","NORTH_KOREA","NORTHERN_IRELAND","NUREMBERG","OHIO","OKLAHOMA","OKLAHOMA_CITY","OREGON","PAKISTAN","PALESTINE","PARIS","PENNSYLVANIA","PHILADELPHIA","PHOENIX","PITTSBURGH","POLAND","PRISTINA","ROME","RWANDA","SAN_FRANCISCO","SAUDI_ARABIA","SEATTLE","SERBIA","SOMALIA","SOUTH_AFRICA","SOUTH_CAROLINA","SOUTH_DAKOTA","SOUTH_KOREA","SPAIN","SUDAN","SYDNEY","SYRIA","TAIWAN","TENNESSEE","TEXAS","THE_WEST_BANK","TIBET","TOKYO","TURIN","TURKEY","UTAH","VENTURA","VIETNAM","VIRGINIA","WASHINGTON","WISCONSIN"],null,null]}],"limits":{"lat":[-38.416097,64.2008413],"lng":[-149.4936733,151.2092955]}},"evals":[],"jsHooks":[]}</script>
+    label=~lemma)
+
+frameWidget(x)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:480px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/2018-01-22-text-geography-and-semantic-space_files/figure-html//widgets/widget_unnamed-chunk-7.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 <p>
 <h3>
 Spatial joins
@@ -123,9 +123,12 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
   summarize (txtf=sum(txtf),docf=sum(docf))%&gt;%
   filter(subregion!=&#39;Northern America&#39;)%&gt;%
   ggplot(aes(x=docf, y=txtf)) + 
-  geom_text(aes(label=toupper(subregion)), size=3, check_overlap = TRUE,hjust = &quot;inward&quot;)+
+  geom_text(aes(label=toupper(subregion)), 
+            size=3, 
+            check_overlap = TRUE,
+            hjust = &quot;inward&quot;)+
   labs(title = &quot;Document vs. text frequency for GPEs outside of Northern America&quot;, 
-    subtitle=&quot;By Subregion&quot;)</code></pre>
+       subtitle=&quot;By Subregion&quot;)</code></pre>
 <p><img src="/post/2018-01-22-text-geography-and-semantic-space_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 <div id="corpus-search-and-context" class="section level2">
@@ -140,21 +143,29 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
   slice(1:100)%&gt;%
   mutate(lemma=paste0(lemma,&#39;~GPE&#39;))</code></pre>
 <p>Perform search:</p>
-<pre class="r"><code>gpe_contexts &lt;- corpuslingr::clr_search_context(search = gpe_search$lemma, corp=slate, LW=15, RW=15)</code></pre>
+<pre class="r"><code>gpe_contexts &lt;- corpuslingr::clr_search_context(
+  search = gpe_search$lemma, 
+  corp=slate, 
+  LW=15, RW=15)</code></pre>
 <p>A small random sample of the search results are presented below in context. The <code>clr_context_kwic</code> function quickly rebuilds the original user-specified search context, with the search term highlighted.</p>
 <pre class="r"><code>gpe_contexts %&gt;%
   corpuslingr::clr_context_kwic(include=c(&#39;doc_id&#39;)) %&gt;%
   sample_n(5)%&gt;%
-  DT::datatable(class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
-  DT::formatStyle(c(1:2),fontSize = &#39;85%&#39;)</code></pre>
+  DT::datatable(class = &#39;cell-border stripe&#39;, 
+                rownames = FALSE,
+                width=&quot;100%&quot;, 
+                escape=FALSE)%&gt;%
+  DT::formatStyle(c(1:2),fontSize = &#39;90%&#39;)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["231","914","38","11","813"],["support for the peace process boosted his acceptability , \" the paper said . In <mark> Britain <\/mark> , the_Daily_Telegraph led Friday with the claim that British Prime Minister Tony_Blair has softened his","the economic storms ravaging quite a lot of today 's world . For example , <mark> Japan <\/mark> 's economy has been shrinking at an alarming pace the_last_few_quarters . Is this because Japanese","Allgemeine_Zeitung led its front page Monday with the wave of student demonstrations in Tehran , <mark> Iran <\/mark> , which were also prominently reported in many other leading European newspapers . An analysis","American_Jewry , which analyzes the psychological underpinnings of the cult of Jewish toughness born after <mark> Israel <\/mark> 's victory in the_1967_Six_Day_War . Cohen hits bottom when he compares the gangster Louis_Lepke_'s flight","European ruling against France in its_Mad_Cow_War with the British and found something to celebrate in <mark> France <\/mark> 's astounding semifinal victory over the_New_Zealand \" All Blacks \" Sunday in the_Rugby_World_Cup tournament in"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["933","928","304","705","999"],["an author who has based his biography of Washington on a guide to etiquette . <mark> Washington <\/mark> 's Rule No . 2_proclaims ( in the_Library_of_America_'s superior 18 th -century version ) ,","two hits to stay profitable . In addition , the lack of accountability that dominates <mark> Hollywood <\/mark> encourages the managerial pursuit of self-interest . A studio executive who wants to safeguard his","Gov. Jesse_Ventura , the_Reform_Party_'s only elected official and Perot 's rival as unofficial leader . <mark> Ventura <\/mark> 's interest is in keeping a seat warm until he 's ready to run for",", than the farcical death by a thousand cuts process that 's currently underway in <mark> Washington <\/mark> . R.J._Reynolds Chairman Steven_Goldstone probably would n't opt for the firing squad . But his","Santa_Barbara , Calif. , as the family had originally stated . Newspapers around Europe attacked <mark> France <\/mark> over the ticketing arrangements for this year 's soccer World_Cup . When a telephone hot"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'90%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'90%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 </div>
 <div id="lsa-mds-and-semantic-space" class="section level2">
 <h2>LSA, MDS, and semantic space</h2>
 <p>So, having extracted all contexts from the corpus, we can now build a GPE-feature matrix (ie, word embeddings by GPE) by applying the <code>clr_context_bow</code> function to the output of <code>clr_search_context</code>. We limit our definition of features to only content words, and aggregate feature frequencies by lemma.</p>
 <pre class="r"><code>term_feat_mat &lt;- gpe_contexts %&gt;%
-  corpuslingr::clr_context_bow(agg_var = c(&#39;searchLemma&#39;,&#39;lemma&#39;),content_only=TRUE)%&gt;%
+  corpuslingr::clr_context_bow(
+    agg_var = c(&#39;searchLemma&#39;,&#39;lemma&#39;),
+    content_only=TRUE)%&gt;%
   spread (searchLemma,cofreq)%&gt;%
   replace(is.na(.), 0)</code></pre>
 Some of the matrix:
@@ -182,10 +193,14 @@ sim_mat &lt;- term_feat_mat %&gt;%
   mutate (lemma = rownames(sim_mat))%&gt;%
   left_join(slate_gpe_details)%&gt;%
   ggplot(aes(X1,X2)) +
-  geom_text(aes(label=colnames(sim_mat),col=continent), size=2.5, check_overlap = TRUE)+
+  geom_text(aes(label=colnames(sim_mat),col=continent), 
+            size=2.5, 
+            check_overlap = TRUE)+
   scale_colour_stata() + theme_fivethirtyeight() +
-  theme(legend.position = &quot;none&quot;,plot.title = element_text(size=14))+ 
-  labs(title=&quot;Slate GPEs in semantic space&quot;,subtitle=&quot;A two-dimensional solution&quot;)</code></pre>
+  theme(legend.position = &quot;none&quot;,
+        plot.title = element_text(size=14))+ 
+  labs(title=&quot;Slate GPEs in semantic space&quot;,
+       subtitle=&quot;A two-dimensional solution&quot;)</code></pre>
 <p><img src="/post/2018-01-22-text-geography-and-semantic-space_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 <p>The first dimension (x-axis) seems to do a very nice job capturing a “Domestic - Foreign” distinction, with some obvious exceptions. The second dimension (y-axis) seems to capture a “City - State” distinction, or an “Urban - Non-urban” distinction. Also, there seems to be a “Europe - Non-Europe” element to the second dimension on the “Foreign” side of the plot.</p>
 <p>Someone better versed in the geo-political happenings of the waning 20th century could likely provide a more detailed analysis here. Suffice it to say, there is some very intuitive structure to the plot above derived from co-occcurence vectors. While not exclusively geospatial, as a “map” of the geo-political “lay of the land” it certainly has utility.</p>

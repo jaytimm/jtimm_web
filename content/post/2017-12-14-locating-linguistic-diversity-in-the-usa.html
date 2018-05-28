@@ -47,15 +47,22 @@ library(DT)</code></pre>
 <h2>Language data and the census</h2>
 <p>Language data in the US census live in census table <code>B16001</code>, which provides summary counts of speakers by language spoken at home. The <code>load_variables</code> function of the <code>tidycensus</code> package allows for nice and easy interaction with census tables and their constituent variables; using this function, then, we gather the relevant language variables included in table <code>B16001</code>,</p>
 <pre class="r"><code>langs &lt;- load_variables(2015, &quot;acs5&quot;, cache = FALSE) %&gt;%
-  filter(grepl(&quot;B16001&quot;,name) &amp; !grepl(&quot;Margin|Speak English|Total$&quot;,label)) %&gt;%
-  mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),label=gsub(&quot;^.*!!&quot;,&quot;&quot;,label))%&gt;%
+  filter(grepl(&quot;B16001&quot;,name) &amp; !
+         grepl(&quot;Margin|Speak English|Total$&quot;,label)) %&gt;%
+  mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),
+         label=gsub(&quot;^.*!!&quot;,&quot;&quot;,label))%&gt;%
   select(-concept)</code></pre>
 <p>The US census provides counts of speakers for the following language categories:</p>
 <pre><code>## [1] &quot;Speak only English | Spanish or Spanish Creole | French (incl. Patois, Cajun) | French Creole | Italian | Portuguese or Portuguese Creole | German | Yiddish | Other West Germanic languages | Scandinavian languages | Greek | Russian | Polish | Serbo-Croatian | Other Slavic languages | Armenian | Persian | Gujarati | Hindi | Urdu | Other Indic languages | Other Indo-European languages | Chinese | Japanese | Korean | Mon-Khmer, Cambodian | Hmong | Thai | Laotian | Vietnamese | Other Asian languages | Tagalog | Other Pacific Island languages | Navajo | Other Native North American languages | Hungarian | Arabic | Hebrew | African languages | Other and unspecified languages&quot;</code></pre>
 <p>These 40 languages/language categories are cleaned up some in the table below, where we add some details implicit in the census’ classification scheme. While the classifications would leave a linguistic typologist nonplussed, for our purposes here they are fine. <br/> <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["IE","IE","IE","IE","IE","IE","IE","IE","IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE"],["Armenian","English","Greek","Indic languages","Other Indo-European languages","Romance languages","Scandanavian languages","Slavic languages","West Germanic languages","African languages","Arabic","Asian languages","Hebrew","Hungarian","Native North American languages","Other","Pacific Island Languages"],["Armenian","Speak only English","Greek","Persian, Gujarati, Hindi, Urdu, Other Indic languages","Other Indo-European languages","Spanish or Spanish Creole, French (incl. Patois, Cajun), French Creole, Italian, Portuguese or Portuguese Creole","Scandinavian languages","Russian, Polish, Serbo-Croatian, Other Slavic languages","German, Yiddish, Other West Germanic languages","African languages","Arabic","Chinese, Japanese, Korean, Mon-Khmer, Cambodian, Hmong, Thai, Laotian, Vietnamese, Other Asian languages","Hebrew","Hungarian","Navajo, Other Native North American languages","Other and unspecified languages","Tagalog, Other Pacific Island languages"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>indo<\/th>\n      <th>type<\/th>\n      <th>languages<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script></p>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["IE","IE","IE","IE","IE","IE","IE","IE","IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE","Non-IE"],["Armenian","English","Greek","Indic languages","Other Indo-European languages","Romance languages","Scandanavian languages","Slavic languages","West Germanic languages","African languages","Arabic","Asian languages","Hebrew","Hungarian","Native North American languages","Other","Pacific Island Languages"],["Armenian","Speak only English","Greek","Persian, Gujarati, Hindi, Urdu, Other Indic languages","Other Indo-European languages","Spanish or Spanish Creole, French (incl. Patois, Cajun), French Creole, Italian, Portuguese or Portuguese Creole","Scandinavian languages","Russian, Polish, Serbo-Croatian, Other Slavic languages","German, Yiddish, Other West Germanic languages","African languages","Arabic","Chinese, Japanese, Korean, Mon-Khmer, Cambodian, Hmong, Thai, Laotian, Vietnamese, Other Asian languages","Hebrew","Hungarian","Navajo, Other Native North American languages","Other and unspecified languages","Tagalog, Other Pacific Island languages"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>indo<\/th>\n      <th>type<\/th>\n      <th>languages<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'95%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'95%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'95%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script></p>
 <p><br/> Using <code>tidycensus</code>, we pull counts of speakers for the languages listed above for each county in the US, along with the <code>summary_var</code> (or denominator), which amounts to the population over 5.</p>
-<pre class="r"><code>langData &lt;- tidycensus::get_acs(geography = &quot;county&quot;,variables = langs$name, summary_var=&quot;B16001_001&quot;, survey=&quot;acs5&quot;, year=2015) %&gt;%
+<pre class="r"><code>langData &lt;- tidycensus::get_acs(
+  geography = &quot;county&quot;,
+  variables = langs$name, 
+  summary_var=&quot;B16001_001&quot;, 
+  survey=&quot;acs5&quot;, 
+  year=2015) %&gt;%
   left_join(sumLangs,by=c(&quot;variable&quot;=&quot;name&quot;))</code></pre>
 <p>As an example to explore the data some, we consider languages spoken at home for a county famous for its linguistic diversity: Queens County, New York. Of the 40 language classifications included in the census, Queens is home to speakers of 39 (per 2011-15 5-year estimates).</p>
 <p>Using the <code>treemapify</code> package, the plot below summarizes languages spoken in Queens. Rectangle areas represent the proportion of total speakers, colors reflect language types/families, and sub-tiles reflect within-type languages. While only exploratory, the plot nicely captures how diverse Queens is in terms of languages spoken by its residents.</p>
@@ -64,15 +71,20 @@ library(ggthemes)
 
 langData%&gt;%
   filter(NAME==&#39;Queens County, New York&#39;)%&gt;%
-    ggplot(aes(area = estimate,fill = reorder(type,-estimate),label = label,subgroup = type))+
+    ggplot(aes(area = estimate,
+               fill = reorder(type,-estimate),
+               label = label,
+               subgroup = type))+
       geom_treemap()+
       geom_treemap_subgroup_border() +
       geom_treemap_subgroup_text(place = &quot;bottom&quot;, grow = F, alpha = 0.5, colour =&quot;gray&quot;,  min.size = 0)+ 
       geom_treemap_text(colour = &quot;white&quot;, place = &quot;topleft&quot;, reflow = T)+
       scale_fill_stata()+ theme_fivethirtyeight()+
-      theme(legend.position = &quot;none&quot;,plot.title = element_text(size=14))+ 
-      labs(title = &quot;Queens County, New York&quot;, subtitle = &quot;Composition of languages spoken at home by census language classification&quot;,
-    caption=&quot;Source: American Community Survey 2011-15, Table B16001&quot;)</code></pre>
+      theme(legend.position = &quot;none&quot;,
+            plot.title = element_text(size=14))+ 
+      labs(title = &quot;Queens County, New York&quot;, 
+           subtitle = &quot;Composition of languages spoken at home by census language classification&quot;,
+           caption=&quot;Source: American Community Survey 2011-15, Table B16001&quot;)</code></pre>
 <p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
 <div id="languages-in-the-us" class="section level2">
@@ -85,7 +97,10 @@ langData%&gt;%
   arrange(desc(pop))%&gt;%
   slice(3:20)%&gt;%
   ggplot(aes(x=label, y=pop)) + 
-    geom_segment(aes(x=reorder(label,pop), xend=label, y=0, yend=pop)) + xlab(&quot;&quot;)+
+    geom_segment(aes(x=reorder(label,pop), 
+                     xend=label, 
+                     y=0, yend=pop)) + 
+  xlab(&quot;&quot;)+
     geom_point(size=3.5, color=&#39;steelblue&#39;) +
     labs(title=&quot;Languages spoken at home in the US: ranks 3-20&quot;) +
     coord_flip()+
@@ -104,7 +119,8 @@ langData%&gt;%
   filter(!is.na(eIndex)&amp; grepl(&quot;Hawaii$|Alaska$&quot;,NAME)==FALSE)%&gt;%  
   group_by(GEOID,NAME)%&gt;%
   summarize(entropy=sum(eIndex))%&gt;%
-  mutate(entropy=round(entropy/log(40),3))%&gt;% #scale to max entropy
+  mutate(entropy=round(entropy/log(40),3))%&gt;% 
+  #scale to max entropy
   ungroup()</code></pre>
 </div>
 <div id="locating-linguistic-diversity" class="section level2">
@@ -115,7 +131,10 @@ langData%&gt;%
   arrange(desc(entropy))%&gt;%
   slice(1:50)%&gt;%
   select(NAME,entropy)%&gt;%
-  DT::datatable(selection=&quot;none&quot;,class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::datatable(selection=&quot;none&quot;,
+                class = &#39;cell-border stripe&#39;, 
+                rownames = FALSE,width=&quot;100%&quot;, 
+                escape=FALSE)%&gt;%
   DT::formatStyle(&#39;entropy&#39;,
     background = DT::styleColorBar(byCounty$entropy, &#39;steelblue&#39;),
     backgroundSize = &#39;80% 70%&#39;,
@@ -151,7 +170,8 @@ x &lt;- byCounty %&gt;%
   st_transform(crs = &quot;+init=epsg:4326&quot;)%&gt;%
   leaflet(width=&quot;100%&quot;,height=&#39;400&#39;) %&gt;%
       setView(lng = -98.35, lat = 39.5, zoom = 4) %&gt;%
-      addProviderTiles (&quot;CartoDB.Positron&quot;, options = providerTileOptions(minZoom = 4, maxZoom = 7))%&gt;%
+      addProviderTiles (&quot;CartoDB.Positron&quot;, 
+                        options = providerTileOptions(minZoom = 4, maxZoom = 7))%&gt;%
       addPolygons(popup = ~ NAME,
                 fill = TRUE, 
                 stroke = TRUE,weight=1,
@@ -186,8 +206,11 @@ byCounty %&gt;%
     ggplot(aes(entropy, Div_Name, fill = Div_Name)) +
       scale_fill_stata()+ theme_fivethirtyeight()+
       geom_density_ridges(rel_min_height = 0.01) +
-      theme(legend.position = &quot;none&quot;, plot.title = element_text(size=14)) + ylab(&quot;&quot;)+
-      labs(title = &quot;Linguistic diversity density plots&quot;, subtitle = &quot;By US Division, 2011-15&quot;)</code></pre>
+      theme(legend.position = &quot;none&quot;, 
+            plot.title = element_text(size=14)) + 
+      ylab(&quot;&quot;)+
+      labs(title = &quot;Linguistic diversity density plots&quot;, 
+           subtitle = &quot;By US Division, 2011-15&quot;)</code></pre>
 <p><img src="/post/2017-12-14-locating-linguistic-diversity-in-the-usa_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="fin" class="section level2">

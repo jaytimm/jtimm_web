@@ -68,10 +68,14 @@ The following pipe geocodes the GPEs, removes GPEs that Google Maps cannot geoco
 library(ggmap)
 library(sf)
 
-slate_gpe_geo <- ggmap::geocode(slate_gpe$lemma, output = c("latlon"), messaging = FALSE)%>%
+slate_gpe_geo <- ggmap::geocode(slate_gpe$lemma, 
+                                output = c("latlon"), 
+                                messaging = FALSE) %>%
   bind_cols(slate_gpe)%>%
   filter(complete.cases(.))%>%
-  sf::st_as_sf(coords = c("lon", "lat"), crs = 4326, agr = "constant")
+  sf::st_as_sf(coords = c("lon", "lat"), 
+               crs = 4326, 
+               agr = "constant")
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -82,15 +86,19 @@ We then map the geolocated GPEs using the `leaflet` package; circle radius refle
 
 ```{r message=FALSE, warning=FALSE}
 library(leaflet)
+library(widgetframe)
 
-slate_gpe_geo %>%
+x <- slate_gpe_geo %>%
   leaflet(width="100%") %>%
   setView(lng = -5, lat = 31, zoom = 2) %>%
-  addProviderTiles ("CartoDB.Positron",options = providerTileOptions(minZoom = 2, maxZoom = 3.5))%>%
+  addProviderTiles ("CartoDB.Positron",
+                    options = providerTileOptions (minZoom = 2, maxZoom = 3.5))%>%
   addCircleMarkers(
     radius = ~txtf/25,
     stroke = FALSE, fillOpacity = .75,
     label=~lemma)
+
+frameWidget(x)
 ```
 
 
@@ -118,9 +126,12 @@ slate_gpe_details %>%
   summarize (txtf=sum(txtf),docf=sum(docf))%>%
   filter(subregion!='Northern America')%>%
   ggplot(aes(x=docf, y=txtf)) + 
-  geom_text(aes(label=toupper(subregion)), size=3, check_overlap = TRUE,hjust = "inward")+
+  geom_text(aes(label=toupper(subregion)), 
+            size=3, 
+            check_overlap = TRUE,
+            hjust = "inward")+
   labs(title = "Document vs. text frequency for GPEs outside of Northern America", 
-    subtitle="By Subregion")
+       subtitle="By Subregion")
 ```
 
 
@@ -146,7 +157,10 @@ gpe_search <- data.frame(slate_gpe_geo) %>%
 
 Perform search:
 ```{r}
-gpe_contexts <- corpuslingr::clr_search_context(search = gpe_search$lemma, corp=slate, LW=15, RW=15)
+gpe_contexts <- corpuslingr::clr_search_context(
+  search = gpe_search$lemma, 
+  corp=slate, 
+  LW=15, RW=15)
 ```
 
 
@@ -157,8 +171,11 @@ A small random sample of the search results are presented below in context.  The
 gpe_contexts %>%
   corpuslingr::clr_context_kwic(include=c('doc_id')) %>%
   sample_n(5)%>%
-  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
-  DT::formatStyle(c(1:2),fontSize = '85%')
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)%>%
+  DT::formatStyle(c(1:2),fontSize = '90%')
 ```
 
 
@@ -170,7 +187,9 @@ So, having extracted all contexts from the corpus, we can now build a GPE-featur
 
 ```{r message=FALSE, warning=FALSE}
 term_feat_mat <- gpe_contexts %>%
-  corpuslingr::clr_context_bow(agg_var = c('searchLemma','lemma'),content_only=TRUE)%>%
+  corpuslingr::clr_context_bow(
+    agg_var = c('searchLemma','lemma'),
+    content_only=TRUE)%>%
   spread (searchLemma,cofreq)%>%
   replace(is.na(.), 0)
 ```
@@ -210,10 +229,14 @@ cmdscale(1-sim_mat, eig = TRUE, k = 2)$points %>%
   mutate (lemma = rownames(sim_mat))%>%
   left_join(slate_gpe_details)%>%
   ggplot(aes(X1,X2)) +
-  geom_text(aes(label=colnames(sim_mat),col=continent), size=2.5, check_overlap = TRUE)+
+  geom_text(aes(label=colnames(sim_mat),col=continent), 
+            size=2.5, 
+            check_overlap = TRUE)+
   scale_colour_stata() + theme_fivethirtyeight() +
-  theme(legend.position = "none",plot.title = element_text(size=14))+ 
-  labs(title="Slate GPEs in semantic space",subtitle="A two-dimensional solution")
+  theme(legend.position = "none",
+        plot.title = element_text(size=14))+ 
+  labs(title="Slate GPEs in semantic space",
+       subtitle="A two-dimensional solution")
 ```
 
 The first dimension (x-axis) seems to do a very nice job capturing a "Domestic - Foreign" distinction, with some obvious exceptions.  The second dimension (y-axis) seems to capture a "City - State" distinction, or an "Urban - Non-urban" distinction. Also, there seems to be a "Europe - Non-Europe" element to the second dimension on the "Foreign" side of the plot.  
