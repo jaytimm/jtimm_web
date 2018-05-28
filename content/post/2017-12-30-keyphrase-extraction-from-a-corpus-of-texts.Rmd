@@ -133,7 +133,10 @@ kpsAgg%>%
   group_by(doc_id,title)%>%
   summarise(key_phrases = paste(lemma, collapse=" | "))%>%
   arrange(as.numeric(doc_id))%>%
-  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)
 ```
 <br>
 
@@ -155,9 +158,17 @@ library(sotuAnn) #devtools::install_github("jaytimm/sotuAnn")
 
 sotuAnn::cdr_sotu_ann %>%
   corpuslingr::clr_set_corpus (meta = sotuAnn::cdr_sotu_meta) %>%
-  corpuslingr::clr_search_keyphrases(n=5, key_var ='lemma', flatten=TRUE,jitter=TRUE, remove_nums = TRUE, include = c("year","president"))%>%
+  corpuslingr::clr_search_keyphrases(n=5, 
+                                     key_var ='lemma', 
+                                     flatten=TRUE,
+                                     jitter=TRUE, 
+                                     remove_nums = TRUE, 
+                                     include = c("year","president"))%>%
   arrange(desc(year))%>%
-  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)
 ```
 
 

@@ -55,7 +55,8 @@ Using the `clr_get_freq` function from the `corpuslingr` package, then, we creat
 dtm <- corpusdatr::cdr_slate_ann %>%
   spacyr::entity_consolidate() %>%
   filter(tag %in% c("NN", "NNS") | pos =='ENTITY')%>%
-  corpuslingr::clr_get_freq(agg_var=c('doc_id','lemma'),toupper=FALSE)%>%
+  corpuslingr::clr_get_freq(agg_var=c('doc_id','lemma'),
+                            toupper=FALSE)%>%
   arrange(doc_id)
 ```
 
@@ -82,7 +83,9 @@ str(static_DTM)
 
 Lastly, we fit the model, specifying an eight topic solution:
 ```{r message=FALSE, warning=FALSE}
-static_topic <- topicmodels::LDA(static_DTM, k = 8, control=list(seed=12)) #11
+static_topic <- topicmodels::LDA(static_DTM, 
+                                 k = 8, 
+                                 control=list(seed=12)) #11
 ```
 
 
@@ -98,12 +101,18 @@ topicmodels::posterior(static_topic)$terms %>%
   top_n(6, beta) %>%
   ungroup() %>%
   arrange(topics, beta)%>%
-  mutate(order = row_number(), term=factor(paste(order,term,sep="_"), levels = paste(order, term, sep = "_")), topics = as.character(topics))%>%
-  ggplot(aes(x=term, y=beta, fill=topics)) + 
+  mutate(order = row_number(), 
+         term=factor(paste(order,term,sep="_"), 
+                     levels = paste(order, term, sep = "_")), 
+         topics = as.character(topics))%>%
+  ggplot(aes(x=term, 
+             y=beta, 
+             fill=topics)) + 
     geom_col(show.legend = FALSE) +  
     facet_wrap(~topics, scales = "free_y", ncol = 2) +
     scale_x_discrete(labels = function(x) gsub("^.*_", "", x))+
-    theme_fivethirtyeight()+ scale_fill_stata() +
+    theme_fivethirtyeight()+ 
+    scale_fill_stata() +
     coord_flip()+
     theme(plot.title = element_text(size=14)) +
     labs(title="Topic composition by feature") #
@@ -136,8 +145,11 @@ cdr_gnews_meta%>%
   group_by(pubdates) %>%
   summarize_at(vars(docN),funs(sum))%>%
   ggplot(aes(x=pubdates, group = 1)) +
-  geom_line(aes(y=docN),size=1.25, color = 'steelblue') +
-  labs(title="Daily corpus size", subtitle = "11-27-17 to 12-20-17")
+  geom_line(aes(y=docN),
+            size=1.25, 
+            color = 'steelblue') +
+  labs(title="Daily corpus size", 
+       subtitle = "11-27-17 to 12-20-17")
 ```
 
 The corpus is comprised predominantly of articles from the Washington Post, CNN, and the New York Times.  It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.  
@@ -150,7 +162,8 @@ cdr_gnews_meta %>%
   ggplot(aes(x=reorder(source, docN), y=docN)) + 
   geom_col(width=.65, fill='steelblue') +  
   coord_flip()+
-  labs(title="Top ten news sources by text frequency", subtitle = "11-27-17 to 12-20-17")
+  labs(title="Top ten news sources by text frequency", 
+       subtitle = "11-27-17 to 12-20-17")
 ```
 
 
@@ -164,7 +177,9 @@ hist_topic <- corpusdatr::cdr_gnews_historical %>%
   group_by(doc_id,lemma) %>%
   summarize_at(vars(freq),funs(sum))%>%
   tidytext::cast_sparse(row=doc_id,column=lemma,value=freq)%>%
-  topicmodels::LDA(., k = 12, control = list(verbose = 0,seed=999))
+  topicmodels::LDA(., 
+                   k = 12, 
+                   control = list(verbose = 0, seed=999))
 ```
 
 
@@ -207,7 +222,9 @@ Based on this set of model results, each document in our corpus can be represent
 ```{r}
 hist_beta %>%
   filter(doc_id %in% c('183', '631','896')) %>%
-  ggplot(aes(x=reorder(paste(topic,dims, sep=" - "), -topic), y=val,  fill = dims)) +
+  ggplot(aes(x=reorder(paste(topic,dims, sep=" - "), -topic), 
+             y=val,  
+             fill = dims)) +
   geom_col(width=.85) +  
   coord_flip()+
   scale_fill_stata() +
@@ -234,13 +251,21 @@ The top six words associated with each topic are displayed as well. For a relati
 
 ```{r fig.height=8}
 p <- ggplot(agg_hist_beta) +
-     geom_point(aes(x = pubdates, y = reorder(topic,-topic), size = val, color=dims)) +
-  theme_fivethirtyeight() + scale_color_stata() 
+     geom_point(aes(x = pubdates, 
+                    y = reorder(topic,-topic), 
+                    size = val, 
+                    color=dims)) +
+  theme_fivethirtyeight() + 
+  scale_color_stata() 
 
-p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == "2017-11-27",
-     ], aes(x = pubdates, y = reorder(topic,-topic), label = dims), vjust=-1,hjust=0) +
-  labs(title="Topic prevalence over time", subtitle="11-27-2017 to 12-20-2017")+
-  theme(legend.position="none", plot.title = element_text(size=14))
+p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == "2017-11-27",], 
+     aes(x = pubdates, y = reorder(topic,-topic), label = dims), 
+     vjust=-1,
+     hjust=0) +
+  labs(title="Topic prevalence over time", 
+       subtitle="11-27-2017 to 12-20-2017")+
+  theme(legend.position="none", 
+        plot.title = element_text(size=14))
 ```
 
 
@@ -260,7 +285,8 @@ Next, we compute the distances (ie, dissimilarities) between topic-pairs, and pe
 ```{r fig.height=6, message=FALSE, warning=FALSE}
 library(ggdendro)
 hclust(dist(cor_mat)) %>%
-  ggdendrogram(., rotate=TRUE) + theme_fivethirtyeight()
+  ggdendrogram(., rotate=TRUE) + 
+  theme_fivethirtyeight()
 ```
 
 

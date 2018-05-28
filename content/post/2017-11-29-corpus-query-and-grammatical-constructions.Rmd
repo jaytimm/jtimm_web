@@ -48,8 +48,13 @@ Example searches & syntax are presented below, which load with the package as `c
 ```{r echo=FALSE}
 corpuslingr::clr_ref_search_egs%>%
   mutate(search_syntax = gsub("\\*","*", search_syntax)) %>%
-  DT::datatable(options = list( pageLength = nrow(clr_ref_search_egs),dom = 't'), class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
-    DT::formatStyle(c(1:3),fontSize = '85%')
+  DT::datatable(options = list( pageLength = nrow(clr_ref_search_egs),
+                                dom = 't'), 
+                class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)%>%
+  DT::formatStyle(c(1:3),fontSize = '85%')
 ```
 
 
@@ -101,7 +106,9 @@ search2 <- "VERB PRP$ way (through| into) NPHR"
 
 ```{r message=FALSE, warning=FALSE}
 searchResults <- slate %>%
-  corpuslingr::clr_search_context(search=search2, LW=5, RW = 5)
+  corpuslingr::clr_search_context(search=search2, 
+                                  LW=5, 
+                                  RW = 5)
 ```
 
 `KWIC` object:
@@ -132,7 +139,8 @@ The figure below illustrates the top 20 instantiations of the grammatical constr
 ```{r}
 slate %>%
   corpuslingr::clr_search_gramx(search=search3)%>%
-  corpuslingr::clr_get_freq(agg_var=c("lemma"),toupper =TRUE) %>%
+  corpuslingr::clr_get_freq(agg_var=c("lemma"),
+                            toupper =TRUE) %>%
   slice(1:20)%>%
   ggplot(aes(x=reorder(lemma,txtf), y=txtf)) + 
     geom_col(width=.6, fill="steelblue") +  
@@ -144,15 +152,21 @@ slate %>%
 Although search is quicker when searching for multiple search terms simultaneaously, in some cases it may be useful to treat multiple search terms distinctly using `lapply()`:
 
 ```{r}
-search3a <- c("VERB across","VERB through", "VERB out", "VERB down")
+search3a <- c("VERB across",
+              "VERB through", 
+              "VERB out", 
+              "VERB down")
 ```
 
 ```{r}
 vb_prep <- lapply(1:length(search3a), function(y) {
-  corpuslingr::clr_search_gramx(corp=slate, search=search3a[y])%>%
-  corpuslingr::clr_get_freq(agg_var=c("lemma"),toupper =TRUE) %>%
-  mutate(search = search3a[y])
-  }) %>%  bind_rows()
+    corpuslingr::clr_search_gramx(corp=slate, 
+                                  search=search3a[y])%>%
+    corpuslingr::clr_get_freq(agg_var=c("lemma"),
+                              toupper =TRUE) %>%
+    mutate(search = search3a[y])
+    }) %>%  
+  bind_rows()
 ```
 
 
@@ -160,7 +174,8 @@ Summary by search:
 ```{r}
 vb_prep %>%
   group_by(search) %>%
-  summarize(gramx_freq = sum(txtf), gramx_type = n())
+  summarize(gramx_freq = sum(txtf), 
+            gramx_type = n())
 ```
 
 <br>
@@ -170,10 +185,13 @@ library(ggthemes)
 vb_prep %>%
   group_by(search)%>%
   slice(1:10)%>%
-  ggplot(aes(x=reorder(lemma,txtf), y=txtf, fill = search)) + 
+  ggplot(aes(x=reorder(lemma,txtf), 
+             y=txtf, 
+             fill = search)) + 
     geom_col(width=.6) + 
     scale_fill_stata() +
-    coord_flip()+ theme(legend.position="none") +
+    coord_flip()+ 
+    theme(legend.position="none") +
     facet_wrap(~search, scales = "free_y")
 ```
 
@@ -194,10 +212,14 @@ search4 <- "VERB NPHR into VBG"
 
 ```{r message=FALSE, warning=FALSE}
 slate %>%
-  corpuslingr::clr_search_context(search=search4, LW=10, RW = 10) %>%
+  corpuslingr::clr_search_context(search=search4, 
+                                  LW=10, 
+                                  RW = 10) %>%
   corpuslingr::clr_context_kwic(include=c('doc_id')) %>%
-  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
-    DT::formatStyle(c(1:2),fontSize = '85%')
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,width="100%", 
+                escape=FALSE) %>%
+  DT::formatStyle(c(1:2),fontSize = '85%')
 ```
 
 
@@ -209,15 +231,22 @@ The `clr_context_bow()` function returns a co-occurrence vector for each search 
 * *Multiple search terms*
 
 ```{r}
-search5 <- c("Clinton", "Lewinsky", "Bradley", "McCain", "Milosevic", "Starr",  "Microsoft", "Congress", "China", "Russia")
+search5 <- c("Clinton", "Lewinsky", 
+             "Bradley", "McCain", 
+             "Milosevic", "Starr",  
+             "Microsoft", "Congress", 
+             "China", "Russia")
 ```
 
 Here we search for some prominent players of the late 90s (when articles in the `cdr_slate_ann` corpus were published), and plot the most frequent co-occurring features of each search term.
 
 ```{r message=FALSE, warning=FALSE}
 co_occur <- slate %>%
-  corpuslingr::clr_search_context(search=search5, LW=15, RW = 15)%>%
-  corpuslingr::clr_context_bow(content_only=TRUE, agg_var=c('searchLemma','lemma','pos'))
+  corpuslingr::clr_search_context(search=search5, 
+                                  LW=15, 
+                                  RW = 15)%>%
+  corpuslingr::clr_context_bow(content_only=TRUE,
+                               agg_var=c('searchLemma','lemma','pos'))
 ```
 
 
@@ -230,12 +259,18 @@ co_occur %>%
   top_n(n=10,wt=jitter(cofreq))%>%
   ungroup()%>%
   #Hack1 to sort order within facet
-  mutate(order = row_number(), lemma=factor(paste(order,lemma,sep="_"), levels = paste(order, lemma, sep = "_")))%>%
-  ggplot(aes(x=lemma, y=cofreq, fill=searchLemma)) + 
+  mutate(order = row_number(), 
+         lemma=factor(paste(order,lemma,sep="_"), 
+                      levels = paste(order, lemma, sep = "_")))%>%
+  ggplot(aes(x=lemma, 
+             y=cofreq, 
+             fill=searchLemma)) + 
     geom_col(show.legend = FALSE) +  
     facet_wrap(~searchLemma, scales = "free_y", ncol = 2) +
-    scale_x_discrete(labels = function(x) gsub("^.*_", "", x))+#Hack2 to modify labels
-    theme_fivethirtyeight()+ scale_fill_stata() +
+  #Hack2 to modify labels
+    scale_x_discrete(labels = function(x) gsub("^.*_", "", x))+
+    theme_fivethirtyeight()+ 
+    scale_fill_stata() +
     theme(plot.title = element_text(size=13))+ 
     coord_flip()+
     labs(title="Co-occurrence frequencies for some late 20th century players")

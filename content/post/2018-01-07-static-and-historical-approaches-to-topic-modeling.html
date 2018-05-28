@@ -51,7 +51,8 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 <pre class="r"><code>dtm &lt;- corpusdatr::cdr_slate_ann %&gt;%
   spacyr::entity_consolidate() %&gt;%
   filter(tag %in% c(&quot;NN&quot;, &quot;NNS&quot;) | pos ==&#39;ENTITY&#39;)%&gt;%
-  corpuslingr::clr_get_freq(agg_var=c(&#39;doc_id&#39;,&#39;lemma&#39;),toupper=FALSE)%&gt;%
+  corpuslingr::clr_get_freq(agg_var=c(&#39;doc_id&#39;,&#39;lemma&#39;),
+                            toupper=FALSE)%&gt;%
   arrange(doc_id)</code></pre>
 <p>Example portion of text as a DTM:</p>
 <pre><code>##   doc_id   lemma txtf docf
@@ -76,7 +77,9 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 ##   ..@ x       : num [1:161352] 14 1 1 1 1 1 1 1 1 2 ...
 ##   ..@ factors : list()</code></pre>
 <p>Lastly, we fit the model, specifying an eight topic solution:</p>
-<pre class="r"><code>static_topic &lt;- topicmodels::LDA(static_DTM, k = 8, control=list(seed=12)) #11</code></pre>
+<pre class="r"><code>static_topic &lt;- topicmodels::LDA(static_DTM, 
+                                 k = 8, 
+                                 control=list(seed=12)) #11</code></pre>
 <p>We extract the <code>terms</code> object from the <code>LDA</code> output using the <code>topicmodels::posterior</code> function; output includes the posterior probabilities of the terms for each topic. Focusing on the six highest probability terms per topic, the plot below summarizes model results for the Slate Magazine corpus (ca 1996-2000).</p>
 <pre class="r"><code>library(ggthemes)
 topicmodels::posterior(static_topic)$terms %&gt;%
@@ -87,12 +90,18 @@ topicmodels::posterior(static_topic)$terms %&gt;%
   top_n(6, beta) %&gt;%
   ungroup() %&gt;%
   arrange(topics, beta)%&gt;%
-  mutate(order = row_number(), term=factor(paste(order,term,sep=&quot;_&quot;), levels = paste(order, term, sep = &quot;_&quot;)), topics = as.character(topics))%&gt;%
-  ggplot(aes(x=term, y=beta, fill=topics)) + 
+  mutate(order = row_number(), 
+         term=factor(paste(order,term,sep=&quot;_&quot;), 
+                     levels = paste(order, term, sep = &quot;_&quot;)), 
+         topics = as.character(topics))%&gt;%
+  ggplot(aes(x=term, 
+             y=beta, 
+             fill=topics)) + 
     geom_col(show.legend = FALSE) +  
     facet_wrap(~topics, scales = &quot;free_y&quot;, ncol = 2) +
     scale_x_discrete(labels = function(x) gsub(&quot;^.*_&quot;, &quot;&quot;, x))+
-    theme_fivethirtyeight()+ scale_fill_stata() +
+    theme_fivethirtyeight()+ 
+    scale_fill_stata() +
     coord_flip()+
     theme(plot.title = element_text(size=14)) +
     labs(title=&quot;Topic composition by feature&quot;) #</code></pre>
@@ -130,8 +139,11 @@ Corpus and some descriptives
   group_by(pubdates) %&gt;%
   summarize_at(vars(docN),funs(sum))%&gt;%
   ggplot(aes(x=pubdates, group = 1)) +
-  geom_line(aes(y=docN),size=1.25, color = &#39;steelblue&#39;) +
-  labs(title=&quot;Daily corpus size&quot;, subtitle = &quot;11-27-17 to 12-20-17&quot;)</code></pre>
+  geom_line(aes(y=docN),
+            size=1.25, 
+            color = &#39;steelblue&#39;) +
+  labs(title=&quot;Daily corpus size&quot;, 
+       subtitle = &quot;11-27-17 to 12-20-17&quot;)</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p>The corpus is comprised predominantly of articles from the Washington Post, CNN, and the New York Times. It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.</p>
 <pre class="r"><code>cdr_gnews_meta %&gt;%
@@ -141,7 +153,8 @@ Corpus and some descriptives
   ggplot(aes(x=reorder(source, docN), y=docN)) + 
   geom_col(width=.65, fill=&#39;steelblue&#39;) +  
   coord_flip()+
-  labs(title=&quot;Top ten news sources by text frequency&quot;, subtitle = &quot;11-27-17 to 12-20-17&quot;)</code></pre>
+  labs(title=&quot;Top ten news sources by text frequency&quot;, 
+       subtitle = &quot;11-27-17 to 12-20-17&quot;)</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>
 <h4>
@@ -154,7 +167,9 @@ Topic Model
   group_by(doc_id,lemma) %&gt;%
   summarize_at(vars(freq),funs(sum))%&gt;%
   tidytext::cast_sparse(row=doc_id,column=lemma,value=freq)%&gt;%
-  topicmodels::LDA(., k = 12, control = list(verbose = 0,seed=999))</code></pre>
+  topicmodels::LDA(., 
+                   k = 12, 
+                   control = list(verbose = 0, seed=999))</code></pre>
 <p>Extract the topic summary of the model:</p>
 <pre class="r"><code>topic_summary &lt;- data.frame(topicmodels::terms(hist_topic,7)) %&gt;%
   gather(key=&#39;topic&#39;,value=&#39;val&#39;,Topic.1:Topic.12) %&gt;%
@@ -168,16 +183,16 @@ Topic Model
 ##    &lt;chr&gt;                                                         
 ##  1 tax, bill, Senate, Republicans, House, vote, rate             
 ##  2 Moore, Alabama, woman, voter, election, Republican, Trump     
-##  3 woman, allegation, harassment, story, time, statement, people 
+##  3 woman, allegation, harassment, story, statement, time, people 
 ##  4 film, time, first, one, people, movie, way                    
 ##  5 North Korea, missile, snow, U.S., weapon, North Korean, report
 ##  6 company, deal, Fox, market, price, time, Disney               
 ##  7 EU, deal, government, trade, Yankees, time, Britain           
 ##  8 fire, wildfire, home, man, photo, Ventura, people             
-##  9 Iran, Yemen, CNN, people, coalition, missile, time            
-## 10 game, team, time, coach, player, first, NFL                   
+##  9 CNN, Yemen, people, time, child, police, family               
+## 10 game, team, time, coach, player, NFL, first                   
 ## 11 Trump, president, Russia, Trump_&#39;s, official, Mueller, Flynn  
-## 12 police, Jerusalem, Israel, officer, death, city, people</code></pre>
+## 12 police, Jerusalem, Israel, capital, city, death, people</code></pre>
 <p>So a busy three weeks. The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.</p>
 <p>
 <h4>
@@ -196,7 +211,9 @@ Topic prevalence historically
 <p>Based on this set of model results, each document in our corpus can be represented as a composite of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9.</p>
 <pre class="r"><code>hist_beta %&gt;%
   filter(doc_id %in% c(&#39;183&#39;, &#39;631&#39;,&#39;896&#39;)) %&gt;%
-  ggplot(aes(x=reorder(paste(topic,dims, sep=&quot; - &quot;), -topic), y=val,  fill = dims)) +
+  ggplot(aes(x=reorder(paste(topic,dims, sep=&quot; - &quot;), -topic), 
+             y=val,  
+             fill = dims)) +
   geom_col(width=.85) +  
   coord_flip()+
   scale_fill_stata() +
@@ -214,13 +231,21 @@ Topic prevalence historically
 <p>Finally, we plot the results. The size of plot points represents aggregate posterior probabilities, which can be interpreted as the likelihood that some article <strong>a</strong> written on day <strong>d</strong> was about some topic <strong>z</strong>.</p>
 <p>The top six words associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.</p>
 <pre class="r"><code>p &lt;- ggplot(agg_hist_beta) +
-     geom_point(aes(x = pubdates, y = reorder(topic,-topic), size = val, color=dims)) +
-  theme_fivethirtyeight() + scale_color_stata() 
+     geom_point(aes(x = pubdates, 
+                    y = reorder(topic,-topic), 
+                    size = val, 
+                    color=dims)) +
+  theme_fivethirtyeight() + 
+  scale_color_stata() 
 
-p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&quot;,
-     ], aes(x = pubdates, y = reorder(topic,-topic), label = dims), vjust=-1,hjust=0) +
-  labs(title=&quot;Topic prevalence over time&quot;, subtitle=&quot;11-27-2017 to 12-20-2017&quot;)+
-  theme(legend.position=&quot;none&quot;, plot.title = element_text(size=14))</code></pre>
+p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&quot;,], 
+     aes(x = pubdates, y = reorder(topic,-topic), label = dims), 
+     vjust=-1,
+     hjust=0) +
+  labs(title=&quot;Topic prevalence over time&quot;, 
+       subtitle=&quot;11-27-2017 to 12-20-2017&quot;)+
+  theme(legend.position=&quot;none&quot;, 
+        plot.title = element_text(size=14))</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 </div>
 <div id="topic-clusters" class="section level2">
@@ -232,7 +257,8 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&qu
 <p>Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform hierarchical clustering analysis on the resulting matrix. We use the <code>ggdendro</code> package to plot results. Per plot below, some intuitive relationships, some less so.</p>
 <pre class="r"><code>library(ggdendro)
 hclust(dist(cor_mat)) %&gt;%
-  ggdendrogram(., rotate=TRUE) + theme_fivethirtyeight()</code></pre>
+  ggdendrogram(., rotate=TRUE) + 
+  theme_fivethirtyeight()</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
 <div id="quick-summary" class="section level2">
