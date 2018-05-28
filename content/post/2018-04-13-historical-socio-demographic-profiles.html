@@ -44,7 +44,10 @@ geos_inc &lt;- c(&quot;us&quot;,
 nm_us_w_micros &lt;- &quot;NM|New Mexico|United States&quot;</code></pre>
 <p>The <code>tidycensus</code> function for accessing the ACS API, <code>get_acs()</code>, enables users to obtain data for a single geography type, a single year, and multiple census variables. Here, however, we want to be able to fetch ACS data for <em>multiple</em> geography types, <em>multiple</em> years, and multiple census variables.</p>
 <p>To accomplish this particular task, we build a simple wrapper function that adds some functionality to <code>get_acs()</code>:</p>
-<pre class="r"><code>get_historic_acs &lt;- function (variables, geography, year, summary_var = NULL) {
+<pre class="r"><code>get_historic_acs &lt;- function (variables, 
+                              geography, 
+                              year, 
+                              summary_var = NULL) {
 y &lt;- list()
 for (i in 1:length(year)) {
   y[[i]] &lt;- lapply(geography, function (x) {
@@ -97,7 +100,9 @@ for (i in 1:length(year)) {
            &quot;%Below FPL - All people&quot;)</code></pre>
 <pre class="r"><code>dp_table &lt;- as.data.frame(cbind(variable, label))</code></pre>
 <p>We apply the simple wrapper function to fetch data for our variable set by year and geography type:</p>
-<pre class="r"><code>dp_data &lt;- get_historic_acs(variables=variable, geography = geos_inc, year = year_range)</code></pre>
+<pre class="r"><code>dp_data &lt;- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range)</code></pre>
 <p>Output from the API query is summarized below:</p>
 <pre><code>## # A tibble: 59,424 x 6
 ##    GEOID NAME          variable   estimate    moe  year
@@ -125,11 +130,15 @@ dp_data %&gt;%
              ymin=estimate - moe, ymax=estimate + moe)) +
     geom_line(size=.95) +
     geom_errorbar(width=0.1) +
-    scale_colour_stata() + theme_fivethirtyeight()+
-    theme(legend.position=&quot;bottom&quot;, legend.title = element_blank(), plot.title = element_text(size=14))+
+    scale_colour_stata() + 
+    theme_fivethirtyeight()+
+    theme(legend.position=&quot;bottom&quot;, 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
     ylab (&quot;&quot;) + xlab(&quot;&quot;) +
     facet_wrap(~label, scales = &quot;free_y&quot;, ncol=3)+ 
-    labs(title=&quot;Socio-economic profiles&quot;,subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
+    labs(title=&quot;Socio-economic profiles&quot;,
+         subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>
 <div id="comparing-health-insurance-rates" class="section level3">
@@ -141,14 +150,17 @@ dp_data %&gt;%
          grepl (nm_us_w_micros, NAME), 
          variable == &quot;DP03_0096P&quot;) %&gt;%
   mutate (NAME = ifelse(GEOID == 21580, &quot;Espanola, NM Micro Area&quot;, NAME), 
-          year = paste0(&quot;p&quot;,year), NAME = gsub (&quot;, NM.*$&quot;,&quot;&quot;, NAME)) %&gt;%
+          year = paste0(&quot;p&quot;,year), 
+          NAME = gsub (&quot;, NM.*$&quot;,&quot;&quot;, NAME)) %&gt;%
   select(-moe) %&gt;%
   spread (year, estimate) %&gt;%
 
 #Build viz:
   ggplot(aes(reorder(NAME, -p2012), x=p2012, xend=p2016)) + 
-    geom_dumbbell(size=3, color=&quot;#e3e2e1&quot;, 
-                  colour_x = &quot;#5b8124&quot;, colour_xend = &quot;#bad744&quot;,
+    geom_dumbbell(size=3, 
+                  color=&quot;#e3e2e1&quot;, 
+                  colour_x = &quot;#5b8124&quot;, 
+                  colour_xend = &quot;#bad744&quot;,
                   dot_guide=TRUE, dot_guide_size=0.05) +
     labs(x=NULL, y=NULL, 
          title=&quot;Healthcare coverage&quot;,
@@ -182,7 +194,9 @@ ed_level &lt;- c(1:7)
 
 ed_table &lt;- as.data.frame(cbind(variable, ed_level, ed_labels), stringsAsFactors =FALSE)</code></pre>
 <p>Again, we collect data via the ACS API with our <code>get_acs()</code> wrapper function:</p>
-<pre class="r"><code>ed_data &lt;- get_historic_acs(variables=variable, geography = geos_inc, year = year_range) </code></pre>
+<pre class="r"><code>ed_data &lt;- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range) </code></pre>
 <p>Then we add variable details, filter to our set of geographies, and plot:</p>
 <pre class="r"><code>#Filter and transform data:
 ed_data %&gt;%
@@ -192,14 +206,19 @@ ed_data %&gt;%
   mutate (NAME = ifelse(GEOID == 21580, &quot;Espanola, NM Micro Area&quot;, NAME)) %&gt;%
 
 #Build viz:  
-  ggplot(aes(x = year, y = estimate, fill = reorder(ed_labels, -ed_level))) + 
+  ggplot(aes(x = year, 
+             y = estimate, 
+             fill = reorder(ed_labels, -ed_level))) + 
     geom_col(color= &#39;gray&#39;, width = .8) +
     scale_fill_brewer(palette = &#39;BrBG&#39;) +
     theme_fivethirtyeight()+
     coord_flip()+
     facet_wrap(~NAME, ncol = 3)+
-    theme(legend.position=&quot;bottom&quot;, legend.title = element_blank(), plot.title = element_text(size=14))+
-    labs(title=&quot;Educational attainment profiles&quot;,subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
+    theme(legend.position=&quot;bottom&quot;, 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
+    labs(title=&quot;Educational attainment profiles&quot;,
+         subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>So, we get a sense of variation in distributions of educational attainment across different geographies in New Mexico; we can also get a sense of changes in these distributions over time. Similar profiles can be built for race/ethnicity, language spoken at home, income levels, etc. simply by amending the variable parameter above.</p>
 </div>
@@ -221,15 +240,29 @@ ed_data %&gt;%
 ## [41] &quot;B01001_044&quot; &quot;B01001_045&quot; &quot;B01001_046&quot; &quot;B01001_047&quot; &quot;B01001_048&quot;
 ## [46] &quot;B01001_049&quot;</code></pre>
 <p>Here we build out variable details manually; there are other (presumably smarter) ways to do this. This approach is streamlined for building population pyramids.</p>
-<pre class="r"><code>age &lt;- c(rep(c(&quot;0-4&quot;, &quot;5-9&quot;, &quot;10-14&quot;, &quot;15-19&quot;, &quot;15-19&quot;, &quot;20-24&quot;, &quot;20-24&quot;, &quot;20-24&quot;, &quot;25-29&quot;, &quot;30-34&quot;, &quot;35-39&quot;, &quot;40-44&quot;, &quot;45-49&quot;, &quot;50-54&quot;, &quot;55-59&quot;, &quot;60-64&quot;, &quot;60-64&quot;, &quot;65-69&quot;, &quot;65-69&quot;, &quot;70-74&quot;, &quot;75-79&quot;, &quot;80-84&quot;, &quot;85-over&quot;),2))
+<pre class="r"><code>age &lt;- c(rep ( c(&quot;0-4&quot;, &quot;5-9&quot;, &quot;10-14&quot;, 
+                 &quot;15-19&quot;, &quot;15-19&quot;, &quot;20-24&quot;, 
+                 &quot;20-24&quot;, &quot;20-24&quot;, &quot;25-29&quot;, 
+                 &quot;30-34&quot;, &quot;35-39&quot;, &quot;40-44&quot;, 
+                 &quot;45-49&quot;, &quot;50-54&quot;, &quot;55-59&quot;, 
+                 &quot;60-64&quot;, &quot;60-64&quot;, &quot;65-69&quot;, 
+                 &quot;65-69&quot;, &quot;70-74&quot;, &quot;75-79&quot;, 
+                 &quot;80-84&quot;, &quot;85-over&quot;),
+               2))
 
 order &lt;- rep(c(1:3,4,4,5,5,5,6:12, 13,13,14,14,15:18),2)
 
-gender &lt;- c(rep(&quot;Male&quot;,23), rep(&quot;Female&quot;,23))
+gender &lt;- c(rep(&quot;Male&quot;,23), 
+            rep(&quot;Female&quot;,23))
 
-age_table &lt;- as.data.frame(cbind(variable, gender, order, age), stringsAsFactors =FALSE)</code></pre>
+age_table &lt;- as.data.frame(
+  cbind(variable, gender, order, age), 
+  stringsAsFactors =FALSE)</code></pre>
 <p>Again, we call our wrapper function to <code>tidycensus::get_acs()</code>, using the same year and geography parameters as initialized for our previous data profile queries.</p>
-<pre class="r"><code>age_data &lt;- get_historic_acs(variables = variable, geography = geos_inc, year = year_range, summary_var = &quot;B01001_001&quot;)</code></pre>
+<pre class="r"><code>age_data &lt;- get_historic_acs(variables = variable, 
+                             geography = geos_inc, 
+                             year = year_range, 
+                             summary_var = &quot;B01001_001&quot;)</code></pre>
 <p>Next, we perform some data transformation processes: namely,</p>
 <ul>
 <li>join variable details,</li>
@@ -240,7 +273,8 @@ age_table &lt;- as.data.frame(cbind(variable, gender, order, age), stringsAsFact
 <pre class="r"><code>age_data_trans &lt;- age_data %&gt;%
   inner_join(age_table) %&gt;%
   group_by(GEOID, NAME, year, age, gender, order) %&gt;%
-  summarize(estimate = sum(estimate), summary_est = mean (summary_est))%&gt;%
+  summarize(estimate = sum(estimate), 
+            summary_est = mean (summary_est))%&gt;%
   ungroup()%&gt;%
   mutate(percent = round(estimate/summary_est*100,1)) %&gt;%
   mutate(percent = ifelse(gender == &quot;Male&quot;,percent*-1,percent))%&gt;%
@@ -248,25 +282,43 @@ age_table &lt;- as.data.frame(cbind(variable, gender, order, age), stringsAsFact
           order=as.numeric(order)) </code></pre>
 <p>A bit of a hack for the <code>geom_step</code> portion of our plot below:</p>
 <pre class="r"><code>age_data_overlay &lt;- age_data_trans %&gt;%
-  bind_rows(age_data_trans %&gt;% filter(year==2012, age==&quot;85-over&quot;) %&gt;% group_by(GEOID) %&gt;% mutate(order = order + 1)) </code></pre>
+  bind_rows(age_data_trans %&gt;% 
+              filter(year==2012, age==&quot;85-over&quot;) %&gt;% 
+              group_by(GEOID) %&gt;% 
+              mutate(order = order + 1)) </code></pre>
 <p>Lastly, we plot age distributions in 2016 as traditional population pyramid and age distributions in 2012 as a <code>geom_step</code> overlay:</p>
 <pre class="r"><code>#Plot pyramids
-ggplot(data = age_data_trans %&gt;% filter(year == 2016, grepl (nm_us_w_micros, NAME)), aes(x = reorder(age,order) , y = percent, fill =gender)) +
+ggplot(data = age_data_trans %&gt;% 
+         filter(year == 2016, grepl (nm_us_w_micros, NAME)), 
+       aes(x = reorder(age,order) , y = percent, fill =gender)) +
   geom_col() +
   
 #ADD overlay
-  geom_step(data = age_data_overlay %&gt;% filter(gender == &quot;Male&quot;, year == 2012, grepl (nm_us_w_micros, NAME)), aes(x=order -.5), size = .7) + 
-  geom_step(data = age_data_overlay %&gt;% filter(gender == &quot;Female&quot;, year == 2012, grepl (nm_us_w_micros, NAME)), aes(x=order -.5), size = .7) + 
+  geom_step(data = age_data_overlay %&gt;% 
+              filter(gender == &quot;Male&quot;, 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)),
+            aes(x=order -.5), size = .7) + 
+  
+  geom_step(data = age_data_overlay %&gt;% 
+              filter(gender == &quot;Female&quot;, 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)), 
+            aes(x=order -.5), size = .7) + 
   
 #Add some format
-  scale_y_continuous(breaks=c(-5, 0, 5),labels=c(&quot;5%&quot;, &quot;0%&quot;, &quot;5%&quot;)) +
+  scale_y_continuous(breaks=c(-5, 0, 5),
+                     labels=c(&quot;5%&quot;, &quot;0%&quot;, &quot;5%&quot;)) +
   scale_x_discrete(labels = xlabs) + 
   coord_flip() +
   facet_wrap(~NAME, ncol=3)+
   scale_fill_stata() +
   theme_fivethirtyeight()+
-  theme(legend.position=&quot;bottom&quot;, legend.title = element_blank(), plot.title = element_text(size=14))+
-  labs(title=&quot;Population pyramids&quot;,subtitle=&quot;NM &amp; USA: comparing 2012 (line) and 2016 (color)&quot;)</code></pre>
+  theme(legend.position=&quot;bottom&quot;, 
+        legend.title = element_blank(), 
+        plot.title = element_text(size=14))+
+  labs(title=&quot;Population pyramids&quot;,
+       subtitle=&quot;NM &amp; USA: comparing 2012 (line) and 2016 (color)&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 <p>Indeed, quite a bit of variation in age distributions throughout MSAs in New Mexico; a fairly consistent theme, however, is that distributions have grown more top-heavy over the last five years.</p>
 </div>

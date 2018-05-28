@@ -37,8 +37,8 @@ Language data in the US census live in census table `B16001`, which provides sum
 
 ```{r}
 langs <- load_variables(2015, "acs5", cache = FALSE) %>%
-  filter(grepl("B16001",name) & !
-         grepl("Margin|Speak English|Total$",label)) %>%
+  filter(grepl("B16001",name) & 
+         !grepl("Margin|Speak English|Total$",label)) %>%
   mutate(name=gsub("E","",name),
          label=gsub("^.*!!","",label))%>%
   select(-concept)
@@ -90,9 +90,16 @@ langData%>%
                subgroup = type))+
       geom_treemap()+
       geom_treemap_subgroup_border() +
-      geom_treemap_subgroup_text(place = "bottom", grow = F, alpha = 0.5, colour ="gray",  min.size = 0)+ 
-      geom_treemap_text(colour = "white", place = "topleft", reflow = T)+
-      scale_fill_stata()+ theme_fivethirtyeight()+
+      geom_treemap_subgroup_text(place = "bottom", 
+                                 grow = F, 
+                                 alpha = 0.5, 
+                                 colour ="gray",  
+                                 min.size = 0)+ 
+      geom_treemap_text(colour = "white", 
+                        place = "topleft", 
+                        reflow = T)+
+      scale_fill_stata()+ 
+  theme_fivethirtyeight()+
       theme(legend.position = "none",
             plot.title = element_text(size=14))+ 
       labs(title = "Queens County, New York", 
@@ -117,7 +124,8 @@ langData %>%
                      xend=label, 
                      y=0, yend=pop)) + 
   xlab("")+
-    geom_point(size=3.5, color='steelblue') +
+    geom_point(size=3.5, 
+               color='steelblue') +
     labs(title="Languages spoken at home in the US: ranks 3-20") +
     coord_flip()+
     theme_bw()
@@ -213,11 +221,17 @@ x <- byCounty %>%
                 fillOpacity = 1,
                 color="white",
                 fillColor=~pal(entropy))%>%
-      addPolygons(data=divs,fill=FALSE,color="gray",stroke = TRUE,weight=1)%>%
+      addPolygons(data=divs,
+                  fill=FALSE,
+                  color="gray",
+                  stroke = TRUE,
+                  weight=1)%>%
       addCircleMarkers(data=st_centroid(divs), 
                        radius=0,
                        label=~NAME,
-                       labelOptions = labelOptions(noHide = T, textOnly = TRUE, offset=c(-25,-10)))%>% 
+                       labelOptions = labelOptions(noHide = T, 
+                                                   textOnly = TRUE,
+                                                   offset=c(-25,-10)))%>% 
       addLegend("bottomright", 
               pal = pal, 
               values = ~ entropy,
@@ -246,7 +260,8 @@ byCounty %>%
   left_join((geodatr::us_regions)) %>%
   na.omit()%>%
     ggplot(aes(entropy, Div_Name, fill = Div_Name)) +
-      scale_fill_stata()+ theme_fivethirtyeight()+
+      scale_fill_stata()+ 
+      theme_fivethirtyeight()+
       geom_density_ridges(rel_min_height = 0.01) +
       theme(legend.position = "none", 
             plot.title = element_text(size=14)) + 

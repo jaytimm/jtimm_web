@@ -59,7 +59,10 @@ The `tidycensus` function for accessing the ACS API, `get_acs()`, enables users 
 To accomplish this particular task, we build a simple wrapper function that adds some functionality to `get_acs()`:
 
 ```{r message=FALSE, warning=FALSE}
-get_historic_acs <- function (variables, geography, year, summary_var = NULL) {
+get_historic_acs <- function (variables, 
+                              geography, 
+                              year, 
+                              summary_var = NULL) {
 y <- list()
 for (i in 1:length(year)) {
   y[[i]] <- lapply(geography, function (x) {
@@ -131,7 +134,9 @@ dp_table <- as.data.frame(cbind(variable, label))
 
 We apply the simple wrapper function to fetch data for our variable set by year and geography type:
 ```{r message=FALSE}
-dp_data <- get_historic_acs(variables=variable, geography = geos_inc, year = year_range)
+dp_data <- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range)
 ```
 
 
@@ -156,11 +161,15 @@ dp_data %>%
              ymin=estimate - moe, ymax=estimate + moe)) +
     geom_line(size=.95) +
     geom_errorbar(width=0.1) +
-    scale_colour_stata() + theme_fivethirtyeight()+
-    theme(legend.position="bottom", legend.title = element_blank(), plot.title = element_text(size=14))+
+    scale_colour_stata() + 
+    theme_fivethirtyeight()+
+    theme(legend.position="bottom", 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
     ylab ("") + xlab("") +
     facet_wrap(~label, scales = "free_y", ncol=3)+ 
-    labs(title="Socio-economic profiles",subtitle="NM & USA, 2012-2016")
+    labs(title="Socio-economic profiles",
+         subtitle="NM & USA, 2012-2016")
 ```
 
 
@@ -176,14 +185,17 @@ dp_data %>%
          grepl (nm_us_w_micros, NAME), 
          variable == "DP03_0096P") %>%
   mutate (NAME = ifelse(GEOID == 21580, "Espanola, NM Micro Area", NAME), 
-          year = paste0("p",year), NAME = gsub (", NM.*$","", NAME)) %>%
+          year = paste0("p",year), 
+          NAME = gsub (", NM.*$","", NAME)) %>%
   select(-moe) %>%
   spread (year, estimate) %>%
 
 #Build viz:
   ggplot(aes(reorder(NAME, -p2012), x=p2012, xend=p2016)) + 
-    geom_dumbbell(size=3, color="#e3e2e1", 
-                  colour_x = "#5b8124", colour_xend = "#bad744",
+    geom_dumbbell(size=3, 
+                  color="#e3e2e1", 
+                  colour_x = "#5b8124", 
+                  colour_xend = "#bad744",
                   dot_guide=TRUE, dot_guide_size=0.05) +
     labs(x=NULL, y=NULL, 
          title="Healthcare coverage",
@@ -227,7 +239,9 @@ ed_table <- as.data.frame(cbind(variable, ed_level, ed_labels), stringsAsFactors
 
 Again, we collect data via the ACS API with our `get_acs()` wrapper function:
 ```{r message=FALSE, warning=FALSE}
-ed_data <- get_historic_acs(variables=variable, geography = geos_inc, year = year_range) 
+ed_data <- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range) 
 ```
 
 
@@ -241,14 +255,19 @@ ed_data %>%
   mutate (NAME = ifelse(GEOID == 21580, "Espanola, NM Micro Area", NAME)) %>%
 
 #Build viz:  
-  ggplot(aes(x = year, y = estimate, fill = reorder(ed_labels, -ed_level))) + 
+  ggplot(aes(x = year, 
+             y = estimate, 
+             fill = reorder(ed_labels, -ed_level))) + 
     geom_col(color= 'gray', width = .8) +
     scale_fill_brewer(palette = 'BrBG') +
     theme_fivethirtyeight()+
     coord_flip()+
     facet_wrap(~NAME, ncol = 3)+
-    theme(legend.position="bottom", legend.title = element_blank(), plot.title = element_text(size=14))+
-    labs(title="Educational attainment profiles",subtitle="NM & USA, 2012-2016")
+    theme(legend.position="bottom", 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
+    labs(title="Educational attainment profiles",
+         subtitle="NM & USA, 2012-2016")
 ```
 
 
@@ -275,20 +294,34 @@ variable
 Here we build out variable details manually; there are other (presumably smarter) ways to do this.  This approach is streamlined for building population pyramids.
 
 ```{r}
-age <- c(rep(c("0-4", "5-9", "10-14", "15-19", "15-19", "20-24", "20-24", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "60-64", "65-69", "65-69", "70-74", "75-79", "80-84", "85-over"),2))
+age <- c(rep ( c("0-4", "5-9", "10-14", 
+                 "15-19", "15-19", "20-24", 
+                 "20-24", "20-24", "25-29", 
+                 "30-34", "35-39", "40-44", 
+                 "45-49", "50-54", "55-59", 
+                 "60-64", "60-64", "65-69", 
+                 "65-69", "70-74", "75-79", 
+                 "80-84", "85-over"),
+               2))
 
 order <- rep(c(1:3,4,4,5,5,5,6:12, 13,13,14,14,15:18),2)
 
-gender <- c(rep("Male",23), rep("Female",23))
+gender <- c(rep("Male",23), 
+            rep("Female",23))
 
-age_table <- as.data.frame(cbind(variable, gender, order, age), stringsAsFactors =FALSE)
+age_table <- as.data.frame(
+  cbind(variable, gender, order, age), 
+  stringsAsFactors =FALSE)
 ```
 
 
 Again, we call our wrapper function to `tidycensus::get_acs()`, using the same year and geography parameters as initialized for our previous data profile queries.
 
 ```{r message=FALSE}
-age_data <- get_historic_acs(variables = variable, geography = geos_inc, year = year_range, summary_var = "B01001_001")
+age_data <- get_historic_acs(variables = variable, 
+                             geography = geos_inc, 
+                             year = year_range, 
+                             summary_var = "B01001_001")
 ```
 
 
@@ -303,7 +336,8 @@ Next, we perform some data transformation processes: namely,
 age_data_trans <- age_data %>%
   inner_join(age_table) %>%
   group_by(GEOID, NAME, year, age, gender, order) %>%
-  summarize(estimate = sum(estimate), summary_est = mean (summary_est))%>%
+  summarize(estimate = sum(estimate), 
+            summary_est = mean (summary_est))%>%
   ungroup()%>%
   mutate(percent = round(estimate/summary_est*100,1)) %>%
   mutate(percent = ifelse(gender == "Male",percent*-1,percent))%>%
@@ -324,29 +358,47 @@ xlabs = c("0-4" = "0-4", "5-9" = "", "10-14" = "", "15-19" = "", "20-24" = "",
 A bit of a hack for the `geom_step` portion of our plot below:
 ```{r}
 age_data_overlay <- age_data_trans %>%
-  bind_rows(age_data_trans %>% filter(year==2012, age=="85-over") %>% group_by(GEOID) %>% mutate(order = order + 1)) 
+  bind_rows(age_data_trans %>% 
+              filter(year==2012, age=="85-over") %>% 
+              group_by(GEOID) %>% 
+              mutate(order = order + 1)) 
 ```
 
 
 Lastly, we plot age distributions in 2016 as traditional population pyramid and age distributions in 2012 as a `geom_step` overlay:
 ```{r fig.height=10}
 #Plot pyramids
-ggplot(data = age_data_trans %>% filter(year == 2016, grepl (nm_us_w_micros, NAME)), aes(x = reorder(age,order) , y = percent, fill =gender)) +
+ggplot(data = age_data_trans %>% 
+         filter(year == 2016, grepl (nm_us_w_micros, NAME)), 
+       aes(x = reorder(age,order) , y = percent, fill =gender)) +
   geom_col() +
   
 #ADD overlay
-  geom_step(data = age_data_overlay %>% filter(gender == "Male", year == 2012, grepl (nm_us_w_micros, NAME)), aes(x=order -.5), size = .7) + 
-  geom_step(data = age_data_overlay %>% filter(gender == "Female", year == 2012, grepl (nm_us_w_micros, NAME)), aes(x=order -.5), size = .7) + 
+  geom_step(data = age_data_overlay %>% 
+              filter(gender == "Male", 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)),
+            aes(x=order -.5), size = .7) + 
+  
+  geom_step(data = age_data_overlay %>% 
+              filter(gender == "Female", 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)), 
+            aes(x=order -.5), size = .7) + 
   
 #Add some format
-  scale_y_continuous(breaks=c(-5, 0, 5),labels=c("5%", "0%", "5%")) +
+  scale_y_continuous(breaks=c(-5, 0, 5),
+                     labels=c("5%", "0%", "5%")) +
   scale_x_discrete(labels = xlabs) + 
   coord_flip() +
   facet_wrap(~NAME, ncol=3)+
   scale_fill_stata() +
   theme_fivethirtyeight()+
-  theme(legend.position="bottom", legend.title = element_blank(), plot.title = element_text(size=14))+
-  labs(title="Population pyramids",subtitle="NM & USA: comparing 2012 (line) and 2016 (color)")
+  theme(legend.position="bottom", 
+        legend.title = element_blank(), 
+        plot.title = element_text(size=14))+
+  labs(title="Population pyramids",
+       subtitle="NM & USA: comparing 2012 (line) and 2016 (color)")
 ```
 
 

@@ -47,8 +47,8 @@ library(DT)</code></pre>
 <h2>Language data and the census</h2>
 <p>Language data in the US census live in census table <code>B16001</code>, which provides summary counts of speakers by language spoken at home. The <code>load_variables</code> function of the <code>tidycensus</code> package allows for nice and easy interaction with census tables and their constituent variables; using this function, then, we gather the relevant language variables included in table <code>B16001</code>,</p>
 <pre class="r"><code>langs &lt;- load_variables(2015, &quot;acs5&quot;, cache = FALSE) %&gt;%
-  filter(grepl(&quot;B16001&quot;,name) &amp; !
-         grepl(&quot;Margin|Speak English|Total$&quot;,label)) %&gt;%
+  filter(grepl(&quot;B16001&quot;,name) &amp; 
+         !grepl(&quot;Margin|Speak English|Total$&quot;,label)) %&gt;%
   mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),
          label=gsub(&quot;^.*!!&quot;,&quot;&quot;,label))%&gt;%
   select(-concept)</code></pre>
@@ -75,9 +75,16 @@ langData%&gt;%
                subgroup = type))+
       geom_treemap()+
       geom_treemap_subgroup_border() +
-      geom_treemap_subgroup_text(place = &quot;bottom&quot;, grow = F, alpha = 0.5, colour =&quot;gray&quot;,  min.size = 0)+ 
-      geom_treemap_text(colour = &quot;white&quot;, place = &quot;topleft&quot;, reflow = T)+
-      scale_fill_stata()+ theme_fivethirtyeight()+
+      geom_treemap_subgroup_text(place = &quot;bottom&quot;, 
+                                 grow = F, 
+                                 alpha = 0.5, 
+                                 colour =&quot;gray&quot;,  
+                                 min.size = 0)+ 
+      geom_treemap_text(colour = &quot;white&quot;, 
+                        place = &quot;topleft&quot;, 
+                        reflow = T)+
+      scale_fill_stata()+ 
+  theme_fivethirtyeight()+
       theme(legend.position = &quot;none&quot;,
             plot.title = element_text(size=14))+ 
       labs(title = &quot;Queens County, New York&quot;, 
@@ -99,7 +106,8 @@ langData%&gt;%
                      xend=label, 
                      y=0, yend=pop)) + 
   xlab(&quot;&quot;)+
-    geom_point(size=3.5, color=&#39;steelblue&#39;) +
+    geom_point(size=3.5, 
+               color=&#39;steelblue&#39;) +
     labs(title=&quot;Languages spoken at home in the US: ranks 3-20&quot;) +
     coord_flip()+
     theme_bw()</code></pre>
@@ -176,11 +184,17 @@ x &lt;- byCounty %&gt;%
                 fillOpacity = 1,
                 color=&quot;white&quot;,
                 fillColor=~pal(entropy))%&gt;%
-      addPolygons(data=divs,fill=FALSE,color=&quot;gray&quot;,stroke = TRUE,weight=1)%&gt;%
+      addPolygons(data=divs,
+                  fill=FALSE,
+                  color=&quot;gray&quot;,
+                  stroke = TRUE,
+                  weight=1)%&gt;%
       addCircleMarkers(data=st_centroid(divs), 
                        radius=0,
                        label=~NAME,
-                       labelOptions = labelOptions(noHide = T, textOnly = TRUE, offset=c(-25,-10)))%&gt;% 
+                       labelOptions = labelOptions(noHide = T, 
+                                                   textOnly = TRUE,
+                                                   offset=c(-25,-10)))%&gt;% 
       addLegend(&quot;bottomright&quot;, 
               pal = pal, 
               values = ~ entropy,
@@ -202,7 +216,8 @@ byCounty %&gt;%
   left_join((geodatr::us_regions)) %&gt;%
   na.omit()%&gt;%
     ggplot(aes(entropy, Div_Name, fill = Div_Name)) +
-      scale_fill_stata()+ theme_fivethirtyeight()+
+      scale_fill_stata()+ 
+      theme_fivethirtyeight()+
       geom_density_ridges(rel_min_height = 0.01) +
       theme(legend.position = &quot;none&quot;, 
             plot.title = element_text(size=14)) + 
