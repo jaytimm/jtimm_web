@@ -141,9 +141,7 @@ Scrolling through the table, we can see some fairly informative keyphrases, and 
 
 
 
-##Lastly - State of the Union Addresses
-
->So, a bit of a postscript:
+##Post script - State of the Union Addresses
 
 I have wrapped this method into my `corpuslingr` package as `clr_search_keyphrase`. To demonstrate its usage, we extract keyphrases from State of the Union (SOTU) addresses delivered by US Presidents from 1790 to 2016. 
 
