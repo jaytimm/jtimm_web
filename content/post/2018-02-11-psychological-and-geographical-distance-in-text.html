@@ -61,7 +61,10 @@ concreteness%&gt;%
   sample_n(30)%&gt;%
   mutate(rank=rank(concRating))%&gt;%
   ggplot(aes(x=concRating, y=rank)) +
-  geom_text(aes(label=toupper(Word)), size=2.5, check_overlap = TRUE,hjust = &quot;inward&quot;)</code></pre>
+  geom_text(aes(label=toupper(Word)), 
+            size=2.5, 
+            check_overlap = TRUE,
+            hjust = &quot;inward&quot;)</code></pre>
 <p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>The distribution of concreteness ratings for the 40,000 word forms:</p>
 <pre class="r"><code>ggplot(concreteness, aes(concRating)) +
@@ -81,10 +84,15 @@ concreteness%&gt;%
   top_n(100,txtf)%&gt;%
   mutate(lemma=paste0(lemma,&#39;~GPE&#39;))
 
-gpe_contexts &lt;- corpuslingr::clr_search_context(search = gpe_search$lemma, corp = slate, LW=15, RW=15) </code></pre>
+gpe_contexts &lt;- corpuslingr::clr_search_context(
+  search = gpe_search$lemma, 
+  corp = slate, 
+  LW=15, RW=15) </code></pre>
 <p>Results from <code>clr_search_context</code> include both a <code>BOW</code> object and a <code>KWIC</code> object. Here, the former is aggregated by GPE, context, and lemma using the <code>clr_context_bow</code> function; concreteness ratings are then joined (by lemma). Finally, concreteness scores are calculated as the average concreteness rating of all (non-proper/non-entity) words in a given context. Words not included in the normed dataset are assigned a concreteness value of zero.</p>
 <pre class="r"><code>conc_by_eg &lt;- gpe_contexts %&gt;%
-  corpuslingr::clr_context_bow(agg_var = c(&#39;doc_id&#39;,&#39;eg&#39;,&#39;searchLemma&#39;,&#39;lemma&#39;,&#39;tag&#39;),content_only=TRUE)%&gt;%
+  corpuslingr::clr_context_bow(
+    agg_var = c(&#39;doc_id&#39;,&#39;eg&#39;,&#39;searchLemma&#39;,&#39;lemma&#39;,&#39;tag&#39;),
+    content_only=TRUE)%&gt;%
   left_join(concreteness,by = c(&#39;lemma&#39;=&#39;Word&#39;))%&gt;%
   replace_na(list(concRating=0))%&gt;%
   group_by(doc_id,eg,searchLemma) %&gt;%
@@ -100,7 +108,10 @@ gpe_contexts &lt;- corpuslingr::clr_search_context(search = gpe_search$lemma, co
   sample_n(5)%&gt;%
   select(kwic,ave_conc)%&gt;%
   arrange(desc(ave_conc))%&gt;%
-  DT::datatable(class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+  DT::datatable(class = &#39;cell-border stripe&#39;, 
+                rownames = FALSE,
+                width=&quot;100%&quot;, 
+                escape=FALSE)%&gt;%
   DT::formatStyle(c(1:2),fontSize = &#39;85%&#39;)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["drug war , \" says Sam_Vagenas , spokesman for pro-reform forces in Arizona . \" <mark> Arizona <\/mark> was an explicit rejection . \" Is the result a delegitimization of the drug war","hard to imagine that closer consultations with Israel will do so either . \" In <mark> London <\/mark> , the conservative Daily_Telegraph called for a tough line against Saddam . Saying in an","to cities in western Turkey . And since 1995 , Turkish troops have invaded northern <mark> Iraq <\/mark> three times to destroy PKK bases . Iran : The Iranian Kurds are much quieter","Zen and looks back to the tradition of the scholar-aesthete hermit imported centuries earlier from <mark> China <\/mark> . Everything is pared down , black-and-white , elemental . Some of the finest of",": Do these acts of revenge undermine the humanitarian rationale of NATO 's intervention in <mark> Kosovo <\/mark> ? Does the barbarism of a few of Slobodan_Milosevic_'s victims vitiate the justness of the"],[2.74,2.19,2.18,2.1,1.74]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
@@ -112,7 +123,10 @@ gpe_contexts &lt;- corpuslingr::clr_search_context(search = gpe_search$lemma, co
   mutate(ave_conc= round(conc/n,2))</code></pre>
 <p>Results are presented in the table below, and can be sorted using column headers.</p>
 <pre class="r"><code>conc_by_term %&gt;%
-   DT::datatable(class = &#39;cell-border stripe&#39;, rownames = FALSE,width=&quot;100%&quot;, escape=FALSE)%&gt;%
+   DT::datatable(class = &#39;cell-border stripe&#39;, 
+                 rownames = FALSE,
+                 width=&quot;100%&quot;, 
+                 escape=FALSE)%&gt;%
   DT::formatStyle(&#39;ave_conc&#39;,
     background = DT::styleColorBar(conc_by_term$ave_conc, &#39;cornflowerblue&#39;),
     backgroundSize = &#39;80% 70%&#39;,
@@ -154,9 +168,12 @@ Plot
   ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
   #geom_point(size=.75)+
   geom_smooth(method=&quot;loess&quot;, se=T)+
-  geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  geom_text(aes(label=lemma), 
+            size=2.5, 
+            check_overlap = TRUE)+
   theme(legend.position = &quot;none&quot;)+
-  labs(title = &quot;Concreteness scores vs. distance from Washington, D.C.&quot;, subtitle=&quot;By geo-political entity&quot;)</code></pre>
+  labs(title = &quot;Concreteness scores vs. distance from Washington, D.C.&quot;,
+       subtitle=&quot;By geo-political entity&quot;)</code></pre>
 <p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
 <p>
 <h3>

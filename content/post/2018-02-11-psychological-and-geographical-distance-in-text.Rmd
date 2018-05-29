@@ -60,7 +60,10 @@ concreteness%>%
   sample_n(30)%>%
   mutate(rank=rank(concRating))%>%
   ggplot(aes(x=concRating, y=rank)) +
-  geom_text(aes(label=toupper(Word)), size=2.5, check_overlap = TRUE,hjust = "inward")
+  geom_text(aes(label=toupper(Word)), 
+            size=2.5, 
+            check_overlap = TRUE,
+            hjust = "inward")
 ```
 
 
@@ -94,14 +97,19 @@ gpe_search <- corpusdatr::cdr_slate_gpe %>%
   top_n(100,txtf)%>%
   mutate(lemma=paste0(lemma,'~GPE'))
 
-gpe_contexts <- corpuslingr::clr_search_context(search = gpe_search$lemma, corp = slate, LW=15, RW=15) 
+gpe_contexts <- corpuslingr::clr_search_context(
+  search = gpe_search$lemma, 
+  corp = slate, 
+  LW=15, RW=15) 
 ```
 
 Results from `clr_search_context` include both a `BOW` object and a `KWIC` object.  Here, the former is aggregated by GPE, context, and lemma using the `clr_context_bow` function; concreteness ratings are then joined (by lemma). Finally, concreteness scores are calculated as the average concreteness rating of all (non-proper/non-entity) words in a given context.  Words not included in the normed dataset are assigned a concreteness value of zero. 
 
 ```{r}
 conc_by_eg <- gpe_contexts %>%
-  corpuslingr::clr_context_bow(agg_var = c('doc_id','eg','searchLemma','lemma','tag'),content_only=TRUE)%>%
+  corpuslingr::clr_context_bow(
+    agg_var = c('doc_id','eg','searchLemma','lemma','tag'),
+    content_only=TRUE)%>%
   left_join(concreteness,by = c('lemma'='Word'))%>%
   replace_na(list(concRating=0))%>%
   group_by(doc_id,eg,searchLemma) %>%
@@ -126,7 +134,10 @@ corpuslingr::clr_context_kwic(gpe_contexts,include=c('doc_id','eg','lemma')) %>%
   sample_n(5)%>%
   select(kwic,ave_conc)%>%
   arrange(desc(ave_conc))%>%
-  DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)%>%
   DT::formatStyle(c(1:2),fontSize = '85%')
 ```
 
@@ -144,7 +155,10 @@ conc_by_term <-  conc_by_eg%>%
 Results are presented in the table below, and can be sorted using column headers.
 ```{r}
 conc_by_term %>%
-   DT::datatable(class = 'cell-border stripe', rownames = FALSE,width="100%", escape=FALSE)%>%
+   DT::datatable(class = 'cell-border stripe', 
+                 rownames = FALSE,
+                 width="100%", 
+                 escape=FALSE)%>%
   DT::formatStyle('ave_conc',
     background = DT::styleColorBar(conc_by_term$ave_conc, 'cornflowerblue'),
     backgroundSize = '80% 70%',
@@ -189,9 +203,12 @@ gpe_dists %>%
   ggplot(aes(x=miles_from_dc, y=ave_conc)) + 
   #geom_point(size=.75)+
   geom_smooth(method="loess", se=T)+
-  geom_text(aes(label=lemma), size=2.5, check_overlap = TRUE)+
+  geom_text(aes(label=lemma), 
+            size=2.5, 
+            check_overlap = TRUE)+
   theme(legend.position = "none")+
-  labs(title = "Concreteness scores vs. distance from Washington, D.C.", subtitle="By geo-political entity")
+  labs(title = "Concreteness scores vs. distance from Washington, D.C.",
+       subtitle="By geo-political entity")
 ```
 
 
