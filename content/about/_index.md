@@ -8,7 +8,7 @@ nodateline = true
 
 My name is Jason Timm. I am part academic researcher and part data scientist.  I received my PhD in Linguistics from the University of New Mexico in December 2016, where I trained as a corpus linguist and a psycholinguist.
 
-My research interests include computational & corpus-based approaches to (1) the mental lexicon, (2) lexical innovation, and (3) the cognitive and social mechanisms underlying processes of language change.
+My research interests include computational & corpus-based approaches to (1) the mental lexicon, (2) lexical innovation, and (3) the cognitive and social mechanisms underlying processes of language change. [[Dissertation](http://digitalrepository.unm.edu/ling_etds/45/)]
 
 More broadly, I am interested in: 
 
