@@ -16,7 +16,6 @@ banner: banners/topic.jpg
 
 <div id="TOC">
 <ul>
-<li><a href="#topic-models-and-text-structures">Topic models and text structures</a></li>
 <li><a href="#synchronic-application">Synchronic application</a></li>
 <li><a href="#diachronic-application">Diachronic application</a></li>
 <li><a href="#topic-clusters">Topic clusters</a></li>
@@ -33,28 +32,23 @@ library(tidytext)
 library(spacyr)</code></pre>
 <pre class="r"><code>library(corpusdatr)#devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
 library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</code></pre>
-<div id="topic-models-and-text-structures" class="section level2">
-<h2>Topic models and text structures</h2>
 <p>Very quickly, topic modeling is an unsupervised text classification methodology in which</p>
 <ul>
 <li>documents are modeled as composites of topics, and</li>
 <li>topics are modeled as composites of features/words.</li>
 </ul>
 <p>The approach to topic modeling employed here is latent Dirichlet allocation (LDA); to fit our models, we use the <code>LDA</code> function from the <code>topicmodels</code> package <span class="citation">(Hornik and Grün <a href="#ref-hornik2011topicmodels">2011</a>)</span>.</p>
-<p>Like most topic modeling functions, the <code>topicmodels::LDA</code> function requires a <code>DocumentTermMatrix</code> as input. Informally, a DTM is simply a data structure in which each document in a corpus is represented in terms of its constitutent features and their frequencies (where features could be defined in terms of lemma, token, n-gram, keyphrase, etc).</p>
-<p>As a data structure in R, however, a <code>DocumentTermMatrix</code> is awkward and not especially intuitive to work with. Conveniently, the <code>cast_sparse</code> function from the <code>tidytext</code> package allows us to get from informal DTM to formal DTM quite easily.</p>
-</div>
 <div id="synchronic-application" class="section level2">
 <h2>Synchronic application</h2>
 <p>In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as <code>cdr_slate_ann</code> from the <code>corpusdatr</code> package. The corpus has been annotated using the <code>spacyr</code> package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.</p>
-<p>Using the <code>clr_get_freq</code> function from the <code>corpuslingr</code> package, then, we create a DTM of the corpus using the lemma as our feature unit, and limit feature composition to nouns and entities.</p>
+<p>The first step in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the <code>clr_get_freq</code> function from the <code>corpuslingr</code> package. We set the lemma as our feature unit, and limit feature composition to nouns and entities.</p>
 <pre class="r"><code>dtm &lt;- corpusdatr::cdr_slate_ann %&gt;%
   spacyr::entity_consolidate() %&gt;%
   filter(tag %in% c(&quot;NN&quot;, &quot;NNS&quot;) | pos ==&#39;ENTITY&#39;)%&gt;%
   corpuslingr::clr_get_freq(agg_var=c(&#39;doc_id&#39;,&#39;lemma&#39;),
                             toupper=FALSE)%&gt;%
   arrange(doc_id)</code></pre>
-<p>Example portion of text as a DTM:</p>
+<p>Example portion of the corpus-as-BOW:</p>
 <pre><code>##   doc_id   lemma txtf docf
 ## 1      1   noise   14   25
 ## 2      1     lip    9   24
@@ -62,7 +56,8 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 ## 4      1    walk    6   24
 ## 5      1     one    5  874
 ## 6      1 service    5  177</code></pre>
-<p>Per the output of <code>clr_get_freq</code>, we can filter out features with extreme document frequencies (ie, features with limited utility in classificaion). We then convert the DTM to a formal DTM using the <code>cast_sparse</code> function.</p>
+<p>Like most topic modeling functions, <code>topicmodels::LDA</code> requires a document-term matrix (DTM) as input. A DTM is a sparse matrix and, as a data structure, is awkward to work with. Conveniently, the <code>cast_sparse</code> function from the <code>tidytext</code> package allows us to get from corpus-as-BOW to formal DTM quite easily.</p>
+<p>Per the output of <code>clr_get_freq</code>, we filter out features with extreme document frequencies (ie, features with limited utility in classification), and then build the DTM with <code>cast_sparse</code>.</p>
 <pre class="r"><code>static_DTM &lt;- dtm%&gt;%
   filter(docf &lt; 500 &amp; docf &gt; 5)%&gt;%
   tidytext::cast_sparse(row=doc_id,column=lemma,value=txtf)</code></pre>
@@ -117,7 +112,7 @@ Corpus and some descriptives
 </h4>
 </p>
 <p>The corpus is comprised of web-based news articles published during a three-week time period (11-27/17 to 12/20/17). Articles were retrieved using my <code>quicknews</code> package, which leverages Goggle News’ RSS feed to direct search, and annotated using the <code>spacyr</code> package.</p>
-<p>For the sake of avoiding copyright issues, each constituent article in the corpus is reduced to a document-term matrix (DTM). The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.</p>
+<p>For the sake of avoiding copyright issues, each constituent article in the corpus has already been reduced to a BOW. The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.</p>
 <p>Example corpus metadata:</p>
 <pre class="r"><code>head(cdr_gnews_meta)[1:4]</code></pre>
 <pre><code>##   doc_id   pubdates          source
@@ -183,16 +178,16 @@ Topic Model
 ##    &lt;chr&gt;                                                         
 ##  1 tax, bill, Senate, Republicans, House, vote, rate             
 ##  2 Moore, Alabama, woman, voter, election, Republican, Trump     
-##  3 woman, allegation, harassment, story, statement, time, people 
+##  3 woman, allegation, harassment, story, time, statement, people 
 ##  4 film, time, first, one, people, movie, way                    
 ##  5 North Korea, missile, snow, U.S., weapon, North Korean, report
 ##  6 company, deal, Fox, market, price, time, Disney               
 ##  7 EU, deal, government, trade, Yankees, time, Britain           
 ##  8 fire, wildfire, home, man, photo, Ventura, people             
-##  9 CNN, Yemen, people, time, child, police, family               
-## 10 game, team, time, coach, player, NFL, first                   
+##  9 Iran, Yemen, CNN, people, coalition, missile, time            
+## 10 game, team, time, coach, player, first, NFL                   
 ## 11 Trump, president, Russia, Trump_&#39;s, official, Mueller, Flynn  
-## 12 police, Jerusalem, Israel, capital, city, death, people</code></pre>
+## 12 police, Jerusalem, Israel, officer, death, city, people</code></pre>
 <p>So a busy three weeks. The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.</p>
 <p>
 <h4>

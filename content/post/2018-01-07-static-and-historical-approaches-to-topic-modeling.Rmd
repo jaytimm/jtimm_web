@@ -31,8 +31,6 @@ library(corpuslingr)#devtools::install_github("jaytimm/corpuslingr")
 ```
 
 
-##Topic models and text structures
-
 Very quickly, topic modeling is an unsupervised text classification methodology in which 
 
 * documents are modeled as composites of topics, and 
@@ -40,16 +38,12 @@ Very quickly, topic modeling is an unsupervised text classification methodology 
 
 The approach to topic modeling employed here is latent Dirichlet allocation (LDA); to fit our models, we use the `LDA` function from the `topicmodels` package [@hornik2011topicmodels]. 
 
-Like most topic modeling functions, the `topicmodels::LDA` function requires a `DocumentTermMatrix` as input. Informally, a DTM is simply a data structure in which each document in a corpus is represented in terms of its constitutent features and their frequencies (where features could be defined in terms of lemma, token, n-gram, keyphrase, etc).  
-
-As a data structure in R, however, a `DocumentTermMatrix` is awkward and not especially intuitive to work with.  Conveniently, the `cast_sparse` function from the `tidytext` package allows us to get from informal DTM to formal DTM quite easily. 
-
 
 ##Synchronic application
 
 In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as `cdr_slate_ann` from the `corpusdatr` package.  The corpus has been annotated using the `spacyr` package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.
 
-Using the `clr_get_freq` function from the `corpuslingr` package, then, we create a DTM of the corpus using the lemma as our feature unit, and limit feature composition to nouns and entities.
+The first step in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the `clr_get_freq` function from the `corpuslingr` package.  We set the lemma as our feature unit, and limit feature composition to nouns and entities.
 
 ```{r}
 dtm <- corpusdatr::cdr_slate_ann %>%
@@ -61,12 +55,15 @@ dtm <- corpusdatr::cdr_slate_ann %>%
 ```
 
 
-Example portion of text as a DTM:
+Example portion of the corpus-as-BOW:
 ```{r echo=FALSE}
 head(dtm)
 ```
 
-Per the output of `clr_get_freq`, we can filter out features with extreme document frequencies (ie, features with limited utility in classificaion). We then convert the DTM to a formal DTM using the `cast_sparse` function.
+
+Like most topic modeling functions, `topicmodels::LDA` requires a document-term matrix (DTM) as input.  A DTM is a sparse matrix and, as a data structure, is awkward to work with. Conveniently, the `cast_sparse` function from the `tidytext` package allows us to get from corpus-as-BOW to formal DTM quite easily. 
+
+Per the output of `clr_get_freq`, we filter out features with extreme document frequencies (ie, features with limited utility in classification), and then build the DTM with `cast_sparse`. 
 
 ```{r}
 static_DTM <- dtm%>%
@@ -130,7 +127,7 @@ Next we explore topics in a diachronic corpus, and demonstrate a straightforward
 
 The corpus is comprised of web-based news articles published during a three-week time period (11-27/17 to 12/20/17).  Articles were retrieved using my `quicknews` package, which leverages Goggle News' RSS feed to direct search, and annotated using the `spacyr` package.  
 
-For the sake of avoiding copyright issues, each constituent article in the corpus is reduced to a document-term matrix (DTM).  The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.
+For the sake of avoiding copyright issues, each constituent article in the corpus has already been reduced to a BOW.  The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.
 
 Example corpus metadata:
 ```{r}
