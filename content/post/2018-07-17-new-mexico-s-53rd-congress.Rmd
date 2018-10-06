@@ -9,7 +9,7 @@ output:
     toc: true
     toc_depth: 2
 categories: []
-tags: ['rstats','new mexico', 'civic-tech']
+tags: ['rstats','new mexico', 'open-government']
 banner: banners/53congress.png
 ---
 
@@ -28,7 +28,6 @@ library(DT)
 library(tidycensus); options(tigris_use_cache = TRUE, tigris_class = "sf")
 library(tigris)
 library(sf)
-library(corpuslingr)
 library(knitr)
 library(ggthemes)
 library(data.table)
