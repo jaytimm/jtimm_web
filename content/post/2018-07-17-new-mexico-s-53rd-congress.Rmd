@@ -15,9 +15,9 @@ banner: banners/53congress.png
 
 In this post, we introduce a new R data package, `nmlegisdatr`, that makes available roll call data for New Mexico's 53rd (2017-18) State Legislature (NMSL53).  While these data are publicly available via [nmlegis.gov](https://www.nmlegis.gov), they are wrapped up in thousands of PDFs and, hence, largely inaccessible. 
 
-I have scraped roll calls and legislation details from these PDFs, and tidied things up some as a collection of data frames^[Roll call data for older legislatures are also available online. However, roll call tables in these PDFs are structured poorly/idiosyncratically, making the scraping process challenging. If the state makes historical roll call data available in a nice, shiny spreadsheet, joke's on me.]; a full code-through of how the package was built is available [here](https://github.com/jaytimm/nmlegisdatr/blob/master/data-raw/scrape_nmsl_data.md).  
+I have scraped roll calls and legislation details from these PDFs, and tidied things up some as a collection of data frames^[Roll call data for older legislatures are also available online. However, roll call tables in these PDFs are structured poorly/idiosyncratically, making the scraping process challenging. If the state makes historical roll call data available in a nice, shiny spreadsheet, joke's on me.]; a full code-through of how the package was built is available [here](https://github.com/jaytimm/nmlegisdatr/blob/master/data-raw/scrape_nmsl_data.md).  The package can be downloaded [here](https://github.com/jaytimm/nmlegisdatr).
 
-In this post, then, we demonstrate the contents/structure of the package, as well as its utility as an analytical tool. Ultimately, the goal is to make voting histories available (in an actionable format) for interested folks in New Mexico, as general elections for all 70 House seats are in November. This is the first in a series of posts investigating NMSL53.   
+In this post, then, we demonstrate the contents/structure of the package, as well as its utility as an analytical tool. Ultimately, the goal is to make voting histories available (in an actionable format) for interested folks in New Mexico, as **general elections for all 70 House seats are in November**. This is the first in a series of posts investigating NMSL53.   
 
 
 ```{r message=FALSE, warning=FALSE}
