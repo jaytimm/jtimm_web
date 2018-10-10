@@ -35,6 +35,7 @@ library(spacyr)
 library(corpuslingr) #devtools::install_github("jaytimm/corpuslingr")
 library(corpusdatr) #devtools::install_github("jaytimm/corpusdatr")
 library(lexvarsdatr) #devtools::install_github("jaytimm/lexvarsdatr")
+library(knitr)
 ```
 
 
@@ -137,11 +138,9 @@ corpuslingr::clr_context_kwic(gpe_contexts,include=c('doc_id','eg','lemma')) %>%
   DT::datatable(class = 'cell-border stripe', 
                 rownames = FALSE,
                 width="100%", 
-                escape=FALSE)%>%
-  DT::formatStyle(c(1:2),fontSize = '85%')
+                escape=FALSE)
 ```
 
-<br>
 
 Lastly, we aggregate contextual concreteness scores to obtain a single concretness score for each GPE.  
 
@@ -163,8 +162,7 @@ conc_by_term %>%
     background = DT::styleColorBar(conc_by_term$ave_conc, 'cornflowerblue'),
     backgroundSize = '80% 70%',
     backgroundRepeat = 'no-repeat',
-    backgroundPosition = 'right') %>%
-  DT::formatStyle(c(1:4),fontSize = '85%')
+    backgroundPosition = 'right') 
 ```
 
 
@@ -183,12 +181,13 @@ NOTE: Lat/Long coordinates represent the center (or centroid) of a given GPE (eg
 
 ```{r, message=FALSE, warning=FALSE}
 gpe_dists <- corpusdatr::cdr_slate_gpe %>% 
-  mutate(miles_from_dc = round(as.numeric(st_distance(geometry,dc))*0.000621371,0)) #Convert to miles.
+  mutate(miles_from_dc = round(as.numeric(st_distance(geometry,dc))*0.000621371,0)) 
+#Convert to miles.
 ```
 
 Distances from DC:
 ```{r echo=FALSE}
-head(gpe_dists) %>% data.frame() %>% select(lemma,miles_from_dc,geometry)
+head(gpe_dists) %>% data.frame() %>% select(lemma,miles_from_dc,geometry) %>% kable()
 ```
 
 

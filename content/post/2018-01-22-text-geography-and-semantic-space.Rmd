@@ -23,6 +23,7 @@ library(tidyverse)
 library(ggthemes)
 library(corpuslingr) #devtools::install_github("jaytimm/corpuslingr")
 library(corpusdatr) #devtools::install_github("jaytimm/corpusdatr")
+library(knitr)
 ```
 
 
@@ -43,7 +44,7 @@ slate <- corpusdatr::cdr_slate_ann %>%
 
 Next, we obtain text and document frequencies for GPEs included in the corpus, and filter to only those occurring in 1% or greater of articles comprising the corpus.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 slate_gpe <- slate %>%
   bind_rows()%>%
   filter(tag == 'NNGPE')%>%
@@ -52,8 +53,9 @@ slate_gpe <- slate %>%
 ```
 
 The most frequently referenced GPEs in the Slate corpus (not including the US):
-```{r echo=FALSE}
-head(slate_gpe)
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+head(slate_gpe)%>%
+  kable()
 ```
 
 <p><h3>Geocoding</h3></p>
@@ -100,7 +102,6 @@ x <- slate_gpe_geo %>%
 frameWidget(x)
 ```
 
-
 <p><h3>Spatial joins</h3></p>
 
 The `spData` package conveniently makes available a variety of shapefiles/geopolitical polygons as `sf` objects, including a world country map.  Having geocoded the GPEs, we can add features from this country map (eg, country, subregion, continent) to our GPE points via a spatial join. We use the `st_join` function from the `sf` package to accomplish this task.  
@@ -113,7 +114,7 @@ slate_gpe_details <- sf::st_join(slate_gpe_geo, spData::world)
 Per the spatial join, we now have information regarding country, continent, and subregion for each GPE from the Slate Magazine corpus.
 
 ```{r echo=FALSE}
-slate_gpe_details[4:9,c(1,5:6,8)] %>% data.frame() %>% select(-geometry)
+slate_gpe_details[4:9,c(1,5:6,8)] %>% data.frame() %>% select(-geometry) %>% kable()
 ```
 
 We can use this information, for example, to aggregate GPE text and document frequencies to the subregion level:
@@ -138,9 +139,7 @@ slate_gpe_details %>%
 
 ##Corpus search and context
 
-So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location. 
-
-> What does a map derived from patterns of lexical co-occurrence in text look like? 
+So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location. *What does a map derived from patterns of lexical co-occurrence in text look like?* 
 
 The first step in accomplishing this task is to search the Slate Magazine corpus for GPEs in context. For each occurrence of each GPE in the corpus, then, token and surrounding context are extracted using the `corpuslingr::clr_search_context` function. Here, context is defined as the 15x15 window of words surrounding a given token of a GPE. We limit our search to the 100 most frequent GPEs.
 
@@ -173,8 +172,7 @@ gpe_contexts %>%
   DT::datatable(class = 'cell-border stripe', 
                 rownames = FALSE,
                 width="100%", 
-                escape=FALSE)%>%
-  DT::formatStyle(c(1:2),fontSize = '90%')
+                escape=FALSE)
 ```
 
 
@@ -195,7 +193,7 @@ term_feat_mat <- gpe_contexts %>%
 
 Some of the matrix:
 ```{r echo=FALSE}
-term_feat_mat[5263:5268,1:4]
+term_feat_mat[5263:5268,1:4] %>% kable()
 ```
 
 <br>

@@ -41,7 +41,8 @@ banner: banners/geotext.png
 <pre class="r"><code>library(tidyverse)
 library(ggthemes)
 library(corpuslingr) #devtools::install_github(&quot;jaytimm/corpuslingr&quot;)
-library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)</code></pre>
+library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
+library(knitr)</code></pre>
 <div id="from-text-to-map" class="section level2">
 <h2>From text to map</h2>
 <p>
@@ -60,13 +61,48 @@ Slate corpus &amp; geopolitical entities
   filter(tag == &#39;NNGPE&#39;)%&gt;%
   corpuslingr::clr_get_freq(agg_var=&#39;lemma&#39;,toupper=TRUE) %&gt;%
   filter(txtf&gt;9 &amp; !grepl(&#39;US|USA|AMERICA|UNITED_STATES|THE_UNITED_STATES|U.S.|U.S.A&#39;,lemma))</code></pre>
-<pre><code>## Warning: package &#39;bindrcpp&#39; was built under R version 3.4.4</code></pre>
-The most frequently referenced GPEs in the Slate corpus (not including the US):
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["lemma"],"name":[1],"type":["chr"],"align":["left"]},{"label":["txtf"],"name":[2],"type":["int"],"align":["right"]},{"label":["docf"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"WASHINGTON","2":"398","3":"230","_rn_":"1"},{"1":"KOSOVO","2":"298","3":"78","_rn_":"2"},{"1":"CHINA","2":"262","3":"94","_rn_":"3"},{"1":"NEW_YORK","2":"222","3":"143","_rn_":"4"},{"1":"ISRAEL","2":"204","3":"78","_rn_":"5"},{"1":"BRITAIN","2":"161","3":"85","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
+<p>The most frequently referenced GPEs in the Slate corpus (not including the US):</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">lemma</th>
+<th align="right">txtf</th>
+<th align="right">docf</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">WASHINGTON</td>
+<td align="right">398</td>
+<td align="right">230</td>
+</tr>
+<tr class="even">
+<td align="left">KOSOVO</td>
+<td align="right">298</td>
+<td align="right">78</td>
+</tr>
+<tr class="odd">
+<td align="left">CHINA</td>
+<td align="right">262</td>
+<td align="right">94</td>
+</tr>
+<tr class="even">
+<td align="left">NEW_YORK</td>
+<td align="right">222</td>
+<td align="right">143</td>
+</tr>
+<tr class="odd">
+<td align="left">ISRAEL</td>
+<td align="right">204</td>
+<td align="right">78</td>
+</tr>
+<tr class="even">
+<td align="left">BRITAIN</td>
+<td align="right">161</td>
+<td align="right">85</td>
+</tr>
+</tbody>
+</table>
 <p>
 <h3>
 Geocoding
@@ -111,11 +147,61 @@ Spatial joins
 <pre class="r"><code>library(spData)
 slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
 <p>Per the spatial join, we now have information regarding country, continent, and subregion for each GPE from the Slate Magazine corpus.</p>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["lemma"],"name":[1],"type":["chr"],"align":["left"]},{"label":["name_long"],"name":[2],"type":["chr"],"align":["left"]},{"label":["continent"],"name":[3],"type":["chr"],"align":["left"]},{"label":["subregion"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"ALBANIA","2":"Albania","3":"Europe","4":"Southern Europe","_rn_":"4"},{"1":"ARGENTINA","2":"Argentina","3":"South America","4":"South America","_rn_":"5"},{"1":"ARIZONA","2":"United States","3":"North America","4":"Northern America","_rn_":"6"},{"1":"ARKANSAS","2":"United States","3":"North America","4":"Northern America","_rn_":"7"},{"1":"ARLINGTON","2":"United States","3":"North America","4":"Northern America","_rn_":"8"},{"1":"ATHENS","2":"Greece","3":"Europe","4":"Southern Europe","_rn_":"9"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">lemma</th>
+<th align="left">name_long</th>
+<th align="left">continent</th>
+<th align="left">subregion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>4</td>
+<td align="left">ALBANIA</td>
+<td align="left">Albania</td>
+<td align="left">Europe</td>
+<td align="left">Southern Europe</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td align="left">ARGENTINA</td>
+<td align="left">Argentina</td>
+<td align="left">South America</td>
+<td align="left">South America</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td align="left">ARIZONA</td>
+<td align="left">United States</td>
+<td align="left">North America</td>
+<td align="left">Northern America</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td align="left">ARKANSAS</td>
+<td align="left">United States</td>
+<td align="left">North America</td>
+<td align="left">Northern America</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td align="left">ARLINGTON</td>
+<td align="left">United States</td>
+<td align="left">North America</td>
+<td align="left">Northern America</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td align="left">ATHENS</td>
+<td align="left">Greece</td>
+<td align="left">Europe</td>
+<td align="left">Southern Europe</td>
+</tr>
+</tbody>
+</table>
 <p>We can use this information, for example, to aggregate GPE text and document frequencies to the subregion level:</p>
 <pre class="r"><code>slate_gpe_details %&gt;%
   data.frame()%&gt;%
@@ -133,10 +219,7 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
 </div>
 <div id="corpus-search-and-context" class="section level2">
 <h2>Corpus search and context</h2>
-<p>So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location.</p>
-<blockquote>
-<p>What does a map derived from patterns of lexical co-occurrence in text look like?</p>
-</blockquote>
+<p>So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location. <em>What does a map derived from patterns of lexical co-occurrence in text look like?</em></p>
 <p>The first step in accomplishing this task is to search the Slate Magazine corpus for GPEs in context. For each occurrence of each GPE in the corpus, then, token and surrounding context are extracted using the <code>corpuslingr::clr_search_context</code> function. Here, context is defined as the 15x15 window of words surrounding a given token of a GPE. We limit our search to the 100 most frequent GPEs.</p>
 <pre class="r"><code>gpe_search &lt;- data.frame(slate_gpe_geo) %&gt;%
   arrange(desc(txtf))%&gt;%
@@ -154,10 +237,9 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
   DT::datatable(class = &#39;cell-border stripe&#39;, 
                 rownames = FALSE,
                 width=&quot;100%&quot;, 
-                escape=FALSE)%&gt;%
-  DT::formatStyle(c(1:2),fontSize = &#39;90%&#39;)</code></pre>
+                escape=FALSE)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["102","302","506","151","615"],["proved himself in another arena . He does n't need the power and prestige of <mark> Washington <\/mark> and feels no compulsion to claw his way up . This is rare among D.C.","as the Turkish government uses the latest techniques to protect monuments such as the_Hagia_Sophia in <mark> Istanbul <\/mark> from seismic turbulence , so should it \" apply the same rigorous standards to its","For true instinct , you must turn to Mike_Figgis , an English director ( Leaving <mark> Las_Vegas <\/mark> , 1995 , One Night Stand , 1997 ) who 's defiantly not a player","able to revisit his beloved Venice and spend a_final_summer in his country house in upstate <mark> New_York <\/mark> . Even though we know the end , the story is filled with suspense ,","China is the second largest trade partner of the_United_States , whereas the US is only <mark> China <\/mark> 's fourth largest partner . \" Excerpts from Clinton 's entertaining radio talk show include"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'90%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'90%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["689","321","418","398","401"],["the U.S. return the crew of a fishing boat it says was hijacked out of <mark> Cuba <\/mark> Monday , and is now in Coast_Guard custody . About Face ! On Nov._12 .","and that \" ultimately there will be a calling to account for the rape of <mark> East_Timor <\/mark> . \" In New_Zealand , where world leaders have been discussing the crisis at the_Asia-Pacific_Economic_Cooperation","the shipbuilders , the Citadel cadets , the \" gangstas , \" the_Spur_Posse , the <mark> Vietnam <\/mark> vets , the_Promise_Keepers , the football fans , the militiamen , the porno film stars","'s also a tad bloodless , but you ca n't have everything . Set in <mark> England <\/mark> before World_War_I , the play ( based on an actual incident ) tells the story","are not going to expose their own cities to needless risk . \" Back to <mark> Kosovo <\/mark> : The conservative National_Post_of_Canada ran a tough editorial Wednesday saying that acceptance of Milosevic 's"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="lsa-mds-and-semantic-space" class="section level2">
 <h2>LSA, MDS, and semantic space</h2>
@@ -168,12 +250,55 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
     content_only=TRUE)%&gt;%
   spread (searchLemma,cofreq)%&gt;%
   replace(is.na(.), 0)</code></pre>
-Some of the matrix:
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["lemma"],"name":[1],"type":["chr"],"align":["left"]},{"label":["AFGHANISTAN"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["ALABAMA"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["ALASKA"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"GOT_MAIL","2":"0","3":"0","4":"0"},{"1":"GOURMET","2":"0","3":"0","4":"0"},{"1":"GOV.","2":"0","3":"0","4":"0"},{"1":"GOVERN","2":"0","3":"0","4":"0"},{"1":"GOVERNANCE","2":"0","3":"0","4":"0"},{"1":"GOVERNMENT","2":"2","3":"1","4":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
+<p>Some of the matrix:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">lemma</th>
+<th align="right">AFGHANISTAN</th>
+<th align="right">ALABAMA</th>
+<th align="right">ALASKA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">GOT_MAIL</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">GOURMET</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">GOV.</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">GOVERN</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">GOVERNANCE</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">GOVERNMENT</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">2</td>
+</tr>
+</tbody>
+</table>
 <p><br> Next, we create a cosine-based similarity matrix using the <code>LSA</code> package:</p>
 <pre class="r"><code>library(lsa)
 sim_mat &lt;- term_feat_mat %&gt;%
