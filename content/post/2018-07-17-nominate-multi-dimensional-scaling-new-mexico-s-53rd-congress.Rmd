@@ -4,7 +4,6 @@ description: 'A demonstration of the NOMINATE/VoteView procedure using roll call
 author: ''
 date: '2018-10-10'
 slug: nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress
-draft: true
 output:
   blogdown::html_page:
     toc: true
