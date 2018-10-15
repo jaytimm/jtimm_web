@@ -4,7 +4,7 @@ date = "2017-05-19T21:49:20+02:00"
 menu = "main" 
 disable_comments = true 
 nodateline = true
-banner = 'banners/services.png'
+banner = 'banners/about.png'
 +++
 
 My name is Jason Timm. I am part academic researcher and part data scientist.  I received my PhD in Linguistics from the University of New Mexico in December 2016, where I trained as a corpus linguist and a psycholinguist.
