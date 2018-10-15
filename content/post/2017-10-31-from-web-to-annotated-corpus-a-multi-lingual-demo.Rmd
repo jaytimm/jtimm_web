@@ -10,7 +10,6 @@ output:
     toc: yes
 bibliography: biblio.bib
 link-citations: yes
-banner: banners/build_corpus.jpg
 ---
 
 This post demonstrates some methods for building multi-lingual corpora from web-based news content using my R package `quicknews`, as well as methods for annotating multi-lingual corpora using the `cleanNLP` [@arnold2017tidy] and`udpipe` [@Wijffels2018udpipe] packages.  In the process, this post lays a bit of a foundation for analyzing text data, and serves as a reference for some basic corpus concepts and common text structures.  
