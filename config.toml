@@ -97,7 +97,7 @@ theme = "hugo-icarus-theme"
     facebook        = ""
     facebook_admin  = ""
     twitter_domain  = ""
-    twitter         = ""
+    twitter         = "JasonTimm13"
 
 # Enable and disable widgets for the right sidebar
 [params.widgets]
