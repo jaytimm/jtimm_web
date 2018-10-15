@@ -1,8 +1,7 @@
 +++
-title = "Resources" 
-date = "2017-05-19T21:49:20+02:00" 
-menu = "main" 
-disable_comments = true 
+date = "2015-08-19T20:29:37-07:00"
+draft = false
+title = "Resources"
 nodateline = true
 banner = 'banners/resources.png'
 +++
