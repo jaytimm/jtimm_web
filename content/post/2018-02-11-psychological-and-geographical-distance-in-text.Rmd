@@ -13,15 +13,11 @@ tags: ['rstats', 'geo', 'corpus ling']
 banner: banners/distance.png
 ---
 
-This post considers a super-clever study presented in @snefjella2015concreteness, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets.
-
-General idea/hypothesis:
+This post considers a super-clever study presented in @snefjella2015concreteness, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets.  General idea/hypothesis:
 
 >The more we perceive an event/entity as (geographically) proximal to self, the more concrete our language when referencing said event/entity; the more we perceive an event/entity as (geographically) distant from self, the more abstract our language when referencing said event/entity. In other words, perceived distance is reflected in the language that we use, and in a graded way.
 
-In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter's location and the referenced location increases.
-
-In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the `corpusdatr` package. 
+In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter's location and the referenced location increases. In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the `corpusdatr` package. 
 
 Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between Washington, DC and referenced location in the corpus; instead of the abstractness of language in a tweet, we consider the abstractness of language in the context surrounding the referenced location in the corpus.  Imperfect, but sufficient to demonstrate some methodologies.
 
@@ -222,16 +218,12 @@ gpe_dists %>%
 
 Collectively, the first two observations could reflect the influence of perceived distance on language use, at least from a "here in the (concrete) USA" versus "over there in (abstract) Europe" perspective.  This particular interpretation would recast the epicenter of Slate magazine narrative as the US instead of Washington DC, which probably makes sense.  
 
-The up-swing in the use of concrete language in reference to ~Asian GPEs runs counter to theory, but perhaps could be explained by the content of the conversation surrounding some of these GPEs, eg, Indonesian occupation of East Timor (ca. late 20th century), in which the (presumably more concrete) language of conflict trumps the effects of perceived distance.   
-
-Or any number of other interpretations.
+The up-swing in the use of concrete language in reference to ~Asian GPEs runs counter to theory, but perhaps could be explained by the content of the conversation surrounding some of these GPEs, eg, Indonesian occupation of East Timor (ca. late 20th century), in which the (presumably more concrete) language of conflict trumps the effects of perceived distance.  Or any number of other interpretations.
 
 
 ##FIN
 
-Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small.
-
-From this perspective, hopefully we have demonstrated the utility of @snefjella2015concreteness's cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.
+Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small.  From this perspective, hopefully we have demonstrated the utility of @snefjella2015concreteness's cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.
 
 
 
