@@ -1,9 +1,9 @@
 ---
 title: 'Twitter, political ideology & the 115th US Senate'
-description: 'A demonstration of the NOMINATE/VoteView procedure using roll call data from NMSL53.'
+description: 'Estimating political ideologies in the US Senate using shared news sources on Twitter.'
 author: ''
-date: '2018-11-02'
-slug: new-mexican-lawmakers-in-the-us-congress
+date: '2018-11-03'
+slug: 'twitter-political-ideology-and-the-115-US-Senate'
 output:
   blogdown::html_page:
     toc: true
@@ -146,16 +146,6 @@ With Twitter handles in tow, we can now gather some tweets.  There are different
 
 ```{r message=FALSE, warning=FALSE}
 library(rtweet)
-```
-
-
-```{r message=FALSE, warning=FALSE, include=FALSE}
-rtweet::create_token(
-  app = "jtimm_twitter",
-  consumer_key = "CpTkgrdkRWQTrYSR4EEW4YSo6",
-  consumer_secret = "39F4DCY2WtMMqo1lDQMXXCEWrgqvXgRZYE99m4OW8oUuuevzD7",
-  access_token = "965072442954690560-H04g14OTNfZMzC7nUvvpvSGB1Cr2ERm",
-  access_secret = "Gn2hNKmcLIaXSZxKrh5AfeyttbrXKEeAAnrw8koGHRP3p")
 ```
 
 
