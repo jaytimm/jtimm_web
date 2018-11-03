@@ -1,5 +1,5 @@
 ---
-title: new mexico's 53rd state legislature
+title: New Mexico's 53rd State Legislature
 description: 'A demo of the data package <nmlegisdatr>, which makes available data about New Mexico state legislative activities, including bill summaries, roll calls, & legislator details.'
 author: ''
 date: '2018-10-01'

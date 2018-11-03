@@ -1,5 +1,5 @@
 ---
-title: NOMINATE, political ideology & new mexico's 53rd state legislature
+title: Political ideology & New Mexico's 53rd State Legislature
 description: 'A demonstration of the NOMINATE/VoteView procedure using roll call data from NMSL53.'
 author: ''
 date: '2018-10-10'
