@@ -31,7 +31,7 @@ library(knitr)
 
 ##Building a historical, genre-based corpus
 
-For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus was built using my `quicknews` package, and assembled over the course of roughly two weeks.
+For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus was built using my `quicknews` package, and assembled over the course of roughly two weeks (10/29/18 ~ 11/15/18).
 
 Metadata were collected and articles scraped/annotated/aggregated to BOWs three times a day using the Windows task scheduler app.  The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
 
@@ -57,7 +57,7 @@ totals <- qnews_bow %>%
 ```
 
 
-The table below summarizes the composition of our corpus in terms of genre.  So, in a little over two weeks, we have assembled a ~3K text corpus comprised of ~2 million words.  And fairly balanced as well from a genre perspective.  
+The table below summarizes the composition of our corpus in terms of genre.  So, in a little over two weeks, we have assembled a ~2.8K text corpus comprised of ~1.8 million words.  And fairly balanced as well from a genre perspective.  
 
 ```{r}
 qnews_bow %>%
@@ -123,7 +123,7 @@ qnews_tif %>%
 
 
 
-##Building a Naive Bayes classifier
+##Building a Naive Bayes classifier 
 
 The table below illustrates the structure of our genre-based corpus (post some removal of stop words & other less informative lemma types).  The corpus, then, represents each constituent article as a bag-of-words (BOW). 
 

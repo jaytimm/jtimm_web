@@ -43,7 +43,7 @@ library(knitr)
 #library(quicknews)#devtools::install_github(&quot;jaytimm/quicknews&quot;)</code></pre>
 <div id="building-a-historical-genre-based-corpus" class="section level2">
 <h2>Building a historical, genre-based corpus</h2>
-<p>For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News’ RSS feed. The corpus was built using my <code>quicknews</code> package, and assembled over the course of roughly two weeks.</p>
+<p>For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News’ RSS feed. The corpus was built using my <code>quicknews</code> package, and assembled over the course of roughly two weeks (10/29/18 ~ 11/15/18).</p>
 <p>Metadata were collected and articles scraped/annotated/aggregated to BOWs three times a day using the Windows task scheduler app. The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available <a href="https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R">here</a>.</p>
 <p><strong>Metadata include</strong> the genre (as defined by Google News) &amp; domain name of article source; they also include the full/raw text of each article. The script above updates corpus (as a collection of BOWs) and metadata (as TIF) each time it is called by the task scheduler.</p>
 <pre class="r"><code>setwd(&quot;C:\\Users\\jason\\Google Drive\\GitHub\\packages\\quicknews\\data-raw&quot;)
@@ -51,7 +51,7 @@ qnews_tif &lt;- readRDS(&#39;qnews_eg_tif.rds&#39;)
 qnews_bow &lt;- readRDS(&#39;qnews_eg_corpus.rds&#39;)%&gt;%
   mutate(doc_id = as.integer(doc_id)) %&gt;%
   left_join(qnews_tif %&gt;% select(doc_id, search))</code></pre>
-<p>The table below summarizes the composition of our corpus in terms of genre. So, in a little over two weeks, we have assembled a ~3K text corpus comprised of ~2 million words. And fairly balanced as well from a genre perspective.</p>
+<p>The table below summarizes the composition of our corpus in terms of genre. So, in a little over two weeks, we have assembled a ~2.8K text corpus comprised of ~1.8 million words. And fairly balanced as well from a genre perspective.</p>
 <pre class="r"><code>qnews_bow %&gt;%
   filter(pos != &#39;PUNCT&#39;) %&gt;%
   group_by(search) %&gt;%
