@@ -1,6 +1,6 @@
 ---
 title: genre, text classification & naive bayes
-description: 'A demonstration of genre-based Naive Bayes classification using R.'
+description: 'Predicting text genre via a Naive Bayes classifier.'
 author: ''
 date: '2018-11-11'
 slug: text-classification-naive-bayes
@@ -34,7 +34,7 @@ banner: banners/naivebayes.png
 </ul>
 </div>
 
-<p>In this short post, we outline a Naive Bayes (NB) approach to genre-based text classification. First, we introduce &amp; describe a corpus derived from Google News’ RSS feed, which includes source and genre information. We then train, test &amp; evaluate the efficacy of an NB classifier applied to news genres, with some fairly nice results. Here, we focus on the nuts/bolts of an R-based workflow, and leave discussion of theory &amp; Bayesian assumptions for another day.</p>
+<p>In this short post, we outline a Naive Bayes (NB) approach to genre-based text classification. First, we introduce &amp; describe a corpus derived from Google News’ RSS feed, which includes source and genre information. We then train, test &amp; evaluate the efficacy of an NB classifier applied to online news genres, with some fairly nice results. Here, we focus on the nuts/bolts of an R-based workflow, and leave discussion of theory &amp; Bayesian assumptions for another day.</p>
 <pre class="r"><code>library(e1071)
 library(caret)
 library(corpuslingr)
