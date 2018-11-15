@@ -2,7 +2,7 @@
 title: genre, text classification & naive bayes
 description: 'Predicting text genre via a Naive Bayes classifier.'
 author: ''
-date: '2018-11-11'
+date: '2018-11-15'
 slug: text-classification-naive-bayes
 output:
   blogdown::html_page:
