@@ -1,6 +1,6 @@
 ---
 title: 'Twitter, political ideology & the 115th US Senate'
-description: 'Estimating political ideologies in the US Senate using shared news sources on Twitter.'
+description: 'Estimating political ideologies of US Senators via the news media they share on Twitter.'
 author: ''
 date: '2018-11-03'
 slug: 'twitter-political-ideology-and-the-115-US-Senate'
@@ -121,7 +121,7 @@ The table below summarizes some of the details/info from this data set for a sam
 set.seed(199)
 senate_dets %>% select(last_name, twitter_handle, date_of_birth, class, religion) %>%
   sample_n(5) %>%
-    DT::datatable(options = list(pageLength = 5,dom = 't'),
+    DT::datatable(options = list(pageLength = 5,dom = 't', scrollX = TRUE),
                   rownames = FALSE, width="100%", escape=FALSE) 
 ```
 
@@ -169,7 +169,7 @@ set.seed(999)
 senate_tweets %>%
   select(created_at, screen_name, text) %>% #followers_count, 
   sample_n(5) %>%
-    DT::datatable(options = list(pageLength = 5, dom = 't'), 
+    DT::datatable(options = list(pageLength = 5, dom = 't', scrollX = TRUE), 
                   rownames = FALSE, width="100%", escape=FALSE) 
 ```
 
@@ -219,7 +219,7 @@ A portion of our summary table is presented below:
 senate_summary %>% 
   select(twitter_handle, party, followers, nominate_dim1) %>% 
   head() %>%
-  DT::datatable(options = list(pageLength = 6,dom = 't'),
+  DT::datatable(options = list(pageLength = 6,dom = 't', scrollX = TRUE),
                   rownames = FALSE, width="100%", escape=FALSE) 
 ```
 
@@ -361,7 +361,7 @@ y <- c('nytimes.com', 'thehill.com',
        'bloomberg.com', 'politico.com')
 
 sen_url_mat[sen_url_mat$urls %in% y, x]%>%
-    DT::datatable(options = list(pageLength = 7, dom = 't'), 
+    DT::datatable(options = list(pageLength = 7, dom = 't', scrollX = TRUE), 
                   rownames = FALSE, width="100%", escape=FALSE) 
 ```
 
