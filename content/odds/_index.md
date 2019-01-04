@@ -5,5 +5,8 @@ disable_comments = true
 nodateline = true
 +++
 
+##Presidential transitions
 
-<iframe width="100%" height="700"  src="https://www.jtimm.net/html/pres_groups_sankey/pres_sank.html"> </iframe>
+<iframe width="100%" height="450"  src="https://www.jtimm.net/html/pres_groups_sankey/pres_sank.html"> </iframe>
+
+##Other things
