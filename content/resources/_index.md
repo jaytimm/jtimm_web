@@ -6,7 +6,7 @@ nodateline = true
 banner = 'banners/resources.png'
 +++
 
-This page is a bit of a repository for links to odds and ends, including R-packages, Shiny apps, code-snippets, and other on-going projects.
+This page is a bit of a repository for links to odds and ends, including Shiny apps, code-snippets, and other on-going projects.
 
 ---
 
