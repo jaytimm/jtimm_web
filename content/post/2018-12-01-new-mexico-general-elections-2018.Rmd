@@ -1,6 +1,6 @@
 ---
 title: "Some perspectives on Xochitl Torres Small's win in CD NM-02"
-description: 'A congressional election success story, and an introduction to an R data package with New Mexico general election returns.'
+description: 'A congressional election success story, and an introduction to <nmelectiondatr>, an R data package that makes available New Mexico general election returns from 2014 to 2018.'
 author: ''
 date: '2019-01-17'
 slug: xochitl-torres-small-win-2018
