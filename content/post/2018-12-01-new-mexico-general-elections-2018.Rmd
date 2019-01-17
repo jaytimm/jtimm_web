@@ -2,8 +2,8 @@
 title: "Some perspectives on Xochitl Torres Small's win in CD NM-02"
 description: 'A congressional election success story, and an introduction to an R data package with New Mexico general election returns.'
 author: ''
-date: '2018-12-01'
-slug: new-mexico-general-elections-2018
+date: '2019-01-17'
+slug: xochitl-torres-small-win-2018
 output:
   blogdown::html_page:
     toc: true
@@ -420,7 +420,8 @@ pal <- colorFactor( c('#1a476f', '#90353b', '#55752f', '#e37e00', 'gray'), sweet
 for_leaf <- nmelectiondatr::nmel_pol_geos$nm_precincts %>%
   left_join(sweet) %>%
   filter(CD == '2') %>%
-  sf::st_transform(crs = "+init=epsg:4326")
+  sf::st_transform(crs = "+init=epsg:4326") %>%
+  sf::st_simplify(preserveTopology = TRUE, dTolerance = 0.001)
 
 viz <- for_leaf %>%  
   leaflet(width="100%",height='600') %>%
@@ -586,7 +587,7 @@ viz <- plot_ly(
       source = sum$source, target = sum$target, value =  sum$n)) %>% 
   
     layout(
-      title = "Transitions in precinct-level vote types in NM-02",
+      title = "NM-02 precinct-level transitions in federal-state election voting types",
       font = list(size = 10)) #width = '100%', height = 700
 ```
 
