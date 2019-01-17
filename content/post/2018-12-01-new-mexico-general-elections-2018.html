@@ -151,8 +151,8 @@ library(tidyverse)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>Using the <code>Rvoteview</code> package, we next investigate the political affiliation of representatives of NM-02 for <strong>the last fifteen congresses</strong>. As the table below attests, Xochitl Torres Small is only the second Democrat to be elected to office in NM-02 in the last thirty years.<br />
-Harry Teague was elected to a single term in 2008 (to the 111th Congress), and likely benefited from Obama being atop the ticket. Republican congressmen Skeen &amp; Pearce both served seven terms in office during this time period.</p>
+<p>Using the <code>Rvoteview</code> package, we next investigate the political affiliation of representatives of NM-02 for <strong>the last fifteen congresses</strong>. As the table below attests, Xochitl Torres Small is only the second Democrat to be elected to office in NM-02 in the last thirty years.</p>
+<p>Harry Teague was elected to a single term in 2008 (to the 111th Congress), and likely benefited from Obama being atop the ticket. Republican congressmen Skeen &amp; Pearce both served seven terms in office during this time period.</p>
 <pre class="r"><code>library(Rvoteview)
 Rvoteview:: member_search(chamber= &#39;House&#39;, state = &#39;NM&#39;, congress = 101:116) %&gt;%
   filter(district_code == 2) %&gt;%

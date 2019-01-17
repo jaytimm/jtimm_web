@@ -85,6 +85,8 @@ nmelectiondatr::nmel_results_summary %>%
 
 
 Using the `Rvoteview` package, we next investigate the political affiliation of representatives of NM-02 for **the last fifteen congresses**.  As the table below attests, Xochitl Torres Small is only the second Democrat to be elected to office in NM-02 in the last thirty years.  
+
+
 Harry Teague was elected to a single term in 2008 (to the 111th Congress), and likely benefited from Obama being atop the ticket.  Republican congressmen Skeen & Pearce both served seven terms in office during this time period.
 
 
