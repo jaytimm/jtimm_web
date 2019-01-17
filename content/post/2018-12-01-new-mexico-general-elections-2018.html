@@ -1,0 +1,706 @@
+---
+title: "Some perspectives on Xochitl Torres Small's win in CD NM-02"
+description: 'A congressional election success story, and an introduction to an R data package with New Mexico general election returns.'
+author: ''
+date: '2018-12-01'
+slug: new-mexico-general-elections-2018
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+bibliography: biblio.bib
+link-citations: yes
+categories: []
+tags:
+  - rstats
+  - open-government
+  - new mexico
+banner: banners/elections.png
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
+<script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#a-brief-intro-to-nmelectiondatr">A brief intro to <code>nmelectiondatr</code></a></li>
+<li><a href="#cd-nm-02-an-overview">CD NM-02: an overview</a></li>
+<li><a href="#a-look-at-pearce-xochitl-precincts">A look at Pearce-Xochitl precincts</a></li>
+<li><a href="#straight--split-ticket-voting-in-nm-02">Straight- &amp; split-ticket voting in NM-02</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<p>In this post, we consider some different precinct-level perspectives on <strong>Xochitl Torres Small</strong>’s surprising win over Yvette Herrell in New Mexico’s 2nd Congressional District (NM-02) in the 2018 general elections.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Candidate</th>
+<th align="left">Party</th>
+<th align="right">Votes</th>
+<th align="right">Percent</th>
+<th align="left">Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">XOCHITL TORRES SMALL</td>
+<td align="left">DEM</td>
+<td align="right">101489</td>
+<td align="right">0.509</td>
+<td align="left">Winner</td>
+</tr>
+<tr class="even">
+<td align="left">YVETTE HERRELL</td>
+<td align="left">REP</td>
+<td align="right">97767</td>
+<td align="right">0.491</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+<p>Specifically, we investigate the role of (1) suburban voting precincts and (2) split-ticket voting districts in flipping NM-02 from red to blue in the congressional house race in 2018. In the process, we identify some novel sources of Torres Small support that have developed over the last three election cycles. We also demonstrate the utility of my new <code>nmelectiondatr</code> package.</p>
+<pre class="r"><code>library(nmelectiondatr)#devtools::install_github(&quot;jaytimm/nmelectiondatr&quot;)
+library(tigris); options(tigris_use_cache = TRUE, tigris_class = &quot;sf&quot;)
+library(tidyverse)</code></pre>
+<div id="a-brief-intro-to-nmelectiondatr" class="section level2">
+<h2>A brief intro to <code>nmelectiondatr</code></h2>
+<p>The <code>nmelectiondar</code> package makes available general election results for the last three election cycles (2014, 2016 &amp; 2018) in the state of New Mexico, including returns for federal, legislative, and statewide offices. Returns are made available at the precinct, county, and state legislative levels. The package additionally ships with a collection of New Mexico-based &amp; politically relevant shape files to facilitate convenient geospatial analyses. A more detailed description of the package and its contents is available <a href="https://github.com/jaytimm/nmelectiondatr">here</a>.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Table</th>
+<th align="left">Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">nmel_results_summary</td>
+<td align="left">An overview of election winners</td>
+</tr>
+<tr class="even">
+<td align="left">nmel_results_precinct</td>
+<td align="left">Election returns by precinct</td>
+</tr>
+<tr class="odd">
+<td align="left">nmel_results_district</td>
+<td align="left">Election returns by district</td>
+</tr>
+<tr class="even">
+<td align="left">nmel_results_county</td>
+<td align="left">Election returns by county</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="cd-nm-02-an-overview" class="section level2">
+<h2>CD NM-02: an overview</h2>
+<p>To provide some context for the significance of Xochitl Torres Small’s win in 2018, here we profile NM-02 in terms of (1) previous congressional representation and (2) a small collection of socio-demographic variables.</p>
+<div id="representation-historically" class="section level3">
+<h3>Representation historically</h3>
+<p>Via the <code>nmel_results_summary</code> table from the <code>nmelectiondatr</code> package, the table below summarizes CD NM-02 election results for 2014 &amp; 2016. As can be noted, Republican congressman Steve Pearce won 2014 &amp; 2016 elections by ~25 points &amp; ~30 points, respectively. So, some substantial margins to overcome in 2018 for Torres Small.</p>
+<pre class="r"><code>nmelectiondatr::nmel_results_summary %&gt;%
+  filter(Type == &#39;United States Representative&#39; &amp; 
+           Type_Sub == 2 &amp; Votes &gt; 100 &amp; Year != &#39;2018&#39;) %&gt;%
+  select(Year, Candidate:Winner) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Year</th>
+<th align="left">Candidate</th>
+<th align="left">Party</th>
+<th align="right">Votes</th>
+<th align="right">Percent</th>
+<th align="left">Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2016</td>
+<td align="left">STEVE PEARCE</td>
+<td align="left">REP</td>
+<td align="right">143515</td>
+<td align="right">0.627</td>
+<td align="left">Winner</td>
+</tr>
+<tr class="even">
+<td align="left">2016</td>
+<td align="left">MERRIE LEE SOULES</td>
+<td align="left">DEM</td>
+<td align="right">85232</td>
+<td align="right">0.372</td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">2014</td>
+<td align="left">STEVE PEARCE</td>
+<td align="left">REP</td>
+<td align="right">95209</td>
+<td align="right">0.644</td>
+<td align="left">Winner</td>
+</tr>
+<tr class="even">
+<td align="left">2014</td>
+<td align="left">ROXANNE ‘ROCKY’ LARA</td>
+<td align="left">DEM</td>
+<td align="right">52499</td>
+<td align="right">0.355</td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+<p>Using the <code>Rvoteview</code> package, we next investigate the political affiliation of representatives of NM-02 for <strong>the last fifteen congresses</strong>. As the table below attests, Xochitl Torres Small is only the second Democrat to be elected to office in NM-02 in the last thirty years.<br />
+Harry Teague was elected to a single term in 2008 (to the 111th Congress), and likely benefited from Obama being atop the ticket. Republican congressmen Skeen &amp; Pearce both served seven terms in office during this time period.</p>
+<pre class="r"><code>library(Rvoteview)
+Rvoteview:: member_search(chamber= &#39;House&#39;, state = &#39;NM&#39;, congress = 101:116) %&gt;%
+  filter(district_code == 2) %&gt;%
+  group_by(bioname, party_name) %&gt;%
+  arrange(congress) %&gt;%
+  summarise(congress = paste(congress, collapse = &quot;, &quot;))%&gt;%
+  arrange(congress) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">bioname</th>
+<th align="left">party_name</th>
+<th align="left">congress</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">SKEEN, Joseph Richard</td>
+<td align="left">Republican Party</td>
+<td align="left">101, 102, 103, 104, 105, 106, 107</td>
+</tr>
+<tr class="even">
+<td align="left">PEARCE, Stevan</td>
+<td align="left">Republican Party</td>
+<td align="left">108, 109, 110, 112, 113, 114, 115</td>
+</tr>
+<tr class="odd">
+<td align="left">TEAGUE, Harry</td>
+<td align="left">Democratic Party</td>
+<td align="left">111</td>
+</tr>
+<tr class="even">
+<td align="left">TORRES SMALL, Xochitl</td>
+<td align="left">Democratic Party</td>
+<td align="left">116</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="demographics" class="section level3">
+<h3>Demographics</h3>
+<p>Using the R package <code>tidycensus</code>, we quickly collate a small collection of socio-demographic variables to profile the population of NM-02 in comparison to the US and NM-01 &amp; NM-03.</p>
+<pre class="r"><code>vars &lt;- c(&#39;DP02_0067P&#39;, &#39;DP02_0092P&#39;, &#39;DP03_0096P&#39;, &#39;DP05_0066P&#39;)
+vars_labs &lt;- c(&#39;Per_Bachelors_degree_or_higher&#39;, &#39;Per_Foreign_born&#39;,
+               &#39;Per_Health_insurance&#39;, &#39;Per_Hispanic&#39;)
+years &lt;- c(2012:2016)</code></pre>
+<p>For convenience, I have developed a simple wrapper function to the <code>tidycensus::get_acs</code> function, which facilitates the acquisition of ACS estimates across multiple geography types &amp; years. The function is available <a href="https://gist.github.com/jaytimm/717b0ac226d9a0431afc4e49a2175f50#file-tidycensus_historical-r">here</a>.</p>
+<p>Below we use the function to fetch 1-year ACS estimates over the last five years for our four variables; we limit geographies to the US and congressional districts in New Mexico. Results of the query are fed directly to a <code>ggplot</code> pipe. Margins of error are included in the plots below.</p>
+<pre class="r"><code>get_historic_acs(variables = vars, 
+                            geography = c(&#39;us&#39;,&#39;congressional district&#39;), 
+                            state = list(NULL, &#39;New Mexico&#39;),
+                            year = years,
+                            var_names = vars_labs) %&gt;%
+  mutate(NAME = gsub(&#39;\\(.*$&#39;, &#39;&#39;, NAME)) %&gt;%
+  
+  ggplot(aes(x = year, y =  estimate, color=NAME, 
+             ymin=estimate - moe, ymax=estimate + moe)) +
+    geom_line(size=1) +
+    geom_errorbar(width=0.1) +
+    ggthemes::scale_colour_stata() + 
+    theme(legend.position=&quot;bottom&quot;, 
+          legend.title = element_blank())+
+    ylab (&quot;&quot;) + xlab(&quot;&quot;) +
+    facet_wrap(~label, scales = &quot;free_y&quot;, ncol=2)+ 
+    labs(title=&quot;Some socio-demographics by congressional district &amp; year&quot;)</code></pre>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Per the plots above, then, a <strong>majority-minority</strong> district with lower levels of higher education relative to the US &amp; other congressional districts in New Mexico. The former would seem to belie the district’s historically red roots; the latter (at least in part) a potential explanation for the district’s historically red roots. Also, the passage of the Affordable Care Act has brought health care coverage levels in NM-02 a bit closer to the national average over the last several years.</p>
+<p>So, a district with a deep red past, on one hand, and some demographic characteristics that would seem to lean the district blue, on the other hand.</p>
+</div>
+</div>
+<div id="a-look-at-pearce-xochitl-precincts" class="section level2">
+<h2>A look at Pearce-Xochitl precincts</h2>
+<p>Our first task, then, is to get a beat on the “where” of <strong>Pearce-Xochitl</strong> precincts, ie, precincts that voted for Steve Pearce in 2016 and Small Torres in 2018.</p>
+<p>Below we perform some data transformations on the <code>nmel_results_precinct</code> table from the <code>nmlectiondatr</code> package to facilitate subsequent analyses.</p>
+<pre class="r"><code>precincts_raw &lt;- nmelectiondatr::nmel_pol_geos$nm_precincts %&gt;%
+  inner_join(nmelectiondatr::nmel_results_precinct)
+
+precincts_flat &lt;- precincts_raw %&gt;%
+  data.frame() %&gt;%
+  group_by(NAME10, Year, Type, Type_Sub) %&gt;%
+  mutate(Total = sum(Votes)) %&gt;%
+  filter(!grepl(&#39;write in&#39;,Candidate) &amp; 
+           Party %in% c(&#39;REP&#39;, &#39;DEM&#39;, &#39;IND&#39;) &amp;
+           Total &gt; 1) %&gt;%  
+  select(-geometry, -Candidate) %&gt;%
+  spread(Party, Votes) %&gt;%
+  replace_na(list(DEM = 0, REP = 0, IND = 0)) %&gt;%
+  left_join (
+    precincts_raw %&gt;%
+      group_by(Year, Type, Type_Sub, County_Name, Precinct_Num)%&gt;%
+      filter(Votes == max(Votes)) %&gt;%
+      mutate(n = n()) %&gt;%
+      mutate(Party = ifelse(n == 2, &#39;DRAW&#39;, Party),
+             n = row_number()) %&gt;%
+      filter(n == 1) %&gt;%
+      select(-Candidate, -n, -Votes)  ) %&gt;%
+  ungroup()</code></pre>
+<p>A portion of our new data structure, summarizing 2018 election returns for a handful of elections in <strong>Catron County’s 6th precinct</strong>:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Type</th>
+<th align="right">Total</th>
+<th align="right">DEM</th>
+<th align="right">IND</th>
+<th align="right">REP</th>
+<th align="left">Party</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">State Representative</td>
+<td align="right">74</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">74</td>
+<td align="left">REP</td>
+</tr>
+<tr class="even">
+<td align="left">United States Senator</td>
+<td align="right">95</td>
+<td align="right">30</td>
+<td align="right">0</td>
+<td align="right">57</td>
+<td align="left">REP</td>
+</tr>
+<tr class="odd">
+<td align="left">United States Representative</td>
+<td align="right">95</td>
+<td align="right">32</td>
+<td align="right">0</td>
+<td align="right">63</td>
+<td align="left">REP</td>
+</tr>
+<tr class="even">
+<td align="left">Governor and Lieutenant Governor</td>
+<td align="right">94</td>
+<td align="right">29</td>
+<td align="right">0</td>
+<td align="right">65</td>
+<td align="left">REP</td>
+</tr>
+<tr class="odd">
+<td align="left">Secretary of State</td>
+<td align="right">95</td>
+<td align="right">34</td>
+<td align="right">0</td>
+<td align="right">58</td>
+<td align="left">REP</td>
+</tr>
+</tbody>
+</table>
+<div id="an-overview-of-flipped-precincts" class="section level3">
+<h3>An overview of flipped precincts</h3>
+<p>For Torres Small to overcome the ~25% Pearce margin in 2016, she had to flip a lot of precincts from red to blue in 2018. The table below summarizes how precincts voted in NM-02 in 2016 &amp; 2018. As can be noted, a total of 142 precincts (out of 500 total) voted for Pearce in 2016 and Torres Small in 2018, ie, Pearce-Xochitl precincts. Obviously some substantial gains.</p>
+<pre class="r"><code>flips &lt;- precincts_flat %&gt;%
+  data.frame() %&gt;%
+  select(-Total:-REP, -geometry) %&gt;%
+  spread(Year, Party)%&gt;%
+  mutate(flip = ifelse(`2016` == `2018`, &#39;same&#39;, &#39;flip&#39;),
+         flip = ifelse(flip == &#39;flip&#39;, `2018`, flip),
+         flip_dets = paste0(`2016`, &#39; to &#39;, `2018`)) %&gt;%
+  left_join(nmelectiondatr::nmel_pol_geos$nm_precincts) %&gt;%
+  sf::st_as_sf()
+##
+flips %&gt;%
+  data.frame() %&gt;%
+  filter(Type == &#39;United States Representative&#39; &amp;
+           CD == 2) %&gt;%
+  select(-geometry) %&gt;%
+  group_by(flip_dets, X2016, X2018) %&gt;%
+  summarize(count=n()) %&gt;%
+  ungroup() %&gt;%
+  mutate(per = round(count/sum(count)*100, 1)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">flip_dets</th>
+<th align="left">X2016</th>
+<th align="left">X2018</th>
+<th align="right">count</th>
+<th align="right">per</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DEM to DEM</td>
+<td align="left">DEM</td>
+<td align="left">DEM</td>
+<td align="right">114</td>
+<td align="right">22.8</td>
+</tr>
+<tr class="even">
+<td align="left">DRAW to DEM</td>
+<td align="left">DRAW</td>
+<td align="left">DEM</td>
+<td align="right">1</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="odd">
+<td align="left">REP to DEM</td>
+<td align="left">REP</td>
+<td align="left">DEM</td>
+<td align="right">142</td>
+<td align="right">28.4</td>
+</tr>
+<tr class="even">
+<td align="left">REP to DRAW</td>
+<td align="left">REP</td>
+<td align="left">DRAW</td>
+<td align="right">1</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="odd">
+<td align="left">REP to REP</td>
+<td align="left">REP</td>
+<td align="left">REP</td>
+<td align="right">242</td>
+<td align="right">48.4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="mapping-pearce-xochitl-precincts" class="section level3">
+<h3>Mapping Pearce-Xochitl precincts</h3>
+<p>So, where in NM-02 did Torres Small flip all these precincts? Much has been made about <strong>the role of suburban voters</strong> in flipping the House of Representatives to Dems in the 2018 general election. Did this national trend materialize in NM-02?</p>
+<p>The map below illustrates voting patterns in congressional house races from 2016 to 2018. Precincts in red represent Pearce-Herrell (REP to REP) precincts while precincts in dark blue represent Soules-Xochitl precincts (DEM to DEM). Precincts in light blue, then, flipped from Pearce in 2016 to Xochitl in 2018.</p>
+<pre class="r"><code>flip_dets &lt;- c(&#39;DEM to DEM&#39;,  &#39;REP to REP&#39;, &#39;REP to DEM&#39;)
+flip_pal &lt;- c(&#39;#395f81&#39;, &#39;#9e5055&#39;, &#39;lightblue&#39;)
+names(flip_pal) &lt;- flip_dets
+
+flips %&gt;%
+  filter(Type == &#39;United States Representative&#39; &amp;
+           Type_Sub == &#39;2&#39; &amp;
+           !grepl(&#39;DRAW&#39;, flip_dets)) %&gt;%
+  ggplot() + 
+  geom_sf(aes(fill = flip_dets),
+           color = &#39;darkgray&#39;) + 
+  ggsflabel::lims_bbox(nmel_pol_geos$us_congress_districts %&gt;%
+                         filter(NAME == &#39;02&#39;)) +
+  ggsflabel::geom_sf_text_repel(data = nmel_pol_geos$nm_places %&gt;% 
+                                  filter (LSAD == &#39;25&#39;),
+                                aes(label = NAME), size = 2.5) +
+  
+  scale_fill_manual(values = flip_pal) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        legend.position = &#39;bottom&#39;) +
+  labs(title = &quot;Voting patterns by precinct&quot;,
+       subtitle = &#39;NM-02: 2016 to 2018&#39;) </code></pre>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="a-suburban-blue-wave" class="section level3">
+<h3>A suburban blue wave?</h3>
+<p>While the map above certainly suggests some new-found Democratic support in suburban areas of NM-02, here we take a slightly more quantitative approach to operationalizing “suburban-ness” (relative to simply eyeballing a map – New Mexico is a big state).</p>
+<p>As voting precincts are (in theory) comprised of equally-sized populations, precinct areas can be used to roughly approximate population density. From this perspective, we would imagine precincts voting Democratic in 2016 &amp; 2018 to be smaller (ie, more urban) and precincts voting Republican in 2016 &amp; 2018 to be larger (ie, more rural). If, in fact, Pearce-Xochtil districts tend towards suburban, then we would expect these precincts to have areas somewhere in between deeply Democratic &amp; Republican precincts.</p>
+<p>As the plot below attests, there is certainly some evidence for the role of voters in more suburban precincts in the election of Torres Small. A grain of salt for sure; presumably more rigorous proxies for suburban-ness exist. Precinct area is in log square meters.</p>
+<pre class="r"><code>flips %&gt;%
+  filter(Type == &#39;United States Representative&#39; &amp;
+           Type_Sub == &#39;2&#39; &amp;
+           !grepl(&#39;DRAW&#39;, flip_dets)) %&gt;%
+  mutate(area = as.numeric(gsub(&#39; m^2]&#39;, &#39;&#39;, sf::st_area(.)))) %&gt;%
+  ggplot( aes(log(area), fill = flip_dets)) +
+  
+  scale_fill_manual(values = flip_pal) +
+  geom_density(alpha = 0.75,
+               color = &#39;darkgray&#39;)+
+  labs(title=&quot;Precinct-area probability distributions by vote type&quot;) +
+  theme(legend.position = &quot;bottom&quot;)</code></pre>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="state-house-elections-2016-to-2018" class="section level3">
+<h3>State House elections: 2016 to 2018</h3>
+<p>A quite different story emerges when considering NM-02 precinct-level voting patterns for <strong>New Mexico State House representatives</strong> in 2016 &amp; 2018. While 142 precincts flipped from Rep (2016) to Dem (2018) in the US Congressional election, the table below demonstrates that only 28 precincts flipped from Rep (2016) to Dem (2018) in State House elections.</p>
+<pre class="r"><code>flips %&gt;%
+  data.frame() %&gt;%
+  filter(Type == &#39;State Representative&#39; &amp;
+           CD == 2) %&gt;%
+  select(-geometry) %&gt;%
+  group_by(flip_dets, X2016, X2018) %&gt;%
+  summarize(count=n()) %&gt;%
+  ungroup() %&gt;%
+  mutate(per = round(count/sum(count)*100, 1)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">flip_dets</th>
+<th align="left">X2016</th>
+<th align="left">X2018</th>
+<th align="right">count</th>
+<th align="right">per</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DEM to DEM</td>
+<td align="left">DEM</td>
+<td align="left">DEM</td>
+<td align="right">168</td>
+<td align="right">33.7</td>
+</tr>
+<tr class="even">
+<td align="left">DEM to REP</td>
+<td align="left">DEM</td>
+<td align="left">REP</td>
+<td align="right">7</td>
+<td align="right">1.4</td>
+</tr>
+<tr class="odd">
+<td align="left">DRAW to DEM</td>
+<td align="left">DRAW</td>
+<td align="left">DEM</td>
+<td align="right">1</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="even">
+<td align="left">IND to REP</td>
+<td align="left">IND</td>
+<td align="left">REP</td>
+<td align="right">3</td>
+<td align="right">0.6</td>
+</tr>
+<tr class="odd">
+<td align="left">REP to DEM</td>
+<td align="left">REP</td>
+<td align="left">DEM</td>
+<td align="right">28</td>
+<td align="right">5.6</td>
+</tr>
+<tr class="even">
+<td align="left">REP to DRAW</td>
+<td align="left">REP</td>
+<td align="left">DRAW</td>
+<td align="right">1</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="odd">
+<td align="left">REP to REP</td>
+<td align="left">REP</td>
+<td align="left">REP</td>
+<td align="right">291</td>
+<td align="right">58.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="straight--split-ticket-voting-in-nm-02" class="section level2">
+<h2>Straight- &amp; split-ticket voting in NM-02</h2>
+<p>Per this federal-state disparity in voting patterns in NM-02, Torres Small clearly required some help from <strong>split-ticket</strong> precincts, ie, precincts that voted Dem in the US House election and Rep in (their respective) State House elections. From a typological perspective, four federal-state voting patterns are possible (with our nomenclature in parentheses):</p>
+<ul>
+<li><strong>Straight-ticket types</strong>
+<ul>
+<li>Dem in federal - Dem in state (Dem-Dem)</li>
+<li>Rep in federal - Rep in state (Rep-Rep)</li>
+</ul></li>
+<li><strong>Split-ticket types</strong>
+<ul>
+<li>Dem in federal - Rep in state (Dem-Rep)</li>
+<li>Rep in federal - Dem in state (Rep-Dem)</li>
+</ul></li>
+</ul>
+<p>In this section, then, we consider the distribution of federal-state precinct-level voting types in NM-02 for the last three election cycles (focusing on US &amp; NM House races).</p>
+<pre class="r"><code>sweet &lt;- precincts_flat %&gt;%
+  data.frame() %&gt;% 
+  filter(Type %in% c(&#39;State Representative&#39;, 
+                     &#39;United States Representative&#39;) &amp;
+           !Party %in% c(&#39;IND&#39;) ) %&gt;% #For good measure.
+  select(-Total:-REP, -geometry,-Type_Sub) %&gt;% #
+  mutate(Type = gsub(&#39; &#39;, &#39;_&#39;, Type)) %&gt;%
+  distinct() %&gt;% #NEW.
+  spread(Type, Party) %&gt;%
+  na.omit ()%&gt;%
+  mutate(type = paste0(United_States_Representative, &#39;_&#39;,
+                       State_Representative),
+         type = ifelse (grepl(&#39;DRAW&#39;, type), &#39;DRAW&#39;, type),
+         type = factor(type, levels = c(&#39;DEM_DEM&#39;, 
+                                        &#39;REP_REP&#39;, 
+                                        &#39;DEM_REP&#39;, 
+                                        &#39;REP_DEM&#39;, 
+                                        &#39;DRAW&#39;))) %&gt;%
+  select(County_Name, NAME10, CD, Year, type) </code></pre>
+<p>The plot below summarizes precinct-level voting types for federal and state house elections in NM-02. In 2014 &amp; 2016, the cross-section of federal-state voter types remained fairly consistent. In contrast, 2018 saw a substantial increase in Democratic-voting precincts in the federal house election:</p>
+<ul>
+<li>Straight-ticket Democratic precincts increased from 21.3% to 43.5%, and</li>
+<li>Dem-Rep split-ticket precincts increased from 1.8% to 15.1%.</li>
+</ul>
+<pre class="r"><code># r eval=FALSE, 
+sweet %&gt;%
+  filter(type != &#39;DRAW&#39; &amp; CD == &#39;2&#39;) %&gt;%
+  group_by(Year, CD, type) %&gt;% tally() %&gt;%
+  mutate(per = n/sum(n),
+         new_type = type) %&gt;%
+  separate(type, into = c(&#39;Federal&#39;, &#39;State&#39;), sep = &#39;_&#39;) %&gt;%
+  
+  ggplot(aes(x = Federal, y = State)) +
+  geom_point(aes(color = new_type, size = per), shape = 15) +
+  ggthemes::scale_color_stata()+
+  geom_text(aes(x = Federal, y = State, 
+                label = paste0(round(100*per,1),&#39;%&#39;)),
+            size = 3.5) +
+  geom_text(aes(x = Federal, y = State, 
+                label = paste0(&#39;(&#39;, n,&#39;)&#39;)),
+            nudge_y = -.12, size = 2.5) +
+  scale_size_continuous(range = c(3.5, 35)) +
+  coord_equal() +
+  facet_wrap(~Year, nrow = 1) +
+  theme(legend.position = &quot;none&quot;,
+        axis.text.x=element_text(angle=45,hjust=1)) + 
+  labs(title=&quot;Precincts by federal-state voting type &amp; election year&quot;)</code></pre>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>The <code>lealet</code> map below illustrates voting types at the precinct-level for NM-02. The filter at the top-right can be used to select different election years. A fairly long-winded call to the <code>leaflet</code> function.</p>
+<pre class="r"><code>library(leaflet)
+pal &lt;- colorFactor( c(&#39;#1a476f&#39;, &#39;#90353b&#39;, &#39;#55752f&#39;, &#39;#e37e00&#39;, &#39;gray&#39;), sweet$type)
+
+for_leaf &lt;- nmelectiondatr::nmel_pol_geos$nm_precincts %&gt;%
+  left_join(sweet) %&gt;%
+  filter(CD == &#39;2&#39;) %&gt;%
+  sf::st_transform(crs = &quot;+init=epsg:4326&quot;)
+
+viz &lt;- for_leaf %&gt;%  
+  leaflet(width=&quot;100%&quot;,height=&#39;600&#39;) %&gt;%
+  setView(lng = -105.87, lat = 33.65, zoom = 6.5) %&gt;%
+  addProviderTiles (providers$OpenStreetMap,
+                    options = providerTileOptions (minZoom = 6, maxZoom = 11)) %&gt;%
+  addPolygons(data = for_leaf %&gt;% filter(Year == 2014),
+              popup = ~ NAME10, fill = TRUE,
+              stroke = TRUE, weight=1, 
+              fillOpacity = .8, color=&quot;white&quot;, 
+              fillColor=~pal(type), group = &#39;2014&#39;) %&gt;%
+  addPolygons(data = for_leaf %&gt;% filter(Year == 2016),
+              popup = ~ NAME10, fill = TRUE,
+              stroke = TRUE, weight=1, 
+              fillOpacity = .8, color=&quot;white&quot;, 
+              fillColor=~pal(type), group = &#39;2016&#39;) %&gt;%  
+  addPolygons(data = for_leaf %&gt;% filter(Year == 2018),
+              popup = ~ NAME10, fill = TRUE,
+              stroke = TRUE, weight=1, 
+              fillOpacity = .8, color=&quot;white&quot;, 
+              fillColor=~pal(type), group = &#39;2018&#39;) %&gt;%  
+  addLegend(&quot;bottomright&quot;, 
+            pal = pal, 
+            values = ~ type,
+            title = &quot;Vote Type&quot;,
+            opacity = .8) %&gt;%
+  addLayersControl(position = &quot;topright&quot;, 
+                   #collapsed = FALSE,
+                   baseGroups = c(&quot;2014&quot;, &quot;2016&quot;, &quot;2018&quot;))</code></pre>
+<p><br> <div id="htmlwidget-1" style="width:100%;height:600px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"url":"/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html//widgets/widget_unnamed-chunk-19.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script></p>
+<p><br></p>
+<div id="the-cases-of-las-cruces-socorro" class="section level3">
+<h3>The cases of Las Cruces &amp; Socorro</h3>
+<p>Next, we consider some specific transitions underlying changes in voting type distributions attested in the plots above for two different cities in NM-02: Las Cruces &amp; Socorro. The map below illustrates historical distributions of federal-state voting types for <strong>Las Cruces, NM</strong>.</p>
+<pre class="r"><code>nmelectiondatr::nmel_pol_geos$nm_precincts %&gt;%
+  left_join(sweet) %&gt;%
+  filter(CD == &#39;2&#39;) %&gt;%  # &amp; Year %in% c(2016,2018)
+  ggplot() + 
+  geom_sf(aes(fill = type),
+           color = &#39;darkgray&#39;,
+          size = .25) + 
+  ggsflabel::lims_bbox(nmel_pol_geos$nm_places %&gt;%
+                         filter(NAME == &#39;Las Cruces&#39;)) +
+  ggsflabel::geom_sf_text(data = nmel_pol_geos$nm_places %&gt;% 
+                            filter (LSAD == &#39;25&#39;),
+                          aes(label = NAME), size = 2.5) +
+  facet_wrap (~Year, ncol = 2) +
+  ggthemes::scale_fill_stata() + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        legend.position = &#39;bottom&#39;) +
+  labs(title = &quot;Federal-State election vote types for NM-02: Las Cruces&quot;) </code></pre>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p>The three maps illustrate two main features of voting type changes in Las Cruces from 2014 to 2018:</p>
+<ul>
+<li>Straight-ticket Republican (Rep-Rep) precincts transitioning (or jumping) to straight-ticket Democratic (Dem-Dem) precincts.<br />
+</li>
+<li>Rep-Dem split-ticket precincts transitioning to straight-ticket Democratic (Dem-Dem) precincts.</li>
+</ul>
+<p>The pattern of change in voting type distributions in <strong>Socorro, NM</strong> is quite different than those attested in Las Cruces. Precincts in Socorro-proper have transitioned from straight-ticket Republican to split-ticket Dem-Rep, voting Democratic in federal elections while remaining loyal to Republican candidates for State House representatives.</p>
+<p><img src="/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Albeit from different “directions,” both sets of transition types amounted to new support for Torres Small in the NM-02 congressional house race in 2018.</p>
+</div>
+<div id="a-sankey-perspective-on-vote-types-in-transition" class="section level3">
+<h3>A Sankey perspective on vote types in transition</h3>
+<p>Lastly, we consider an aggregate perspective on federal-state voting type transitions for the last three election cycles for NM-02. Ultimately, the goal to get a more detailed sense of the vote types that “became” new Xochitl support over the last three elections cycles. Here we use the <code>plotly</code> package to build an interactive Sankey plot.</p>
+<pre class="r"><code>sum &lt;- sweet %&gt;%
+  spread(Year, type)%&gt;%
+  mutate(f14_16 = paste0(`2014`,&#39;-&#39;, `2016`),
+         f16_18 = paste0(`2016`,&#39;-&#39;, `2018`))%&gt;%
+  filter(CD == 2 ) %&gt;%
+  select(f14_16, f16_18) %&gt;%
+  gather(elect, flip)%&gt;%
+  group_by(elect, flip) %&gt;%
+  summarize(n=n()) %&gt;%
+  filter(!grepl(&#39;DRAW|NA&#39;,flip)) %&gt;% 
+  separate(flip, c(&#39;source&#39;, &#39;target&#39;), sep = &#39;-&#39;) %&gt;%
+  separate(elect, c(&#39;e1&#39;, &#39;e2&#39;), sep = &#39;_&#39;) %&gt;%
+  mutate(source = paste0(source, &#39; &#39;, gsub(&#39;f&#39;,&#39;&#39;, e1)),
+         target = paste0(target, &#39; &#39;, e2)) %&gt;%
+  select(-e1, -e2)</code></pre>
+<p>After performing some data transformations, we set a few parameters to feed to the <code>plot_ly</code> function.</p>
+<pre class="r"><code>elements &lt;- unique(c(unique(sum$source), unique(sum$target)))
+elements &lt;- data.frame(code = c(0:(length(elements)-1)),
+                       value = elements, 
+                       color = rep(c(&#39;#1a476f&#39;, &#39;#55752f&#39;, 
+                                     &#39;#e37e00&#39;, &#39;#90353b&#39;),3),
+                       stringsAsFactors = FALSE)
+
+sum$source &lt;- elements$code[match(unlist(sum[,1]), elements$value)]
+sum$target &lt;- elements$code[match(unlist(sum[,2]), elements$value)]</code></pre>
+<p>And lastly we build the plot.</p>
+<pre class="r"><code>library(plotly)
+#htmltools::save_html(viz, &#39;pres_sank.html&#39;)
+
+viz &lt;- plot_ly(
+    type = &quot;sankey&quot;,
+    orientation = &quot;h&quot;,
+    node = list(
+      label = elements$value, color = elements$color, pad = 15, 
+      thickness = 20, line = list(color = &quot;black&quot;, width = 0.5)),
+
+    link = list(
+      source = sum$source, target = sum$target, value =  sum$n)) %&gt;% 
+  
+    layout(
+      title = &quot;Transitions in precinct-level vote types in NM-02&quot;,
+      font = list(size = 10)) #width = &#39;100%&#39;, height = 700</code></pre>
+<p><br></p>
+<div id="htmlwidget-2" style="width:100%;height:480px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"url":"/post/2018-12-01-new-mexico-general-elections-2018_files/figure-html//widgets/widget_unnamed-chunk-25.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<p>Per some hovering on the Sankey plot above, a summary of the most prevalent sources of new Democratic voting precincts in federal house elections from 2016 to 2018:</p>
+<ul>
+<li>Party-line REP → DEM_REP split (n = 64) <em>eg, Socorro</em></li>
+<li>REP_DEM split → Party-line DEM (n = 52) <em>eg, Las Cruces</em></li>
+<li>Party-line REP → Party-line DEM (n = 21) <em>eg, Las Cruces</em></li>
+</ul>
+<p>So, REP_DEM-ers largely morphed into party-line DEMs from 2016 to 2018. And previously non-existent DEM_REP-ers spawned from party-line REPs. In all likelihood, a bit of a referendum on 45. As to whether or not the latter stick around remains to be seen, and will likely determine whether Xochitl sticks around in 2020, when voter turnout will be high with 45 back atop the ticket.</p>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>So, hopefully an informative walk-about through some precinct-level election returns in CD NM-02 via <code>nmelectiondatr</code>. With Yvette Herrell ready to run again in 2020, this particular election story will resume soon enough.</p>
+</div>
