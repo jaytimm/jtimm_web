@@ -1,0 +1,307 @@
+---
+title: 'historical word embeddings & lexical semantic change'
+description: 'Some methods for detecting & visualizing semantic change.'
+author: ''
+date: '2019-04-14'
+slug: lexical-change-procrustes
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+bibliography: biblio.bib
+link-citations: yes
+categories: []
+tags: ['rstats', 'corpus-ling']
+banner: banners/grasp.png
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#google-n-gram-data">Google n-gram data</a></li>
+<li><a href="#nearest-neighbors">Nearest-neighbors</a></li>
+<li><a href="#procrustes-pca-visualizing-semantic-change">Procrustes, PCA &amp; visualizing semantic change</a></li>
+<li><a href="#detecting-semantic-change">Detecting semantic change</a></li>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<p>This post builds on a guide available <a href="https://github.com/jaytimm/google_ngrams_and_R">here</a> that codes through the sampling of Google n-gram data and building of historical word embeddings for the investigation of lexical semantic change. Here, we consider (and unpack) some methods presented in <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> &amp; <span class="citation">Li et al. (<a href="#ref-li2019macroscope">2019</a>)</span> for aligning historical matrices/embeddings and visualizing semantic change.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<hr />
+<div id="google-n-gram-data" class="section level2">
+<h2>Google n-gram data</h2>
+<p>As detailed in the Git Hub post, the historical embeddings utilized here span eight quarter-centuries from 1808 to 2008, and are derived from a ~1% sample of Google’s <strong>English One Million</strong> 5-gram corpus. Long story short of workflow:</p>
+<ul>
+<li>Build term-feature matrices based on simple co-occurrence; Word embeddings.<br />
+</li>
+<li>Weight/transform matrices via positive-pointwise mutual information;</li>
+<li>Homogenize feature set across all time periods;<br />
+</li>
+<li>Compress feature set to 250 latent dimensions via SVD.</li>
+</ul>
+<p>The count of terms included in each quarter-century varies from ~16k to ~18k. Matrices are available on Git Hub <a href="https://github.com/jaytimm/google_ngrams_and_R/tree/master/google_one_percent_embeddings">here</a>.</p>
+<pre class="r"><code>setwd(local_dir)
+tfms_mats &lt;- readRDS(&#39;tfms_mats.rds&#39;)</code></pre>
+<p>For subsequent analyses, we reduce matrices to only terms which occur in every quarter-century, which amounts to roughly 11k forms.</p>
+<pre class="r"><code>all_terms &lt;-Reduce(intersect, 
+                   lapply(tfms_mats, rownames)) 
+
+tfms_trimmed &lt;- lapply(1:8, function (x)
+  tfms_mats[[x]][rownames(tfms_mats[[x]]) %in% all_terms,])
+names(tfms_trimmed) &lt;- names(tfms_mats)</code></pre>
+<p><strong>Frequency data</strong> for all terms included in the historical matrices are available <a href="https://github.com/jaytimm/google_ngrams_and_R/blob/master/freqs_by_gen.rds">here</a>. These frequencies are based on the sampled 5-gram corpus, and will obviously differ some from values obtained from the full corpus.</p>
+<pre class="r"><code>setwd(local_freq)
+freqs_by_gen &lt;- readRDS(&#39;freqs_by_gen.rds&#39;)</code></pre>
+<p>While we are here, we examine historical frequencies for a small set of forms.</p>
+<pre class="r"><code>sample &lt;- c(&#39;GRASP&#39;, &#39;SIGNIFICANT&#39;, &#39;COMMITMENT&#39;, &#39;HOPE&#39;)
+
+freqs_by_gen %&gt;%
+  filter(form %in% sample) %&gt;%
+  
+  ggplot(aes(x = quarter, y = ppm, 
+             color = form, group = form)) +
+  geom_line(size = 1.5) +
+  ggthemes::scale_color_stata()+
+  facet_wrap(~form, scales = &#39;free_y&#39;, ncol=2) +
+  labs(title=&quot;Historical frequencies of some forms on the move&quot;) +
+  theme(legend.position=&quot;none&quot;,
+        axis.text.x=element_text(angle=45, 
+                                 hjust=0.5, vjust=0.5))</code></pre>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="nearest-neighbors" class="section level2">
+<h2>Nearest-neighbors</h2>
+<p>Based on these historical matrices, we first investigate historical nearest-neighbors/synonyms for a given term. Using the <code>neighbors</code> function from the <code>LSAfun</code> package, we extract the top 10 nearest-neighbors for each quarter-century for the form <em>SIGNIFICANT</em>.</p>
+<pre class="r"><code>search &lt;- toupper(&#39;significant&#39;)
+nns &lt;- lapply(tfms_trimmed, LSAfun::neighbors, x = search , n = 10)
+#disability, disorder, CELL, quit, significant, </code></pre>
+<p>List output from above is a bit messy; the function below cleans this output some for subsequent visualization/analyses.</p>
+<pre class="r"><code>strip_syns &lt;- function (x) {
+  lapply(1:length(x), function(y)  
+    cbind(form = as.character(names(x[[y]])), 
+          quarter = names(x[y]), 
+          data.frame(sim = x[[y]], row.names=NULL)) ) %&gt;%
+    bind_rows()}</code></pre>
+<p>We apply function, and add historical frequency data to get a better sense of how changes in nearest-neighbors align (or do not align) with changes in term frequency historically.</p>
+<pre class="r"><code>syns &lt;- nns %&gt;% 
+  strip_syns() %&gt;%
+  inner_join(freqs_by_gen) %&gt;%
+  mutate(ppm = round(ppm, 1), sim = round(sim,3)) %&gt;%
+  select(-freq) %&gt;%
+  group_by(quarter) %&gt;%
+  arrange(desc(sim))%&gt;%
+  ungroup()</code></pre>
+<p>Via <code>gridExtra</code>, we plot nearest-neighbors of <em>SIGNIFICANT</em> by quarter-century.</p>
+<pre class="r"><code>g &lt;- list(length(tfms_mats))
+tt &lt;- gridExtra::ttheme_default(base_size = 6.75)
+
+for (i in 1:length(tfms_mats)) {
+  g[[i]] &lt;- syns %&gt;% 
+    filter (quarter == names(tfms_mats[i])) %&gt;%
+    rename(!!names(tfms_mats[i]) := form) %&gt;% 
+    select(-quarter)%&gt;%
+    gridExtra::tableGrob(rows=NULL, theme = tt) }
+
+gridExtra::grid.arrange(grobs = g, nrow = 2)</code></pre>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>So, a form <strong>on the semantic move</strong> historically:</p>
+<ul>
+<li>Roughly: <em>CONSPICUOUS/ REMARKABLE</em> → <em>SUBSTANTIAL/ MARKED</em>;<br />
+</li>
+<li>Also a form that has become decidedly more frequent;<br />
+</li>
+<li>Collectively, changes (very roughly) reflect (1) the (novel) use of <em>SIGNIFICANT</em> in the (burgeoning, ca. late 19th century) field of Statistics, and (2) the continued development of the field of Statistics over the past century or so.</li>
+</ul>
+</div>
+<div id="procrustes-pca-visualizing-semantic-change" class="section level2">
+<h2>Procrustes, PCA &amp; visualizing semantic change</h2>
+<p>While each of our historical term-feature matrices is comprised of 250 latent dimensions, per the nature of SVD this space is defined differently for each matrix. And while this is non-problematic when computing pair-wise cosine similarities within a given time period (as per above), it is problematic if the goal is to compare word embeddings for a single form across multiple time periods. Which is what we want to do now.</p>
+<p>In order to perform this type of comparison, we need to map each historical matrix to a singularly defined coordinate space. Here, this means aligning all non-modern matrices to the modern matrix. We do so using <strong>orthogonal Procrustes</strong>, and implement the algorithm using the <code>procrustes</code> function from the <code>vegan</code> package.</p>
+<pre class="r"><code>procrustes_clean &lt;- lapply(1:7, function (x) {
+  
+  pc &lt;- vegan::procrustes (X = tfms_trimmed[[8]], 
+                           Y = tfms_trimmed[[x]])
+  pc &lt;- pc$Yrot
+  dimnames(pc) &lt;-list(rownames(tfms_trimmed[[8]]), 
+                     c(1:250))
+  pc } )
+
+procrustes_clean[[8]] &lt;- tfms_trimmed[[8]]
+names(procrustes_clean) &lt;- names(tfms_mats)</code></pre>
+<p>With compare-able matrices in tow, our first goal is to <strong>visualize semantic change</strong> for a given term in two-dimensional space. General workflow:</p>
+<ol style="list-style-type: decimal">
+<li>Find (some subset of) historical/modern nearest-neighbors for a given term;</li>
+<li>Extract embeddings for <strong>(1)</strong> from modern matrix;</li>
+<li>Extract embeddings for given term from all historical matrices;</li>
+<li>Append <strong>(2)</strong> &amp; <strong>(3)</strong> as single matrix;</li>
+<li>Perform Principal Component Analysis (PCA) on <strong>(4)</strong>;</li>
+<li>Plot <strong>(5)</strong> in 2D space</li>
+</ol>
+<p>This workflow (roughly) mirrors methods presented in <span class="citation">Li et al. (<a href="#ref-li2019macroscope">2019</a>)</span>, which is a slightly simplified/modified version of methods presented in <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span>.</p>
+<p><strong>What are we actually doing?</strong> Well, we are basically defining a 2d space via modern word embeddings of nearest-neighbors, and allowing a given term (via historical word embeddings) to move within this (defined) space historically. Procrustes-enabled: all forms in all matrices are situated in the same coordinate space.</p>
+<p>Obviously this is a bit weird, as nearest-neighbors are in motion within this space historically as well. However, we have to hold something constant to visualize change – modern embeddings for nearest-neighbors would seem most intuitive/insightful.</p>
+<p>To de-clutter our (forthcoming) visualizations some, we limit our analysis to even-numbered quarter-centuries.</p>
+<pre class="r"><code>gens &lt;- c(&quot;[1833,1858)&quot;, &quot;[1883,1908)&quot;, 
+          &quot;[1933,1958)&quot;, &quot;[1983,2008]&quot;)</code></pre>
+<p><strong>1. Find (some subset of) historical/modern nearest-neighbors for a given term;</strong></p>
+<pre class="r"><code>plot_syns &lt;- syns %&gt;%
+  filter(!form %in% search &amp; quarter %in% gens) %&gt;%
+  group_by(quarter) %&gt;%
+  slice(1:15) %&gt;%
+  ungroup() %&gt;%
+  select(form) %&gt;%
+  distinct()</code></pre>
+<p><strong>2. Extract embeddings for (1) from modern matrix;</strong></p>
+<pre class="r"><code>syn_modern &lt;- tfms_trimmed[[8]][rownames(tfms_trimmed[[8]]) %in%
+                                  plot_syns$form,]</code></pre>
+<p><strong>3. Extract embeddings for given term from all historical matrices;</strong></p>
+<pre class="r"><code>term_proc &lt;- lapply(procrustes_clean[c(2,4,6,8)], 
+                    function (x) x[search,]) %&gt;%
+  bind_rows() %&gt;% t()</code></pre>
+<p><strong>4. Append (2) &amp; (3) as single matrix;</strong></p>
+<pre class="r"><code>full &lt;- rbind(term_proc, syn_modern)</code></pre>
+<p><strong>5. Perform Principal Component Analysis (PCA) on (4);</strong></p>
+<pre class="r"><code>pca &lt;- prcomp(full)$x[,1:2] %&gt;% 
+  data.frame() %&gt;% 
+  rownames_to_column() %&gt;%
+  mutate(cs = ifelse(grepl(&#39;\\[&#39;, rowname), &#39;steelblue&#39;, &#39;black&#39;)) %&gt;%
+  mutate(sz = ifelse(cs == &#39;steelblue&#39;, 3.5, 2.5))</code></pre>
+<p><strong>6. Plot (5) in 2D space.</strong></p>
+<pre class="r"><code>set.seed(99)
+#Hack to build arrows in viz.
+to_end &lt;- pca %&gt;% slice(1:4) 
+for (i in 1:(nrow(to_end)-1)) {
+  to_end$PC3[i] &lt;- to_end$PC1[i+1]
+  to_end$PC4[i] &lt;- to_end$PC2[i+1] }
+
+ggplot(pca, aes(x=PC1, y=PC2))+
+  geom_point(color = &#39;darkgray&#39;, size = 1)+
+  ggrepel::geom_text_repel(
+    data  = pca, label = pca$rowname,
+    color = pca$cs, segment.size = .25,
+    direction = &quot;y&quot;, hjust = 0, size = pca$sz,
+    segment.alpha = .25) +
+  geom_segment(data = to_end %&gt;% slice(1:3), 
+               aes(x=PC1, y=PC2, xend =PC3, yend = PC4),
+               color = &#39;steelblue&#39;,
+               size = .6, linetype = 2,
+               arrow = arrow(length=unit(0.30,&quot;cm&quot;), 
+                             type = &quot;closed&quot;,
+                             angle = 25))+
+
+  ggthemes::theme_fivethirtyeight()  +
+  ggtitle(paste0(search, &#39; in nearest-neighbor space historically&#39;)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        plot.title = element_text(size=12))</code></pre>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><br></p>
+<p><strong>For good measure</strong>, we consider another example: <em>GRASP</em>. Historical nearest-neighbor space is visualized below. Very generally, <em>physical(ly) GRASP</em> → <em>mental(ly) GRASP</em>. By virtue of having a non-lemmatized cache of word embeddings, lots of fun details.</p>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+<div id="detecting-semantic-change" class="section level2">
+<h2>Detecting semantic change</h2>
+<p>Per <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span>, we can also compare a single form’s embeddings at two (or more) points in time to detect changes in distribution and, in theory, lexical semantics. <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> dub such changes as <strong>semantic displacement</strong>, which I like as it is a bit of a hedge. Below we compute the degree of semantic displacement (as cosine distances) for all forms in our historical lexicon between quarter-centuries [1883,1908) and [1983,2008].</p>
+<pre class="r"><code>sim_deltas &lt;- sapply(rownames(procrustes_clean[[8]]), function (x) 
+  lsa::cosine(procrustes_clean[[&quot;[1883,1908)&quot;]][x,],
+              procrustes_clean[[&quot;[1983,2008]&quot;]][x,]) ) %&gt;%
+  #Clean -- 
+  as.tibble() %&gt;% 
+  rownames_to_column(var = &#39;form&#39;) %&gt;%
+  mutate(value = round(value, 3)) %&gt;%
+  arrange(desc(value)) %&gt;%
+  rename(sim_t1_t2 = value)</code></pre>
+<p>The table below highlights forms with the highest degree of semantic displacement from [1883,1908) to [1983,2008]. Again, we add some frequency data to fill out the story some.</p>
+<pre class="r"><code>freq_deltas &lt;- freqs_by_gen %&gt;%
+  filter(quarter %in% c(&quot;[1883,1908)&quot;, &quot;[1983,2008]&quot;) &amp;
+           form %in% rownames(procrustes_clean[[8]])) %&gt;%
+  select(-freq) %&gt;%
+  spread(quarter, ppm) %&gt;%
+  mutate(log_freq_t1_t2 = round(log(`[1983,2008]`/`[1883,1908)`),3)) %&gt;%
+  inner_join(sim_deltas) 
+
+freq_deltas %&gt;% arrange(sim_t1_t2) %&gt;% slice(1:6) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">form</th>
+<th align="right">[1883,1908)</th>
+<th align="right">[1983,2008]</th>
+<th align="right">log_freq_t1_t2</th>
+<th align="right">sim_t1_t2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">MID</td>
+<td align="right">2.50</td>
+<td align="right">25.54</td>
+<td align="right">2.324</td>
+<td align="right">0.081</td>
+</tr>
+<tr class="even">
+<td align="left">EXPLOIT</td>
+<td align="right">3.20</td>
+<td align="right">12.13</td>
+<td align="right">1.333</td>
+<td align="right">0.086</td>
+</tr>
+<tr class="odd">
+<td align="left">PITT</td>
+<td align="right">7.61</td>
+<td align="right">5.09</td>
+<td align="right">-0.402</td>
+<td align="right">0.113</td>
+</tr>
+<tr class="even">
+<td align="left">LURE</td>
+<td align="right">2.00</td>
+<td align="right">4.36</td>
+<td align="right">0.779</td>
+<td align="right">0.114</td>
+</tr>
+<tr class="odd">
+<td align="left">SICKLE</td>
+<td align="right">1.98</td>
+<td align="right">4.91</td>
+<td align="right">0.908</td>
+<td align="right">0.120</td>
+</tr>
+<tr class="even">
+<td align="left">COMMITMENT</td>
+<td align="right">2.32</td>
+<td align="right">52.74</td>
+<td align="right">3.124</td>
+<td align="right">0.123</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Based on these findings</strong>, we take a quick look at <em>COMMITMENT</em> in nearest-neighbor space historically. So, curious.</p>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>The plot below illustrates the relationship between <strong>changes in frequency and semantic displacement</strong> historically for all forms included in our lexicon. So, increases in frequency from t1 to t2 generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity). Does novel use cause increases in frequency, or vice versa?</p>
+<pre class="r"><code>freq_deltas %&gt;%  
+  ggplot(aes(x = log_freq_t1_t2, y =sim_t1_t2)) +
+  geom_point(size = .25)+
+  geom_smooth(method=&quot;loess&quot;, se=T, color = &#39;steelblue&#39;)+
+  ggtitle(&#39;Delta frequency &amp; semantic dispalcement: [1883,1908) to [1983,2008]&#39;)</code></pre>
+<p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Grains of salt abound. These methods are imperfect, and I think best suited for exploration. Examples of actual usage always tell a more complete story when investigating lexical change. Also, the word embeddings used here could be based on a larger corpus. That said, lots of fun to be had with the 1% embeddings, as well as some exploratory utility. Available <a href="https://github.com/jaytimm/google_ngrams_and_R/tree/master/google_one_percent_embeddings">here</a>.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-hamilton2016diachronic">
+<p>Hamilton, William L, Jure Leskovec, and Dan Jurafsky. 2016. “Diachronic Word Embeddings Reveal Statistical Laws of Semantic Change.” <em>arXiv Preprint arXiv:1605.09096</em>.</p>
+</div>
+<div id="ref-li2019macroscope">
+<p>Li, Ying, Tomas Engelthaler, Cynthia SQ Siew, and Thomas T Hills. 2019. “The Macroscope: A Tool for Examining the Historical Structure of Language.” <em>Behavior Research Methods</em>. Springer, 1–14.</p>
+</div>
+</div>
+</div>
