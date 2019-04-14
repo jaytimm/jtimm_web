@@ -15,8 +15,7 @@ tags: ['rstats', 'corpus-ling']
 banner: banners/grasp.png
 ---
 
-
-This post builds on a guide available [here](https://github.com/jaytimm/google_ngrams_and_R) that codes through the sampling of Google n-gram data and building of historical word embeddings for the investigation of lexical semantic change.  Here, we consider (and unpack) some methods presented in @hamilton2016diachronic & @li2019macroscope for aligning historical matrices/embeddings and visualizing semantic change.
+I have developed a [Git Hub guide](https://github.com/jaytimm/google_ngrams_and_R) that demonstrates a simple workflow for sampling Google n-gram data and building historical word embeddings with the aim of investigating lexical semantic change.  Here, we build on this workflow, and unpack some methods presented in @hamilton2016diachronic & @li2019macroscope for aligning historical matrices/embeddings and visualizing semantic change.
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -30,7 +29,7 @@ library(tidyverse)
 
 As detailed in the Git Hub post, the historical embeddings utilized here span eight quarter-centuries from 1808 to 2008, and are derived from a ~1% sample of Google's **English One Million** 5-gram corpus.  Long story short of workflow:
 
-* Build term-feature matrices based on simple co-occurrence;  Word embeddings.  
+* Build term-feature matrices based on simple co-occurrence;
 * Weight/transform matrices via positive-pointwise mutual information; 
 * Homogenize feature set across all time periods;  
 * Compress feature set to 250 latent dimensions via SVD.  

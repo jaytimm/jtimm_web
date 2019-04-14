@@ -27,15 +27,14 @@ banner: banners/grasp.png
 </ul>
 </div>
 
-<p>This post builds on a guide available <a href="https://github.com/jaytimm/google_ngrams_and_R">here</a> that codes through the sampling of Google n-gram data and building of historical word embeddings for the investigation of lexical semantic change. Here, we consider (and unpack) some methods presented in <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> &amp; <span class="citation">Li et al. (<a href="#ref-li2019macroscope">2019</a>)</span> for aligning historical matrices/embeddings and visualizing semantic change.</p>
+<p>I have developed a <a href="https://github.com/jaytimm/google_ngrams_and_R">Git Hub guide</a> that demonstrates a simple workflow for sampling Google n-gram data and building historical word embeddings with the aim of investigating lexical semantic change. Here, we build on this workflow, and unpack some methods presented in <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> &amp; <span class="citation">Li et al. (<a href="#ref-li2019macroscope">2019</a>)</span> for aligning historical matrices/embeddings and visualizing semantic change.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
 <hr />
 <div id="google-n-gram-data" class="section level2">
 <h2>Google n-gram data</h2>
 <p>As detailed in the Git Hub post, the historical embeddings utilized here span eight quarter-centuries from 1808 to 2008, and are derived from a ~1% sample of Google’s <strong>English One Million</strong> 5-gram corpus. Long story short of workflow:</p>
 <ul>
-<li>Build term-feature matrices based on simple co-occurrence; Word embeddings.<br />
-</li>
+<li>Build term-feature matrices based on simple co-occurrence;</li>
 <li>Weight/transform matrices via positive-pointwise mutual information;</li>
 <li>Homogenize feature set across all time periods;<br />
 </li>
