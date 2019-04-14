@@ -386,7 +386,7 @@ ggplot(pca, aes(x=PC1, y=PC2))+
 
 ##Detecting semantic change
 
-Per @hamilton2016diachronic, we can also compare a single form's embeddings at two (or more) points in time to detect changes in distribution and, in theory, lexical semantics.  @hamilton2016diachronic dub such changes as **semantic displacement**, which I like as it is a bit of a hedge.  Below we compute the degree of semantic displacement (as cosine distances) for all forms in our historical lexicon between quarter-centuries [1883,1908) and [1983,2008].    
+Per @hamilton2016diachronic, we can also compare a single form's embeddings at two (or more) points in time to detect changes in distribution and, in theory, lexical semantics.  @hamilton2016diachronic dub such changes **semantic displacement** -- below we compute the degree of semantic displacement (as cosine distances) for all forms in our historical lexicon between quarter-centuries [1883,1908) and [1983,2008].    
 
 
 ```{r}
@@ -501,7 +501,7 @@ ggplot(pca, aes(x=PC1, y=PC2))+
 
 
 
-The plot below illustrates the relationship between **changes in frequency and semantic displacement** historically for all forms included in our lexicon. So, increases in frequency from t1 to t2 generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity).  Does novel use cause increases in frequency, or vice versa?  
+The plot below illustrates the relationship between **delta frequency and semantic displacement** from t1 to t2 for all forms included in our lexicon. So, increases in frequency from t1 to t2 are generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity).  Does novel use cause increases in frequency, or vice versa?  
 
 ```{r fig.height=6, message=FALSE, warning=FALSE}
 freq_deltas %>%  

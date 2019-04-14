@@ -204,7 +204,7 @@ ggplot(pca, aes(x=PC1, y=PC2))+
 </div>
 <div id="detecting-semantic-change" class="section level2">
 <h2>Detecting semantic change</h2>
-<p>Per <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span>, we can also compare a single form’s embeddings at two (or more) points in time to detect changes in distribution and, in theory, lexical semantics. <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> dub such changes as <strong>semantic displacement</strong>, which I like as it is a bit of a hedge. Below we compute the degree of semantic displacement (as cosine distances) for all forms in our historical lexicon between quarter-centuries [1883,1908) and [1983,2008].</p>
+<p>Per <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span>, we can also compare a single form’s embeddings at two (or more) points in time to detect changes in distribution and, in theory, lexical semantics. <span class="citation">Hamilton, Leskovec, and Jurafsky (<a href="#ref-hamilton2016diachronic">2016</a>)</span> dub such changes <strong>semantic displacement</strong> – below we compute the degree of semantic displacement (as cosine distances) for all forms in our historical lexicon between quarter-centuries [1883,1908) and [1983,2008].</p>
 <pre class="r"><code>sim_deltas &lt;- sapply(rownames(procrustes_clean[[8]]), function (x) 
   lsa::cosine(procrustes_clean[[&quot;[1883,1908)&quot;]][x,],
               procrustes_clean[[&quot;[1983,2008]&quot;]][x,]) ) %&gt;%
@@ -281,7 +281,7 @@ freq_deltas %&gt;% arrange(sim_t1_t2) %&gt;% slice(1:6) %&gt;% knitr::kable()</c
 </table>
 <p><strong>Based on these findings</strong>, we take a quick look at <em>COMMITMENT</em> in nearest-neighbor space historically. So, curious.</p>
 <p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
-<p>The plot below illustrates the relationship between <strong>changes in frequency and semantic displacement</strong> historically for all forms included in our lexicon. So, increases in frequency from t1 to t2 generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity). Does novel use cause increases in frequency, or vice versa?</p>
+<p>The plot below illustrates the relationship between <strong>delta frequency and semantic displacement</strong> from t1 to t2 for all forms included in our lexicon. So, increases in frequency from t1 to t2 are generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity). Does novel use cause increases in frequency, or vice versa?</p>
 <pre class="r"><code>freq_deltas %&gt;%  
   ggplot(aes(x = log_freq_t1_t2, y =sim_t1_t2)) +
   geom_point(size = .25)+
