@@ -105,14 +105,7 @@ for (i in 1:length(tfms_mats)) {
 
 gridExtra::grid.arrange(grobs = g, nrow = 2)</code></pre>
 <p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-<p>So, a form <strong>on the semantic move</strong> historically:</p>
-<ul>
-<li>Roughly: <em>CONSPICUOUS/ REMARKABLE</em> → <em>SUBSTANTIAL/ MARKED</em>;<br />
-</li>
-<li>Also a form that has become decidedly more frequent;<br />
-</li>
-<li>Collectively, changes (very roughly) reflect (1) the (novel) use of <em>SIGNIFICANT</em> in the (burgeoning, ca. late 19th century) field of Statistics, and (2) the continued development of the field of Statistics over the past century or so.</li>
-</ul>
+<p>So, a form <strong>on the semantic move</strong> historically. Roughly: <em>CONSPICUOUS/ REMARKABLE</em> → <em>SUBSTANTIAL/ MARKED</em>. Also a form that has become decidedly more frequent. Collectively, changes (very roughly) reflect (1) the (novel) use of <em>SIGNIFICANT</em> in the (burgeoning, ca. late 19th century) field of Statistics, and (2) the continued development of the field of Statistics over the past century or so.</p>
 </div>
 <div id="procrustes-pca-visualizing-semantic-change" class="section level2">
 <h2>Procrustes, PCA &amp; visualizing semantic change</h2>
@@ -198,7 +191,6 @@ ggplot(pca, aes(x=PC1, y=PC2))+
         axis.text.y=element_blank(),
         plot.title = element_text(size=12))</code></pre>
 <p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
-<p><br></p>
 <p><strong>For good measure</strong>, we consider another example: <em>GRASP</em>. Historical nearest-neighbor space is visualized below. Very generally, <em>physical(ly) GRASP</em> → <em>mental(ly) GRASP</em>. By virtue of having a non-lemmatized cache of word embeddings, lots of fun details.</p>
 <p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
@@ -279,7 +271,7 @@ freq_deltas %&gt;% arrange(sim_t1_t2) %&gt;% slice(1:6) %&gt;% knitr::kable()</c
 </tr>
 </tbody>
 </table>
-<p><strong>Based on these findings</strong>, we take a quick look at <em>COMMITMENT</em> in nearest-neighbor space historically. So, curious.</p>
+<p><strong>Based on these findings</strong>, we take a quick look at <em>COMMITMENT</em> in nearest-neighbor space historically.</p>
 <p><img src="/post/2019-03-29-lexical-change-procrustes_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 <p>The plot below illustrates the relationship between <strong>delta frequency and semantic displacement</strong> from t1 to t2 for all forms included in our lexicon. So, increases in frequency from t1 to t2 are generally accompanied by higher degrees of semantic displacement (ie, lower cosine similarity). Does novel use cause increases in frequency, or vice versa?</p>
 <pre class="r"><code>freq_deltas %&gt;%  

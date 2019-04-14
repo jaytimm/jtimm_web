@@ -156,11 +156,7 @@ for (i in 1:length(tfms_mats)) {
 gridExtra::grid.arrange(grobs = g, nrow = 2)
 ```
 
-So, a form **on the semantic move** historically:  
-
-* Roughly: *CONSPICUOUS/ REMARKABLE* &rarr; *SUBSTANTIAL/ MARKED*;  
-* Also a form that has become decidedly more frequent;  
-* Collectively, changes (very roughly) reflect (1) the (novel) use of *SIGNIFICANT* in the (burgeoning, ca. late 19th century) field of Statistics, and (2) the continued development of the field of Statistics over the past century or so.   
+So, a form **on the semantic move** historically.  Roughly: *CONSPICUOUS/ REMARKABLE* &rarr; *SUBSTANTIAL/ MARKED*.  Also a form that has become decidedly more frequent.  Collectively, changes (very roughly) reflect (1) the (novel) use of *SIGNIFICANT* in the (burgeoning, ca. late 19th century) field of Statistics, and (2) the continued development of the field of Statistics over the past century or so.   
 
 
 
@@ -297,8 +293,6 @@ ggplot(pca, aes(x=PC1, y=PC2))+
         plot.title = element_text(size=12))
 ```
 
-<br>
-
 **For good measure**, we consider another example: *GRASP*.  Historical nearest-neighbor space is visualized below.  Very generally, *physical(ly) GRASP* &rarr; *mental(ly) GRASP*. By virtue of having a non-lemmatized cache of word embeddings, lots of fun details. 
 
 
@@ -418,7 +412,7 @@ freq_deltas %>% arrange(sim_t1_t2) %>% slice(1:6) %>% knitr::kable()
 ```
 
 
-**Based on these findings**, we take a quick look at *COMMITMENT* in nearest-neighbor space historically.  So, curious.
+**Based on these findings**, we take a quick look at *COMMITMENT* in nearest-neighbor space historically.
 
 ```{r echo=FALSE, fig.height=6, message=FALSE, warning=FALSE}
 set.seed(99)
