@@ -95,7 +95,8 @@ Next, we perform ideal point estimation using the `wnominate::wnominate` functio
 
 ```{r message=FALSE, warning=FALSE}
 ideal_2D <- wnominate::wnominate (roll_obj,
-                                  polarity=c("BURT","BURT")) #
+                                  dims = 2,
+                                  polarity = c("BURT","BURT"))
 ```
 
 
