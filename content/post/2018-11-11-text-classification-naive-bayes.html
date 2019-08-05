@@ -25,14 +25,6 @@ banner: banners/naivebayes.png
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
-<div id="TOC">
-<ul>
-<li><a href="#building-a-historical-genre-based-corpus">Building a historical, genre-based corpus</a></li>
-<li><a href="#building-a-naive-bayes-classifier">Building a Naive Bayes classifier</a></li>
-<li><a href="#model-assessment-confusion-matrix">Model assessment &amp; confusion matrix</a></li>
-<li><a href="#summary">Summary</a></li>
-</ul>
-</div>
 
 <p>In this short post, we outline a Naive Bayes (NB) approach to genre-based text classification. First, we introduce &amp; describe a corpus derived from Google News’ RSS feed, which includes source and genre information. We then train, test &amp; evaluate the efficacy of an NB classifier applied to online news genres, with some fairly nice results. Here, we focus on the nuts/bolts of an R-based workflow, and leave discussion of theory &amp; Bayesian assumptions for another day.</p>
 <pre class="r"><code>library(e1071)
@@ -41,12 +33,11 @@ library(corpuslingr)
 library(tidyverse)
 library(knitr)
 #library(quicknews)#devtools::install_github(&quot;jaytimm/quicknews&quot;)</code></pre>
-<div id="building-a-historical-genre-based-corpus" class="section level2">
-<h2>Building a historical, genre-based corpus</h2>
+<p>##Building a historical, genre-based corpus</p>
 <p>For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News’ RSS feed. The corpus was built using my <code>quicknews</code> package, and assembled over the course of roughly two weeks (10/29/18 ~ 11/15/18).</p>
 <p>Metadata were collected and articles scraped/annotated/aggregated to BOWs three times a day using the Windows task scheduler app. The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available <a href="https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R">here</a>.</p>
 <p><strong>Metadata include</strong> the genre (as defined by Google News) &amp; domain name of article source; they also include the full/raw text of each article. The script above updates corpus (as a collection of BOWs) and metadata (as TIF) each time it is called by the task scheduler.</p>
-<pre class="r"><code>setwd(&quot;C:\\Users\\jason\\Google Drive\\GitHub\\packages\\quicknews\\data-raw&quot;)
+<pre class="r"><code>setwd(local1)
 qnews_tif &lt;- readRDS(&#39;qnews_eg_tif.rds&#39;)
 qnews_bow &lt;- readRDS(&#39;qnews_eg_corpus.rds&#39;)%&gt;%
   mutate(doc_id = as.integer(doc_id)) %&gt;%
@@ -61,7 +52,7 @@ qnews_bow &lt;- readRDS(&#39;qnews_eg_corpus.rds&#39;)%&gt;%
   DT::datatable(options = list(pageLength = 8,dom = &#39;t&#39;, scrollX = TRUE),
               rownames = FALSE, width=&quot;100%&quot;, escape=FALSE)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["topic_business","topic_entertainment","topic_health","topic_nation","topic_science","topic_technology","topic_world","TOTAL"],[150292,246617,292680,251564,254331,296630,273732,1765846],[253,432,441,362,398,447,445,2778]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>search<\/th>\n      <th>tokens<\/th>\n      <th>texts<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["topic_business","topic_entertainment","topic_health","topic_nation","topic_science","topic_technology","topic_world","TOTAL"],[480338,624332,607545,647611,556040,698772,660620,4275258],[814,1119,961,989,869,1170,1019,6941]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>search<\/th>\n      <th>tokens<\/th>\n      <th>texts<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":8,"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[8,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 <p>The plot below illustrates the growth of our corpus (by genre) over time.</p>
 <pre class="r"><code>library(ggthemes)
 qnews_bow %&gt;% 
@@ -78,7 +69,7 @@ qnews_bow %&gt;%
   theme(legend.position = &quot;bottom&quot;)+
   scale_y_continuous(labels = function(x) paste0(format(x/1000000), &#39; mil&#39;)) +
   labs(title = &quot;Composition of corpus (in tokens) over time&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Lastly, and largely for good measure, we take a quick look at corpus composition in terms of article sources. The plot below summarizes the top content generators within each genre as measured by article counts.</p>
 <pre class="r"><code>qnews_tif %&gt;% 
   group_by(search, source) %&gt;% 
@@ -102,10 +93,8 @@ qnews_bow %&gt;%
   theme(plot.title = element_text(size=12))+ 
   coord_flip()+
   labs(title=&quot;Most frequent domains by Google News search topic&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-</div>
-<div id="building-a-naive-bayes-classifier" class="section level2">
-<h2>Building a Naive Bayes classifier</h2>
+<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>##Building a Naive Bayes classifier</p>
 <p>The table below illustrates the structure of our genre-based corpus (post some removal of stop words &amp; other less informative lemma types). The corpus, then, represents each constituent article as a bag-of-words (BOW).</p>
 <pre class="r"><code>corpus_as_bow &lt;- qnews_bow %&gt;%  
   filter(pos %in% c(&#39;VERB&#39;, &#39;ADV&#39;,&#39;NOUN&#39;, &#39;ADJ&#39;, &#39;PROPN&#39;) &amp; 
@@ -151,21 +140,19 @@ test_data &lt;- corpus_as_dtm[-trainIndex, ] #Demo distributions.</code></pre>
           as.matrix(test_data[,3:ncol(test_data)]))</code></pre>
 <p>Output contains a vector of genre predictions for each text in the test data set. eg:</p>
 <pre class="r"><code>head(test_predicted)</code></pre>
-<pre><code>## [1] topic_nation   topic_nation   topic_business topic_health  
-## [5] topic_business topic_health  
+<pre><code>## [1] topic_nation  topic_world   topic_health  topic_health  topic_science
+## [6] topic_science
 ## 7 Levels: topic_business topic_entertainment ... topic_world</code></pre>
-</div>
-<div id="model-assessment-confusion-matrix" class="section level2">
-<h2>Model assessment &amp; confusion matrix</h2>
+<p>##Model assessment &amp; confusion matrix</p>
 <p>So, to get a sense of classifier efficacy in identifying the genre of a given article posted on Google News, we calculate a cross-tab of observed &amp; predicted genres via the <code>confusionMatrix</code> function from <code>caret</code>.</p>
 <pre class="r"><code>cfm &lt;- caret::confusionMatrix(data = test_predicted,
                               test_data$search)</code></pre>
 <p><strong>Overall fitness statistics</strong> of our model can be accessed via the <code>overall</code> element from the list of outputs generated by the <code>confusionMatrix</code> function. So, classifier accuracy is quite good at ~ 80%. I am sure this is not at gold standard levels; however, seemingly alright for a simple lemma-based approach to text classification.</p>
 <pre class="r"><code>cfm$overall</code></pre>
 <pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
-##     0.81084337     0.77858092     0.78251138     0.83694717     0.16144578 
+##   0.8056758057   0.7726217922   0.7880007629   0.8224845042   0.1688311688 
 ## AccuracyPValue  McnemarPValue 
-##     0.00000000     0.02121729</code></pre>
+##   0.0000000000   0.0001735602</code></pre>
 <p>Lastly, we visualize the confusion matrix based on the <code>table</code> element of output as a tile plot below. Tiles in the most prominent shade of blue reflect correct classifications.</p>
 <pre class="r"><code>ggplot(data = as.data.frame(cfm$table) ,
            aes(x = Reference, y = Prediction)) +
@@ -175,7 +162,7 @@ test_data &lt;- corpus_as_dtm[-trainIndex, ] #Demo distributions.</code></pre>
     theme(legend.position = &quot;none&quot;,
           axis.text.x=element_text(angle=45,hjust=1)) + 
     labs(title=&quot;Confusion Matrix&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <p>Output from the <code>confusionMatrix</code> function also includes a host of model diagnostics. The table below summarizes some of the more common diagnostics by genre, including <em>sensitivity</em> (1 - proportion of false negatives), <em>specificity</em> (1 - proportion of false positives), and the average of the two, <em>balanced accuracy</em>.</p>
 <pre class="r"><code>cfm$byClass %&gt;% data.frame() %&gt;%
   select (Sensitivity, Specificity, Balanced.Accuracy) %&gt;%
@@ -185,9 +172,6 @@ test_data &lt;- corpus_as_dtm[-trainIndex, ] #Demo distributions.</code></pre>
   DT::datatable(options = list(pageLength = 7,dom = &#39;t&#39;, scrollX = TRUE),
               rownames = FALSE, width=&quot;100%&quot;, escape=FALSE) </code></pre>
 <div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["topic_business","topic_entertainment","topic_health","topic_nation","topic_science","topic_technology","topic_world"],[0.55,0.85,0.91,0.79,0.86,0.9,0.71],[0.94,0.98,0.98,0.95,0.99,0.97,0.97],[0.74,0.91,0.94,0.87,0.93,0.94,0.84]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>topic<\/th>\n      <th>Sensitivity<\/th>\n      <th>Specificity<\/th>\n      <th>Balanced.Accuracy<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":7,"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
-</div>
-<div id="summary" class="section level2">
-<h2>Summary</h2>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["topic_business","topic_entertainment","topic_health","topic_nation","topic_science","topic_technology","topic_world"],[0.55,0.85,0.89,0.79,0.88,0.85,0.78],[0.97,0.97,0.98,0.96,0.97,0.97,0.97],[0.76,0.91,0.93,0.88,0.93,0.91,0.87]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>topic<\/th>\n      <th>Sensitivity<\/th>\n      <th>Specificity<\/th>\n      <th>Balanced.Accuracy<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":7,"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[7,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p>##Summary</p>
 <p>So, a super-quick code-through for building a fairly simple Naive Bayes classifier for genre-based text classification. Largely an excuse on my end to collate some thoughts &amp; resources, and to have a resource to point to (which seems to be lacking re NB text classification in R). Cheers.</p>
-</div>

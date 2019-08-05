@@ -37,9 +37,13 @@ Metadata were collected and articles scraped/annotated/aggregated to BOWs three 
 
 **Metadata include** the genre (as defined by Google News) & domain name of article source; they also include the full/raw text of each article.  The script above updates corpus (as a collection of BOWs) and metadata (as TIF) each time it is called by the task scheduler. 
 
+```{r include=FALSE}
+local1 <- "/home/jtimm/jaetimm@gmail.com/GitHub/packages/quicknews/data-raw"
+```
+
 
 ```{r message=FALSE, warning=FALSE}
-setwd("C:\\Users\\jason\\Google Drive\\GitHub\\packages\\quicknews\\data-raw")
+setwd(local1)
 qnews_tif <- readRDS('qnews_eg_tif.rds')
 qnews_bow <- readRDS('qnews_eg_corpus.rds')%>%
   mutate(doc_id = as.integer(doc_id)) %>%
