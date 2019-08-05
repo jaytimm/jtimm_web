@@ -29,16 +29,16 @@ library(knitr)
 ```
 
 
-##Building a historical, genre-based corpus
+## Building a historical, genre-based corpus
 
-For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus was built using my `quicknews` package, and assembled over the course of roughly two weeks (10/29/18 ~ 11/15/18).
+For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus was built using my `quicknews` package, and assembled over the course of roughly one month (10/29/18 ~ 11/30/18).
 
 Metadata were collected and articles scraped/annotated/aggregated to BOWs three times a day using the Windows task scheduler app.  The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
 
 **Metadata include** the genre (as defined by Google News) & domain name of article source; they also include the full/raw text of each article.  The script above updates corpus (as a collection of BOWs) and metadata (as TIF) each time it is called by the task scheduler. 
 
 ```{r include=FALSE}
-local1 <- "/home/jtimm/jaetimm@gmail.com/GitHub/packages/quicknews/data-raw"
+local1 <- "/home/jtimm/jt_work/GitHub/packages/quicknews/data-raw"
 ```
 
 
@@ -61,7 +61,7 @@ totals <- qnews_bow %>%
 ```
 
 
-The table below summarizes the composition of our corpus in terms of genre.  So, in a little over two weeks, we have assembled a ~2.8K text corpus comprised of ~1.8 million words.  And fairly balanced as well from a genre perspective.  
+The table below summarizes the composition of our corpus in terms of genre.  So, in roughly a month, we have assembled a ~6.9K text corpus comprised of ~4.2 million words.  And fairly balanced as well from a genre perspective.  
 
 ```{r}
 qnews_bow %>%
@@ -86,7 +86,7 @@ qnews_bow %>%
   summarize(tokens = sum(txtf)) %>%
   group_by(search) %>% 
   mutate(cum_tok = cumsum(tokens))%>%
-  filter(tokens > 350) %>%
+  filter(tokens > 351) %>%
   ggplot(aes(x=date, y=cum_tok, fill = search)) +
   geom_area(alpha = 0.75, color = 'gray') +
   ggthemes::scale_fill_economist()+
@@ -127,7 +127,7 @@ qnews_tif %>%
 
 
 
-##Building a Naive Bayes classifier 
+## Building a Naive Bayes classifier 
 
 The table below illustrates the structure of our genre-based corpus (post some removal of stop words & other less informative lemma types).  The corpus, then, represents each constituent article as a bag-of-words (BOW). 
 
@@ -211,7 +211,7 @@ head(test_predicted)
 
 
 
-##Model assessment & confusion matrix
+## Model assessment & confusion matrix
 
 
 So, to get a sense of classifier efficacy in identifying the genre of a given article posted on Google News, we calculate a cross-tab of observed & predicted genres via the `confusionMatrix` function from `caret`. 
@@ -262,6 +262,6 @@ cfm$byClass %>% data.frame() %>%
 
 
 
-##Summary
+## Summary
 
 So, a super-quick code-through for building a fairly simple Naive Bayes classifier for genre-based text classification.  Largely an excuse on my end to collate some thoughts & resources, and to have a resource to point to (which seems to be lacking re NB text classification in R).  Cheers.  

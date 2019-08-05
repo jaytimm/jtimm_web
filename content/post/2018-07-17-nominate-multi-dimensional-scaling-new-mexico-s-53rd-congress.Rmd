@@ -15,15 +15,6 @@ tags: ['rstats','new mexico', 'open-government', 'mds']
 banner: banners/mds53.png
 ---
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "##",
-  progress = FALSE, 
-  verbose = FALSE)
-```
-
-
 This is the second in a series of posts investigating voting patterns in New Mexico's 53rd State Legislature (NMSL53).  In this post, we detail the use of @poole2011ideology 's ideal point estimation procedure (aka [NOMINATE](https://voteview.com/about)) to examine **political ideologies** in NMSL53 using the R package `wnominate` [@Poole2011wnominate]. 
 
 
@@ -47,7 +38,7 @@ We quickly run through the ideal points estimation procedure using `wnominate`, 
 
 
 
-##Ideal points estimation
+## Ideal points estimation
 
 
 Roll call data for New Mexico's 53rd State Legislature are made available as a data frame called `nml_rollcall` in my `nmlegisdatr` package.  As can be noted below, roll call data are in a long format, with each row representing a unique legislator-bill vote.  
@@ -111,7 +102,7 @@ names(ideal_2D)
 
 
 
-##Legislators in political space
+## Legislators in political space
 
 
 The `legislator` element contains model results-proper, ie, the ideal point estimates.  Again, these estimates represent coordinates in a two-dimensional space bounded by a unit circle.  Below we extract these coordinates, and add legislator details (eg, party affiliation and legislative district) for subsequent analyses.  
@@ -146,8 +137,8 @@ The figure below illustrates 1D scores plotted against rank for New Mexico's 53r
 ggplot(senate_data, aes(x=reorder(Representative, coord1D), 
                        y=coord1D, 
                        label=Representative)) + 
-  geom_point(stat='identity', aes(col=Party), size=4.5)  +
-  wnomadds::scale_color_rollcall()+
+  geom_point(stat='identity', aes(col=Party), size=3.5)  +
+  wnomadds::scale_color_party()+
   geom_text(size=2.5, nudge_y = -0.1) +
   labs(title="Figure 1: Legislator ideal point estimates in one-dimensional political space") + 
   ggthemes::theme_fivethirtyeight()+
@@ -177,7 +168,7 @@ d2 <- ggplot(senate_data, aes(x=coord1D, y=coord2D)) +
   geom_point(aes(color = Party),
              size= 3, 
              shape= 17) +
- scale_color_rollcall() + 
+  wnomadds::scale_color_party() + 
   theme(legend.position = 'bottom') +
   geom_text(aes(label=Representative), 
             size=2.5, 
@@ -203,7 +194,7 @@ d2
 
 
 
-##Legislation in 2D political space
+## Legislation in 2D political space
 
 Figure 2, then, represents how legislators voted on all pieces of legislation in a given legislature. Per the NOMINATE procedure, the underlying structure of this political space is based on individual roll call cutting lines.  A **cutting line** bisects the political space, dividing legislators who voted 'Yea' for a given piece of legislation from those who voted 'Nay'.  
 
@@ -251,8 +242,8 @@ Here, we take a bit more detailed perspective on cutting line coordinates and ro
 
 ```{r message=FALSE, warning=FALSE}
 with_cuts <- wnomadds::wnm_get_cutlines(ideal_2D, 
-                                    rollcall_obj = roll_obj, 
-                                    arrow_length = 0.05)
+                                        rollcall_obj = roll_obj, 
+                                        arrow_length = 0.05)
 ```
 
 
@@ -269,7 +260,7 @@ The plot below illustrates cutting lines, legislator ideal points, and roll call
 
 ```{r fig.height=7, message=FALSE, warning=FALSE}
 ggplot () + 
-  wnomadds::scale_color_rollcall() + 
+  wnomadds::scale_color_party() + 
   theme(legend.position = 'bottom') +
   geom_point(data=senate_data, 
                aes(x=coord1D, y=coord2D,color = Party),
@@ -541,7 +532,7 @@ ggplot(aes(x=coord1D, y=coord2D)) +
 The plot illustrates a fairly clean division among Republicans in the Senate with respect to marijuana-based legislation.  Republican State Senators with higher scores on 2D are generally less likely to support legislation friendly to marijuana, ie, social conservatism > small government.  The opposite is true for Republican State Senators with lower scores on 2D. Democrats, in contrast, stand united on the issue.  The plot sheds some additional light on the political ideology underlying the second dimension, and supports a social conservatism element to 2D.  
 
 
-##A quick geographical perspective
+## A quick geographical perspective
 
 Lastly, we investigate a potential relationship between geography and second dimension scores.  Using the super convenient `tigris` package, we obtain a shape file for upper house legislative districts in New Mexico.  Then we join our table containing ideal point estimates for each legislator.  
 
@@ -585,7 +576,7 @@ addPolygons(popup = ~ Representative,
 
 
 
-##Political ideology in NMSL53
+## Political ideology in NMSL53
 
 So, a **brief synopsis** of model results and subsequent discussions. The first dimension of the model captures variation in political ideology based in traditional partisan divisions.  The ideology underlying the second dimension, on the other hand, is less straightforward/defined, and perhaps most easily described as non-partisan in nature.  Per marijuana-based legislation, eg, social conservatism certainly constitutes some of the 2D ideology.  Higher 2D scores for Senators representing more rural districts aligns with this particular interpretation as well.
 
@@ -593,10 +584,10 @@ When we consider both dimensions concurrently (per ideal point estimates in Figu
 
 
 
-##Summary
+## Summary
 
 So, hopefully a helpful methodological walk-through of the NOMINATE procedure.  I am not a political scientist, and what I know about New Mexico state politics I have learned while writing this post.  Hopefully more well-informed folks in New Mexico will put these methods to smarter uses.  General elections are nigh.
 
 
 
-##References
+## References
