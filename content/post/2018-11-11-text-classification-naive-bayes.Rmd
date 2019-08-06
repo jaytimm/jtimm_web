@@ -22,7 +22,6 @@ In this short post, we outline a Naive Bayes (NB) approach to genre-based text c
 ```{r message=FALSE, warning=FALSE}
 library(e1071)
 library(caret)
-library(corpuslingr)
 library(tidyverse)
 library(knitr)
 #library(quicknews)#devtools::install_github("jaytimm/quicknews")
@@ -31,11 +30,10 @@ library(knitr)
 
 ## Building a historical, genre-based corpus
 
-For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus was built using my `quicknews` package, and assembled over the course of roughly one month (10/29/18 ~ 11/30/18).
+For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus (as TIF) was built using my `quicknews` package, and assembled over the course of roughly one month (10/29/18 ~ 11/30/18).  Article text & metadata were scraped/collected three times a day using the Windows task scheduler app.  **Metadata include** the genre (as defined by Google News) & domain name of article source.
 
-Metadata were collected and articles scraped/annotated/aggregated to BOWs three times a day using the Windows task scheduler app.  The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
+The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
 
-**Metadata include** the genre (as defined by Google News) & domain name of article source; they also include the full/raw text of each article.  The script above updates corpus (as a collection of BOWs) and metadata (as TIF) each time it is called by the task scheduler. 
 
 ```{r include=FALSE}
 local1 <- "/home/jtimm/jt_work/GitHub/packages/quicknews/data-raw"
@@ -134,7 +132,7 @@ The table below illustrates the structure of our genre-based corpus (post some r
 ```{r}
 corpus_as_bow <- qnews_bow %>%  
   filter(pos %in% c('VERB', 'ADV','NOUN', 'ADJ', 'PROPN') & 
-           !lemma %in% c(toupper(corpuslingr::clr_ref_stops),'') & 
+           !lemma %in% c(toupper(tm::stopwords()),'') & 
            grepl('^[A-Z]', lemma)) 
 ```
 
@@ -147,9 +145,7 @@ corpus_as_bow %>%
 
 
 
-To build a Naive Bayes classifier, we first need to transform our BOW corpus into a document-term matrix.  The two structures are functionally equivalent; the latter is simply a "wide" rendition of the former.  
-
-In addition to this basic transformation, the pipe below (1) excludes superfrequent/ infrequent terms from the matrix based on document frequencies, and (2) normalizes each document vector to account for variation in document length (--- smarter approaches exist). 
+To build a Naive Bayes classifier via `caret`, we first need to transform our BOW corpus from long to wide format.  In addition to this basic transformation, the pipe below (1) excludes superfrequent/ infrequent terms from the matrix based on document frequencies, and (2) normalizes each document vector to account for variation in document length (--- infinitely smarter approaches exist). 
 
 
 ```{r}
@@ -165,6 +161,8 @@ corpus_as_dtm <- corpus_as_bow %>%
   select(-docf) %>%
   group_by(doc_id) %>%
   mutate(n = n/sqrt(sum(n^2))) %>% #Doc freqs as unit vector
+
+  # Make wide.
   spread(lemma,n) %>%
   replace(., is.na(.), 0)%>%
   ungroup() %>%
