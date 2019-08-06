@@ -206,7 +206,7 @@ classifier &lt;- e1071::naiveBayes(as.matrix(train_data),
 <pre class="r"><code>cfm$byClass %&gt;% data.frame() %&gt;%
   select (Sensitivity, Specificity, Balanced.Accuracy) %&gt;%
   rownames_to_column(var = &#39;topic&#39;) %&gt;%
-  mutate(topic = gsub(&#39;Class: &#39;,&#39;&#39;, topic)) %&gt;%
+  mutate(topic = gsub(&#39;Class: &#39;,&#39;&#39;, topic)) %&gt;% 
   mutate_if(is.numeric, round, 2) %&gt;% 
   knitr::kable() </code></pre>
 <table>

@@ -225,7 +225,7 @@ Output from the `confusionMatrix` function also includes a host of model diagnos
 cfm$byClass %>% data.frame() %>%
   select (Sensitivity, Specificity, Balanced.Accuracy) %>%
   rownames_to_column(var = 'topic') %>%
-  mutate(topic = gsub('Class: ','', topic)) %>%
+  mutate(topic = gsub('Class: ','', topic)) %>% 
   mutate_if(is.numeric, round, 2) %>% 
   knitr::kable() 
 ```
