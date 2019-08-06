@@ -28,11 +28,10 @@ library(knitr)
 ```
 
 
+
 ## Building a historical, genre-based corpus
 
-For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus (as TIF) was built using my `quicknews` package, and assembled over the course of roughly one month (10/29/18 ~ 11/30/18).  Article text & metadata were scraped/collected three times a day using the Windows task scheduler app.  **Metadata include** the genre (as defined by Google News) & domain name of article source.
-
-The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
+For demonstration purposes, I have built a fairly small corpus comprised of national news articles from Google News' RSS feed. The corpus (as TIF) was built using my `quicknews` package, and assembled over the course of roughly one month (10/29/18 ~ 11/30/18).  Article text & metadata were scraped/collected three times a day using the Windows task scheduler app.  The R script used for corpus assembly (which should scale quite nicely to different/novel search types) is available [here](https://github.com/jaytimm/quicknews/blob/master/task/build_qnews_corpus.R). 
 
 
 ```{r include=FALSE}
@@ -42,49 +41,41 @@ local1 <- "/home/jtimm/jt_work/GitHub/packages/quicknews/data-raw"
 
 ```{r message=FALSE, warning=FALSE}
 setwd(local1)
-qnews_tif <- readRDS('qnews_eg_tif.rds')
-qnews_bow <- readRDS('qnews_eg_corpus.rds')%>%
-  mutate(doc_id = as.integer(doc_id)) %>%
-  left_join(qnews_tif %>% select(doc_id, search))
+qnews_tif <- readRDS('qnews_eg_tif.rds') %>%
+  mutate(length = lengths(gregexpr("\\W+", text)) + 1)
 ```
 
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-totals <- qnews_bow %>%
-  filter(pos != 'PUNCT') %>%
-  summarize(tokens = sum(txtf),
-            texts = length(unique(doc_id))) %>%
-  mutate(search = 'TOTAL') %>%
-  select(search, tokens, texts)
-```
-
-
-The table below summarizes the composition of our corpus in terms of genre.  So, in roughly a month, we have assembled a ~6.9K text corpus comprised of ~4.2 million words.  And fairly balanced as well from a genre perspective.  
+**Metadata include** the genre (as defined by Google News) & domain name of article source.
 
 ```{r}
-qnews_bow %>%
-  filter(pos != 'PUNCT') %>%
+colnames(qnews_tif)
+```
+
+
+
+The table below summarizes the composition of our corpus in terms of genre.  So, in roughly a month, we have assembled a ~6.9K text corpus comprised of ~4.3 million words.  And fairly balanced as well from a genre perspective.  
+
+```{r message=FALSE, warning=FALSE}
+qnews_tif %>%
   group_by(search) %>%
-  summarize(tokens = sum(txtf),
+  summarize(tokens = sum(length),
             texts = length(unique(doc_id))) %>%
-  bind_rows(totals) %>%
-  DT::datatable(options = list(pageLength = 8,dom = 't', scrollX = TRUE),
-              rownames = FALSE, width="100%", escape=FALSE)
+  janitor::adorn_totals(c('row')) %>% 
+  knitr::kable()
 ```
 
 
 The plot below illustrates the growth of our corpus (by genre) over time.
 
 ```{r fig.height=7, message=FALSE, warning=FALSE}
-library(ggthemes)
-qnews_bow %>% 
-  filter(pos != 'PUNCT') %>%
-  left_join(qnews_tif)  %>%
+qnews_tif  %>%
   group_by(date, search) %>% 
-  summarize(tokens = sum(txtf)) %>%
+  summarize(tokens = sum(length)) %>%
   group_by(search) %>% 
   mutate(cum_tok = cumsum(tokens))%>%
-  filter(tokens > 351) %>%
+  filter(tokens > 360) %>%
+  
   ggplot(aes(x=date, y=cum_tok, fill = search)) +
   geom_area(alpha = 0.75, color = 'gray') +
   ggthemes::scale_fill_economist()+
@@ -127,46 +118,25 @@ qnews_tif %>%
 
 ## Building a Naive Bayes classifier 
 
-The table below illustrates the structure of our genre-based corpus (post some removal of stop words & other less informative lemma types).  The corpus, then, represents each constituent article as a bag-of-words (BOW). 
+To build a Naive Bayes classifier via `caret`, we first need to transform the tif corpus to a document-term matrix (DTM).  Here, we work within the `text2vec` framework (see vignette [here](http://text2vec.org/)).  Document vectors are L1-normalized and transformed via TF-IDF. Note that there are any number of other ways to transform a tif corpus to a DTM.  Despite some idiosyncratic syntax, `text2vec` is super-quick & super-flexible, and likely a bit overkill here. 
+ 
+```{r message=FALSE, warning=FALSE}
+t2v_corp <-  text2vec::itoken(qnews_tif$text, 
+                              preprocessor = tolower, 
+                              tokenizer = text2vec::word_tokenizer, 
+                              ids = qnews_tif$doc_id)
 
-```{r}
-corpus_as_bow <- qnews_bow %>%  
-  filter(pos %in% c('VERB', 'ADV','NOUN', 'ADJ', 'PROPN') & 
-           !lemma %in% c(toupper(tm::stopwords()),'') & 
-           grepl('^[A-Z]', lemma)) 
-```
+vocab <- text2vec::create_vocabulary(t2v_corp, 
+                                     stopwords = tm::stopwords()) %>%
+  text2vec::prune_vocabulary(doc_proportion_min = .01,
+                             doc_proportion_max = .4) %>%
+  arrange(term)
 
-```{r}
-corpus_as_bow %>%
-  head() %>%
-  DT::datatable(options = list(pageLength = 8,dom = 't', scrollX = TRUE),
-              rownames = FALSE, width="100%", escape=FALSE)
-```
+dtm <- text2vec::create_dtm(t2v_corp, 
+                            text2vec::vocab_vectorizer(vocab))
 
-
-
-To build a Naive Bayes classifier via `caret`, we first need to transform our BOW corpus from long to wide format.  In addition to this basic transformation, the pipe below (1) excludes superfrequent/ infrequent terms from the matrix based on document frequencies, and (2) normalizes each document vector to account for variation in document length (--- infinitely smarter approaches exist). 
-
-
-```{r}
-set.seed(99)
-corpus_as_dtm <- corpus_as_bow %>%
-  group_by(doc_id, search, lemma) %>%
-  summarize(n=n()) %>%
-  group_by(lemma) %>%
-  mutate(docf = length(unique(doc_id))) %>%
-  ungroup() %>%
-  mutate(docf = docf/length(unique(doc_id))) %>%
-  filter(docf > .02 & docf < .35) %>% #Filter infrequent/super-frequent.
-  select(-docf) %>%
-  group_by(doc_id) %>%
-  mutate(n = n/sqrt(sum(n^2))) %>% #Doc freqs as unit vector
-
-  # Make wide.
-  spread(lemma,n) %>%
-  replace(., is.na(.), 0)%>%
-  ungroup() %>%
-  mutate(search = as.factor(search))
+model_tfidf = text2vec::TfIdf$new()
+dtm <- model_tfidf$fit_transform(dtm)
 ```
 
 
@@ -174,19 +144,20 @@ Using the `caret` package, then, we divide the above matrix into a training set 
 
 ```{r}
 set.seed(99)
-trainIndex <- caret::createDataPartition(corpus_as_dtm$search, p=0.7)$Resample1
-train_data <- corpus_as_dtm[trainIndex, ]
-test_data <- corpus_as_dtm[-trainIndex, ] #Demo distributions.
+trainIndex <- caret::createDataPartition(qnews_tif$search, p=0.7)$Resample1
+train_data <- dtm[trainIndex, ]
+test_data <- dtm[-trainIndex, ] #Demo distributions.
 ```
 
 
 With the `naiveBayes` function from the `e1071` package, we build our Naive Bayes classifier based on the training portion of the document-term matrix.
 
 ```{r}
-classifier <- e1071::naiveBayes(
-  as.matrix(train_data[,3:ncol(train_data)]),
-                    train_data$search,
-                    laplace = 0.5) 
+qnews_tif$search <- as.factor(qnews_tif$search)
+
+classifier <- e1071::naiveBayes(as.matrix(train_data), 
+                                qnews_tif[trainIndex, ]$search, 
+                                laplace = 0.5) 
 ```
 
 
@@ -194,9 +165,7 @@ classifier <- e1071::naiveBayes(
 Then we implement the classifier on the test portion of the document-term matrix.
 
 ```{r}
-test_predicted <- 
-  predict(classifier,
-          as.matrix(test_data[,3:ncol(test_data)]))
+test_predicted <- predict(classifier, as.matrix(test_data))
 ```
 
 
@@ -215,13 +184,12 @@ head(test_predicted)
 So, to get a sense of classifier efficacy in identifying the genre of a given article posted on Google News, we calculate a cross-tab of observed & predicted genres via the `confusionMatrix` function from `caret`. 
 
 ```{r}
-cfm <- caret::confusionMatrix(data = test_predicted,
-                              test_data$search)
+cfm <- caret::confusionMatrix(data = test_predicted, qnews_tif[-trainIndex, ]$search)
 ```
 
 
 
-**Overall fitness statistics** of our model can be accessed via the `overall` element from the list of outputs generated by the `confusionMatrix` function.  So, classifier accuracy is quite good at ~ 80%.  I am sure this is not at gold standard levels; however, seemingly alright for a simple lemma-based approach to text classification. 
+**Overall fitness statistics** of our model can be accessed via the `overall` element from the list of outputs generated by the `confusionMatrix` function.  So, classifier accuracy is quite good at ~ 80%.  I am sure this is not at gold standard levels; however, seemingly alright for a simple token-based approach to text classification. 
 
 
 ```{r}
@@ -235,11 +203,16 @@ Lastly, we visualize the confusion matrix based on the `table` element of output
 ```{r fig.height=7}
 ggplot(data = as.data.frame(cfm$table) ,
            aes(x = Reference, y = Prediction)) +
-    geom_tile(aes(fill = log(Freq)), colour = "white") +
-    scale_fill_gradient(low = "white", high = "steelblue") +
-    geom_text(aes(x = Reference, y = Prediction, label = Freq)) +
+    geom_tile(aes(fill = log(Freq)), 
+              colour = "white") +
+    scale_fill_gradient(low = "white", 
+                        high = "steelblue") +
+    geom_text(aes(x = Reference, 
+                  y = Prediction, 
+                  label = Freq)) +
     theme(legend.position = "none",
-          axis.text.x=element_text(angle=45,hjust=1)) + 
+          axis.text.x=element_text(angle=45,
+                                   hjust=1)) + 
     labs(title="Confusion Matrix")
 ```
 
@@ -253,9 +226,8 @@ cfm$byClass %>% data.frame() %>%
   select (Sensitivity, Specificity, Balanced.Accuracy) %>%
   rownames_to_column(var = 'topic') %>%
   mutate(topic = gsub('Class: ','', topic)) %>%
-  mutate_if(is.numeric, round, 2) %>%
-  DT::datatable(options = list(pageLength = 7,dom = 't', scrollX = TRUE),
-              rownames = FALSE, width="100%", escape=FALSE) 
+  mutate_if(is.numeric, round, 2) %>% 
+  knitr::kable() 
 ```
 
 
