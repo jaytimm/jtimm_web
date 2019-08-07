@@ -32,6 +32,7 @@ banner: banners/mds53.png
 <li><a href="#ideal-points-estimation">Ideal points estimation</a></li>
 <li><a href="#legislators-in-political-space">Legislators in political space</a></li>
 <li><a href="#legislation-in-2d-political-space">Legislation in 2D political space</a></li>
+<li><a href="#political-space-and-marijuana">Political space and marijuana</a></li>
 <li><a href="#a-quick-geographical-perspective">A quick geographical perspective</a></li>
 <li><a href="#political-ideology-in-nmsl53">Political ideology in NMSL53</a></li>
 <li><a href="#summary">Summary</a></li>
@@ -40,15 +41,15 @@ banner: banners/mds53.png
 </div>
 
 <p>This is the second in a series of posts investigating voting patterns in New Mexico’s 53rd State Legislature (NMSL53). In this post, we detail the use of <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> ’s ideal point estimation procedure (aka <a href="https://voteview.com/about">NOMINATE</a>) to examine <strong>political ideologies</strong> in NMSL53 using the R package <code>wnominate</code> <span class="citation">(K. Poole et al. <a href="#ref-Poole2011wnominate">2011</a>)</span>.</p>
-<p>NOMINATE is a multidimensional scaling procedure that represents legislators in two-dimensional political “space” based on roll call voting records for a given legislature. Throughout the history of the US Congress, the first dimension of this space has captured ideological differences along the traditional liberal-conservative continuum, while the second dimension has captured ideological differences based in social conservatism that crosscut party affiliation <span class="citation">(K. T. Poole and Rosenthal <a href="#ref-poole2011ideology">2011</a>)</span>.</p>
-<p>Here we apply these methods to roll call data from NMSL53 made available in my R package <code>nmlegisdatr</code> to get of sense of the political ideologies informing voting behavior among <strong>New Mexico State Senators</strong>. We also introduce a simple package that I have developed called <code>wnomadds</code> that facilitates finer-grained exploration of <code>wnominate</code> results.</p>
+<p>NOMINATE is a <strong>multidimensional scaling procedure</strong> that represents legislators in two-dimensional political “space” based on roll call voting records for a given legislature. Throughout the history of the US Congress, the first dimension of this space has captured ideological differences along the traditional liberal-conservative continuum, while the second dimension has captured ideological differences based in social conservatism that crosscut party affiliation <span class="citation">(K. T. Poole and Rosenthal <a href="#ref-poole2011ideology">2011</a>)</span>.</p>
+<p><strong>Here we apply these methods to roll call data from NMSL53</strong> made available in my R package <code>nmlegisdatr</code> to get of sense of the political ideologies informing voting behavior among <strong>New Mexico State Senators</strong>. We also introduce a simple package that I have developed called <code>wnomadds</code> that facilitates finer-grained exploration of <code>wnominate</code> results.</p>
 <pre class="r"><code>library(wnomadds)#devtools::install_github(&quot;jaytimm/wnomadds&quot;)
 library(nmlegisdatr)#devtools::install_github(&quot;jaytimm/nmlegisdatr&quot;)
 library(tidyverse)
 library(wnominate)
 library(pscl)
 library(knitr)</code></pre>
-<p>We quickly run through the ideal points estimation procedure using <code>wnominate</code>, and then spend most of the post unpacking and visualizing model results.</p>
+<p><strong>We quickly run through the ideal points estimation procedure</strong> using <code>wnominate</code>, and then spend most of the post unpacking and visualizing model results.</p>
 <div id="ideal-points-estimation" class="section level2">
 <h2>Ideal points estimation</h2>
 <p>Roll call data for New Mexico’s 53rd State Legislature are made available as a data frame called <code>nml_rollcall</code> in my <code>nmlegisdatr</code> package. As can be noted below, roll call data are in a long format, with each row representing a unique legislator-bill vote.</p>
@@ -98,7 +99,7 @@ library(knitr)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>Before using the <code>wnominate</code> package to run an ideal point estimation, we first need to reshape roll call data from long to wide format. Resulting data structure casts each roll call as an individual column and each legislator as an individual row.</p>
+<p>Before using the <code>wnominate</code> package to run an ideal point estimation, we first need to <strong>reshape roll call data</strong> from long to wide format. Resulting data structure casts each roll call as an individual column and each legislator as an individual row.</p>
 <pre class="r"><code>wide_rolls &lt;- nmlegisdatr::nml_rollcall  %&gt;%
   filter(Chamber ==&#39;Senate&#39; &amp; !grepl(&#39;^LT&#39;, Representative)) %&gt;%
   mutate(Bill_Unique = paste0(Bill_Code, substr(Motion, 1,1))) %&gt;%
@@ -107,7 +108,7 @@ library(knitr)</code></pre>
                               Member_Vote == &quot;Nay&quot; ~ 6,
                               Member_Vote %in% c(&quot;Excused&quot;, &quot;Absent&quot;, &quot;Rec&quot;) ~ 9)) %&gt;%
   spread(key= Bill_Unique, value = Member_Vote)</code></pre>
-<p>Per this new data structure, we then build a roll call object using the <code>pscl</code> package.</p>
+<p><strong>Per this new data structure</strong>, we then build a roll call object using the <code>pscl</code> package.</p>
 <pre class="r"><code>roll_obj &lt;- pscl::rollcall(wide_rolls [,-1], 
                            yea = 1,
                            nay = 6,
@@ -115,7 +116,7 @@ library(knitr)</code></pre>
                            notInLegis = NA,
                            vote.names = colnames(wide_rolls)[2:ncol(wide_rolls)], 
                            legis.names = wide_rolls$Representative)</code></pre>
-<p>Next, we perform ideal point estimation using the <code>wnominate::wnominate</code> function. The <code>polarity</code> parameter is used to specify a legislator who is conservative on each dimension. This does not “train” (or influence) the model in any way; it only affects the polarity of legislator coordinates in two-dimensional space such that conservatives are to the right (ie, positive coordinates) and liberals to the left (ie, negative coordinates), per the standard political metaphor. This will become clearer shortly.</p>
+<p>Next, we perform <strong>ideal point estimation</strong> using the <code>wnominate::wnominate</code> function. The <code>polarity</code> parameter is used to specify a legislator who is conservative on each dimension. This does not “train” (or influence) the model in any way; it only affects the polarity of legislator coordinates in two-dimensional space such that conservatives are to the right (ie, positive coordinates) and liberals to the left (ie, negative coordinates), per the standard political metaphor. This will become clearer shortly.</p>
 <pre class="r"><code>ideal_2D &lt;- wnominate::wnominate (roll_obj,
                                   dims = 2,
                                   polarity = c(&quot;BURT&quot;,&quot;BURT&quot;))</code></pre>
@@ -150,8 +151,8 @@ library(knitr)</code></pre>
 ## 
 ## 
 ## W-NOMINATE estimation completed successfully.
-## W-NOMINATE took 3.168 seconds to execute.</code></pre>
-<p>The above notifications indicate that 507 out of the total 728 roll calls in the State Senate were excluded from the model by virtue of being lopsided, ie, legislation that is largely agreed upon does not shed light on how the political ideologies of legislators differ.</p>
+## W-NOMINATE took 3.212 seconds to execute.</code></pre>
+<p><strong>The above notifications</strong> indicate that 507 out of the total 728 roll calls in the State Senate were excluded from the model by virtue of being lopsided, ie, legislation that is largely agreed upon does not shed light on how the political ideologies of legislators differ.</p>
 <p>The resulting NOMINATE object consists of seven elements. We will unpack each as we go.</p>
 <pre class="r"><code>names(ideal_2D)</code></pre>
 <pre><code>## [1] &quot;legislators&quot; &quot;rollcalls&quot;   &quot;dimensions&quot;  &quot;eigenvalues&quot; &quot;beta&quot;       
@@ -159,13 +160,13 @@ library(knitr)</code></pre>
 </div>
 <div id="legislators-in-political-space" class="section level2">
 <h2>Legislators in political space</h2>
-<p>The <code>legislator</code> element contains model results-proper, ie, the ideal point estimates. Again, these estimates represent coordinates in a two-dimensional space bounded by a unit circle. Below we extract these coordinates, and add legislator details (eg, party affiliation and legislative district) for subsequent analyses.</p>
+<p>The <code>legislator</code> element contains model results-proper, ie, the ideal point estimates. Again, these estimates represent <strong>coordinates in a two-dimensional space</strong> bounded by a unit circle. Below we extract these coordinates, and add legislator details (eg, party affiliation and legislative district) for subsequent analyses.</p>
 <pre class="r"><code>row.names(ideal_2D$rollcalls) &lt;- colnames(wide_rolls)[2:ncol(wide_rolls)]
 
 senate_data &lt;- ideal_2D$legislators %&gt;% 
   bind_cols(nml_legislators %&gt;% 
               filter(Chamber == &#39;Senate&#39; &amp; !grepl(&#39;^LT&#39;, Representative))) </code></pre>
-<p>Sample output of legislator coordinates:</p>
+<p><strong>Sample output</strong> of legislator coordinates:</p>
 <table>
 <thead>
 <tr class="header">
@@ -226,8 +227,8 @@ senate_data &lt;- ideal_2D$legislators %&gt;%
 One-dimensional model
 </h4>
 </p>
-<p>First, we consider the first dimension of model results independently. As noted in <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> (and the NOMINATE literature generally), variation along the first dimension captures traditional partisan divisions in a given legislature.</p>
-<p>The figure below illustrates 1D scores plotted against rank for New Mexico’s 53rd State Senate. Legislators with scores closer to 1 are described as more conservative and those with scores closer to -1 are described as more liberal. Legislators with scores close to zero can be described as moderate.</p>
+<p>First, we consider the <strong>first dimension of model results</strong> independently. As noted in <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> (and the NOMINATE literature generally), variation along the first dimension captures traditional partisan divisions in a given legislature.</p>
+<p><strong>The figure below</strong> illustrates 1D scores plotted against rank for New Mexico’s 53rd State Senate. Legislators with scores closer to 1 are described as more conservative and those with scores closer to -1 are described as more liberal. Legislators with scores close to zero can be described as moderate.</p>
 <pre class="r"><code>ggplot(senate_data, aes(x=reorder(Representative, coord1D), 
                        y=coord1D, 
                        label=Representative)) + 
@@ -242,13 +243,13 @@ One-dimensional model
         plot.title = element_text(size=12)) +
   coord_flip()</code></pre>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>Per model results along 1D, then, <strong>William Soules</strong> from District 37 can be described as the most liberal Democrat in the Senate and <strong>William Sharer</strong> from District 1 the most conservative Republican. In general, Republicans are more moderate in their voting patterns — State Senators Rue, Kernan, and Neville in particular.</p>
+<p><strong>Per model results along 1D</strong>, then, <strong>William Soules</strong> from District 37 can be described as the most liberal Democrat in the Senate and <strong>William Sharer</strong> from District 1 the most conservative Republican. In general, Republicans are more moderate in their voting patterns — State Senators Rue, Kernan, and Neville in particular.</p>
 <p>
 <h4>
 Two-dimensional model
 </h4>
 </p>
-<p>Next, we consider a two-dimensional model. Again, per <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span>, variation along the second dimension in the US Congress has historically captured ideological differences based in social conservatism that crosscut party affiliation — reflecting different stances on social issues of the day, eg, the abolition of slavery, civil rights, and lifestyle choices.</p>
+<p>Next, we consider a <strong>two-dimensional model</strong>. Again, per <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span>, variation along the second dimension in the US Congress has historically captured ideological differences based in social conservatism that crosscut party affiliation — reflecting different stances on social issues of the day, eg, the abolition of slavery, civil rights, and lifestyle choices.</p>
 <pre class="r"><code>library(ggforce)
 circle &lt;- data.frame(
   x0 = 0, y0 = 0, r = 1)
@@ -270,13 +271,13 @@ d2 &lt;- ggplot(senate_data, aes(x=coord1D, y=coord2D)) +
                color = &#39;light gray&#39;,
                inherit.aes=FALSE) +
   coord_fixed() </code></pre>
-<p>As the figure illustrates, the added second dimension captures variation in voting patterns among legislators that crosscut party affiliation, most notably, dividing Senators in the Republican party. We will investigate the ideology underlying the second dimension in the NMSL53 Senate as we go.</p>
+<p><strong>As the figure illustrates</strong>, the added second dimension captures variation in voting patterns among legislators that crosscut party affiliation, most notably, dividing Senators in the Republican party. We will investigate the ideology underlying the second dimension in the NMSL53 Senate as we go.</p>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 </div>
 <div id="legislation-in-2d-political-space" class="section level2">
 <h2>Legislation in 2D political space</h2>
-<p>Figure 2, then, represents how legislators voted on all pieces of legislation in a given legislature. Per the NOMINATE procedure, the underlying structure of this political space is based on individual roll call cutting lines. A <strong>cutting line</strong> bisects the political space, dividing legislators who voted ‘Yea’ for a given piece of legislation from those who voted ‘Nay’.</p>
-<p>Long story short, the procedure positions legislator ideal points and cutting line coordinates to optimize correct classification of all votes cast (ie, Yea v. Nay) by all legislators in a given legislature. Figures 1 &amp; 2 are ultimately the product of this optimization process/algorithm.</p>
+<p>Figure 2, then, <strong>represents how legislators voted on all pieces of legislation in a given legislature</strong>. Per the NOMINATE procedure, the underlying structure of this political space is based on individual roll call cutting lines. A <strong>cutting line</strong> bisects the political space, dividing legislators who voted ‘Yea’ for a given piece of legislation from those who voted ‘Nay’.</p>
+<p><strong>Long story short</strong>, the procedure positions legislator ideal points and cutting line coordinates to optimize correct classification of all votes cast (ie, Yea v. Nay) by all legislators in a given legislature. Figures 1 &amp; 2 are ultimately the product of this optimization process/algorithm.</p>
 <p>The <code>wnominate</code> package provides two functions for investigating these cutting lines: <code>plot.cutlines()</code> and <code>plot.angles()</code>. The plots below illustrate (the first 50) cutting lines (along with legislator coordinates) and the distribution of cutting line angles, respectively.</p>
 <pre class="r"><code>par(mfrow=c(1, 2))
 wnominate::plot.cutlines(ideal_2D)</code></pre>
@@ -286,26 +287,26 @@ wnominate::plot.cutlines(ideal_2D)</code></pre>
        col=&quot;blue&quot;, font=2, pch=16) 
 wnominate::plot.angles(ideal_2D)</code></pre>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
-<p>As the histogram demonstrates, the large proportion of cutting lines have angles in the 90 degree range, ie, more vertical cutting lines that divide legislators along the first dimension. We can investigate the efficacy of these cutting lines in correctly classifying votes via the <code>fits</code> element of the NOMINATE object. Per the output below, a one-dimensional model correctly classifies 90.2% of all cast votes. A second dimension accounts for an additional 1.3% of cast votes.</p>
+<p><strong>As the histogram demonstrates</strong>, the large proportion of cutting lines have angles in the 90 degree range, ie, more vertical cutting lines that divide legislators along the first dimension. We can investigate the efficacy of these cutting lines in correctly classifying votes via the <code>fits</code> element of the NOMINATE object. <strong>Per the output below</strong>, a one-dimensional model correctly classifies 90.2% of all cast votes. A second dimension accounts for an additional 1.3% of cast votes.</p>
 <pre class="r"><code>ideal_2D$fits</code></pre>
 <pre><code>## correctclass1D correctclass2D         apre1D         apre2D          gmp1D 
 ##     90.2219086     91.5153656      0.5242494      0.5871825      0.7607498 
 ##          gmp2D 
 ##      0.8175293</code></pre>
 <p><strong>What does this mean?</strong> Well, we have a fairly good model. We also have a State Senate in NMSL53 that is quite uni-dimensional in its voting patterns; in other words, the traditional partisan (ie, liberal-conservative) divide (as represented in Figure 1) can account for most of the voting behavior in the NM Senate.</p>
-<p>While we do not have historical data for the NMSL, <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> have noted the shrinking utility of the second dimension in accounting for voting patterns in the US Congress historically — which they interpret (paraphrased very roughly here) as the recasting of certain social issues in the national political debate (ca 1980s) as economic ones.</p>
-<p>Despite the relatively small contribution of the second dimension in accounting for voting patterns in NMSL53, we carry on with our 2D model.</p>
+<p>While we do not have historical data for the NMSL, <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> have noted the <strong>shrinking utility of the second dimension</strong> in accounting for voting patterns in the US Congress historically — which they interpret (paraphrased very roughly here) as the recasting of certain social issues in the national political debate (ca 1980s) as economic ones.</p>
+<p>Despite the relatively small contribution of the second dimension in accounting for voting patterns in NMSL53, <strong>we carry on with our 2D model</strong>.</p>
 <p>
 <h4>
 Cutting line coordinates &amp; roll call polarity
 </h4>
 </p>
-<p>While the <code>wnominate::plot.cutlines()</code> and <code>wnominate::plot.angles()</code>are super convenient functions for quickly visualizing model results, they hide away underlying data and, hence, limit subsequent analyses and visualizations. To address these limitations, I have developed a simple R package called <code>wnomadds</code>. Functions included in the package, dubbed <code>wnm_get_cutlines()</code> and <code>wnm_get_angles()</code>, are based on existing <code>wnominate</code> code, and have been tweaked some to output data frames as opposed to base R plots.</p>
-<p>Here, we take a bit more detailed perspective on cutting line coordinates and roll call polarity using the <code>wnomadds::get_cutlines()</code> function. The function takes a <code>nomObj</code> object and a <code>rollcall</code> object (from the previous call to <code>pscl::rollcall</code>). In addition to cutting line coordinates, the function returns the coordinates of two points perpendicular to cutting line ends that specify the polarity of the roll call, ie, the direction of the ‘Yea’ vote in political space.</p>
+<p>While the <code>wnominate::plot.cutlines()</code> and <code>wnominate::plot.angles()</code>are super convenient functions for quickly visualizing model results, they hide away underlying data and, hence, limit subsequent analyses and visualizations. <strong>To address these limitations</strong>, I have developed a simple R package called <code>wnomadds</code>. Functions included in the package, dubbed <code>wnm_get_cutlines()</code> and <code>wnm_get_angles()</code>, are based on existing <code>wnominate</code> code, and have been tweaked some to output data frames as opposed to base R plots.</p>
+<p>Here, we take a bit more <strong>detailed perspective</strong> on cutting line coordinates and roll call polarity using the <code>wnomadds::get_cutlines()</code> function. The function takes a <code>nomObj</code> object and a <code>rollcall</code> object (from the previous call to <code>pscl::rollcall</code>). In addition to cutting line coordinates, the function returns the coordinates of two points perpendicular to cutting line ends that specify the polarity of the roll call, ie, the direction of the ‘Yea’ vote in political space.</p>
 <pre class="r"><code>with_cuts &lt;- wnomadds::wnm_get_cutlines(ideal_2D, 
                                         rollcall_obj = roll_obj, 
                                         arrow_length = 0.05)</code></pre>
-<p>Output contains four sets of (x,y) points. These four sets of points can be used to create three line segments via <code>geom_segment</code>: the actual cutting line and two line arrow segments denoting the polarity of the roll call.</p>
+<p><strong>Output</strong> contains four sets of (x,y) points. These four sets of points can be used to create three line segments via <code>geom_segment</code>: the actual cutting line and two line arrow segments denoting the polarity of the roll call.</p>
 <pre class="r"><code>head(with_cuts)</code></pre>
 <pre><code>##      Bill_Code       x_1         y_1           x_2        y_2      x_1a
 ## 1: R17_HB0001P 0.7665443  0.64219143  0.6828194649 -0.7305871 0.6979054
@@ -321,7 +322,7 @@ Cutting line coordinates &amp; roll call polarity
 ## 4:  0.1634160 -0.67954640 -0.6892576
 ## 5: -0.7944557 -0.08890971  0.9675827
 ## 6:  0.9867905 -0.24656740 -0.9685984</code></pre>
-<p>The plot below illustrates cutting lines, legislator ideal points, and roll call polarity.</p>
+<p><strong>The plot below</strong> illustrates cutting lines, legislator ideal points, and roll call polarity.</p>
 <pre class="r"><code>ggplot () + 
   wnomadds::scale_color_party() + 
   theme(legend.position = &#39;bottom&#39;) +
@@ -345,15 +346,15 @@ Cutting line coordinates &amp; roll call polarity
   coord_fixed(ratio=1) + 
   labs(title=&quot;Figure 3: Cutting lines, roll call polarity &amp; legislator coordinates&quot;)</code></pre>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
-<p>While a bit chaotic, the plot provides a nice high-level perspective on how legislation positions legislators in political space per the NOMINATE procedure. Again, most cutting lines are vertical in nature, dividing the legislature along partisan lines — perhaps most notable is the prevalence of vertical cutting lines on the right (ie, Republican) side of the plot. That said, there are some more horizontal cutting lines that reflect voting ideologies that crosscut political affiliation.</p>
+<p>While a bit chaotic, the plot provides a nice <strong>high-level perspective</strong> on how legislation positions legislators in political space per the NOMINATE procedure. Again, most cutting lines are vertical in nature, dividing the legislature along partisan lines — perhaps most notable is the prevalence of vertical cutting lines on the right (ie, Republican) side of the plot. That said, there are some more horizontal cutting lines that reflect voting ideologies that crosscut political affiliation.</p>
 <p>
 <h4>
 Cutting line angles &amp; legislative bills
 </h4>
 </p>
-<p>To get a sense of the types of legislation that divide the legislature along each dimension of political space (and the political ideologies underlying them), we use the <code>wnm_get_angles()</code> function to extract cutting line angles from the NOMINATE object.</p>
+<p>To get a sense of the types of legislation that <strong>divide the legislature along each dimension of political space</strong> (and the political ideologies underlying them), we use the <code>wnm_get_angles()</code> function to extract cutting line angles from the NOMINATE object.</p>
 <pre class="r"><code>angles &lt;- wnomadds::wnm_get_angles(ideal_2D)</code></pre>
-<p>Sample output includes legislation ID and cutting line angles:</p>
+<p><strong>Sample output</strong> includes legislation ID and cutting line angles:</p>
 <pre><code>##     Bill_Code     angle
 ## 1 R17_HB0001P  86.50989
 ## 2 R17_HB0002P  45.12991
@@ -361,7 +362,7 @@ Cutting line angles &amp; legislative bills
 ## 4 R17_HB0080P  27.56323
 ## 5 R17_HB0086P 110.20101
 ## 6 R17_HB0087P  78.28755</code></pre>
-<p>We can identify legislation that positions legislators in 1D by filtering the above output to roll calls with more vertical cutting lines. Here, we take a random sample of legislation with cutting line angles between 85 and 95 degrees.</p>
+<p>We can identify legislation that <strong>positions legislators in 1D</strong> by filtering the above output to roll calls with more vertical cutting lines. Here, we take a random sample of legislation with cutting line angles between 85 and 95 degrees.</p>
 <pre class="r"><code>set.seed(99)
 angles %&gt;%
   mutate(Bill_Code = gsub(&#39;.$&#39;, &#39;&#39;, Bill_Code)) %&gt;%
@@ -431,7 +432,7 @@ angles %&gt;%
 </tr>
 </tbody>
 </table>
-<p>Legislation with more horizontal cutting lines position legislators in 2D. A random sample of legislation with cutting line angles greater than 135 degrees or less than 45 degrees is presented below.</p>
+<p>Legislation with more horizontal cutting lines <strong>position legislators in 2D</strong>. A random sample of legislation with cutting line angles greater than 135 degrees or less than 45 degrees is presented below.</p>
 <pre class="r"><code>set.seed(99)
 angles %&gt;%
   mutate(Bill_Code = gsub(&#39;.$&#39;, &#39;&#39;, Bill_Code)) %&gt;%
@@ -501,14 +502,14 @@ angles %&gt;%
 </tr>
 </tbody>
 </table>
-<p>So, the two (random sub-) sets of legislation provide a super simple perspective on potential political ideologies underlying each dimension of our model. The sample of 1D legislation does in fact seem to speak to the traditional liberal-conservative divide.</p>
-<p>The sample of 2D legislation, on the other hand, is a bit of a mixed bag, and one that does not strictly speak to social conservatism (as per <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> in the case of US Congress). But certainly a collection of legislation that does not intuitively align with political affiliation.</p>
+<p>So, the two (random sub-) sets of legislation provide a super simple perspective on potential <strong>political ideologies underlying each dimension of our model</strong>. The sample of <strong>1D legislation</strong> does in fact seem to speak to the traditional liberal-conservative divide.</p>
+<p>The sample of <strong>2D legislation</strong>, on the other hand, is a bit of a mixed bag, and one that does not strictly speak to social conservatism (as per <span class="citation">K. T. Poole and Rosenthal (<a href="#ref-poole2011ideology">2011</a>)</span> in the case of US Congress). But certainly a collection of legislation that does not intuitively align with political affiliation.</p>
 <p>
 <h4>
 Individual roll calls &amp; ideal points
 </h4>
 </p>
-<p>Next, we combine the utility of the two functions included in <code>wnomadds</code> to demonstrate how individual roll calls bisect political space. Having extracted cutting line angles, we can now investigate how individual pieces of legislation divide the legislature in different ways. First, we consider (some cherry-picked) roll calls that divide the legislature along 1D.</p>
+<p>Next, we combine the utility of the two functions included in <code>wnomadds</code> to demonstrate how individual roll calls bisect political space. Having extracted cutting line angles, we can now investigate <strong>how individual pieces of legislation divide the legislature in different ways</strong>. First, we consider (some cherry-picked) roll calls that divide the legislature along 1D.</p>
 <pre class="r"><code>D1_cuts &lt;- c(&#39;R17_HB0484&#39;, &#39;R17_SB0140&#39;, &#39;R17_HJR10&#39;, 
              &#39;R18_SM023&#39;, &#39;R17_SB0155&#39;, &#39;R18_SM003&#39;)
 
@@ -520,7 +521,7 @@ sub &lt;- nmlegisdatr::nml_rollcall %&gt;%
 cut_sub &lt;- subset(with_cuts, Bill_Code %in% paste0(D1_cuts,&#39;P&#39;)) %&gt;%
   mutate(Bill_Code = gsub(&#39;.$&#39;, &#39;&#39;, Bill_Code)) %&gt;%
   inner_join(nml_legislation) </code></pre>
-<p>Then we plot/facet individual roll calls and cutting lines utilizing some shape/color palettes made available via <code>wnomadds</code> to visualize party affiliation and vote type per legislator.</p>
+<p>Then we <strong>plot/facet individual roll calls and cutting lines</strong> utilizing some shape/color palettes made available via <code>wnomadds</code> to visualize party affiliation and vote type per legislator.</p>
 <pre class="r"><code>d1 &lt;- sub %&gt;%
 ggplot(aes(x=coord1D, y=coord2D)) +
   geom_point(aes(color = Party_Member_Vote, 
@@ -557,22 +558,24 @@ ggplot(aes(x=coord1D, y=coord2D)) +
   labs(title=&quot;Figure 4: Selected 1D cutting lines and roll calls&quot;) +
   facet_wrap(~Bill_Title, labeller = label_wrap_gen(), ncol = 3) +
   theme(strip.text = element_text(size=7))</code></pre>
-<p>So, some nice examples that demonstrate how individual pieces of legislation divide legislators along 1D space and, more specifically, position legislators along the liberal-conservative continuum.</p>
+<p>So, some nice examples that demonstrate how individual pieces of legislation divide legislators along 1D space and, more specifically, <strong>position legislators along the liberal-conservative continuum</strong>.</p>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
-<p>Next, we consider (some cherry-picked) roll calls that divide the legislature along 2D.</p>
+<p>Next, we consider (some cherry-picked) roll calls that <strong>divide the legislature along 2D</strong>.</p>
 <pre class="r"><code>D2_cuts &lt;- c(&#39;R18_SB0176&#39;,&#39;R18_HB0079&#39;, &#39;R18_SB0030&#39;, 
              &#39;R17_SB0055&#39;, &#39;R18_SB0018&#39;, &#39;R17_HB0080&#39;)</code></pre>
-<p>Using the same <code>ggplot</code> pipe from above, we plot roll calls and cutting lines for legislation that crosscuts political affiliation in varying degrees. Roll calls below illustrate a curious faction comprised of the most conservative Republicans and some of the more moderate Democrats, one that collectively votes against more bureaucratic legislation. (Or some more informed explanation.)</p>
+<p>Using the same <code>ggplot</code> pipe from above, we plot roll calls and cutting lines for legislation that <strong>crosscuts political affiliation in varying degrees</strong>. Roll calls below illustrate a curious faction comprised of the most conservative Republicans and some of the more moderate Democrats, one that collectively votes against more bureaucratic legislation. (Or some more informed explanation.)</p>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
-<p>##Political space and marijuana</p>
-<p>Here, we take a quick look at roll calls for legislation related to marijuana. As a political issue, marijuana-friendly legislation is fun, especially for Republican legislators, as it pits social conservatism against small government &amp; libertarianism. An ideological cage-rattler, as it were. Again, we use the same <code>ggplot</code> pipe from above, and consider two pieces of marijuana-related legislation from the first session of NMSL53.</p>
+</div>
+<div id="political-space-and-marijuana" class="section level2">
+<h2>Political space and marijuana</h2>
+<p>Here, we take a quick look at roll calls for <strong>legislation related to marijuana</strong>. As a political issue, marijuana-friendly legislation is fun, especially for Republican legislators, as it pits social conservatism against small government &amp; libertarianism. An ideological cage-rattler, as it were. Again, we use the same <code>ggplot</code> pipe from above, and consider two pieces of marijuana-related legislation from the first session of NMSL53.</p>
 <pre class="r"><code>weed &lt;-c(&#39;R17_HB0527&#39;, &#39;R17_SB0258&#39;) </code></pre>
 <p><img src="/post/2018-07-17-nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
-<p>The plot illustrates a fairly clean division among Republicans in the Senate with respect to marijuana-based legislation. Republican State Senators with higher scores on 2D are generally less likely to support legislation friendly to marijuana, ie, social conservatism &gt; small government. The opposite is true for Republican State Senators with lower scores on 2D. Democrats, in contrast, stand united on the issue. The plot sheds some additional light on the political ideology underlying the second dimension, and supports a social conservatism element to 2D.</p>
+<p><strong>The plot illustrates a fairly clean division among Republicans in the Senate with respect to marijuana-based legislation</strong>. Republican State Senators with higher scores on 2D are generally less likely to support legislation friendly to marijuana, ie, social conservatism &gt; small government. The opposite is true for Republican State Senators with lower scores on 2D. Democrats, in contrast, stand united on the issue. The plot sheds some additional light on the political ideology underlying the second dimension, and supports a <strong>social conservatism</strong> element to 2D.</p>
 </div>
 <div id="a-quick-geographical-perspective" class="section level2">
 <h2>A quick geographical perspective</h2>
-<p>Lastly, we investigate a potential relationship between geography and second dimension scores. Using the super convenient <code>tigris</code> package, we obtain a shape file for upper house legislative districts in New Mexico. Then we join our table containing ideal point estimates for each legislator.</p>
+<p>Lastly, we investigate a potential relationship between <strong>geography and second dimension scores</strong>. Using the super convenient <code>tigris</code> package, we obtain a shape file for upper house legislative districts in New Mexico. Then we join our table containing ideal point estimates for each legislator.</p>
 <pre class="r"><code>library(tigris); options(tigris_use_cache = TRUE, tigris_class = &quot;sf&quot;)
 library(leaflet); library(sf)
 
@@ -581,7 +584,7 @@ senate_shape &lt;- tigris::state_legislative_districts(&quot;New Mexico&quot;,
                                                    cb = TRUE)%&gt;% 
   inner_join(senate_data, by = c(&#39;NAME&#39;=&#39;District&#39;)) %&gt;%
   st_set_crs(&#39;+proj=longlat +datum=WGS84&#39;)</code></pre>
-<p>We plot the 2D scores by upper house legislative district using the <code>leaflet</code> package. As the map illustrates, legislators with lower scores represent districts in the Albuquerque area (where roughly a third of the state’s population resides), as well as districts in the western part of the state. In contrast, legislators with higher 2D scores represent districts on the state’s periphery (north and south), which tend to be more rural districts.</p>
+<p><strong>We plot the 2D scores by upper house legislative district</strong> using the <code>leaflet</code> package. As the map illustrates, legislators with lower scores represent districts in the Albuquerque area (where roughly a third of the state’s population resides), as well as districts in the western part of the state. In contrast, legislators with higher 2D scores represent districts on the state’s periphery (north and south), which tend to be more rural districts.</p>
 <pre class="r"><code>pal &lt;- colorNumeric(palette =&quot;Purples&quot;, 
   domain = senate_data$coord2D)
 
@@ -606,11 +609,11 @@ addPolygons(popup = ~ Representative,
 <div id="political-ideology-in-nmsl53" class="section level2">
 <h2>Political ideology in NMSL53</h2>
 <p>So, a <strong>brief synopsis</strong> of model results and subsequent discussions. The first dimension of the model captures variation in political ideology based in traditional partisan divisions. The ideology underlying the second dimension, on the other hand, is less straightforward/defined, and perhaps most easily described as non-partisan in nature. Per marijuana-based legislation, eg, social conservatism certainly constitutes some of the 2D ideology. Higher 2D scores for Senators representing more rural districts aligns with this particular interpretation as well.</p>
-<p>When we consider both dimensions concurrently (per ideal point estimates in Figure 2), we get a nice perspective on two factions within the Republican party; namely, socially conservative Republicans more likely to vote with Democrats on social spending bills (eg, Health Care) and more traditional, libertarian-leaning Republicans. In contrast, Democrats in the Senate are a fairly unified group, which is likely a product of their strong majority.</p>
+<p><strong>When we consider both dimensions concurrently</strong> (per ideal point estimates in Figure 2), we get a nice perspective on two factions within the Republican party; namely, socially conservative Republicans more likely to vote with Democrats on social spending bills (eg, Health Care) and more traditional, libertarian-leaning Republicans. In contrast, Democrats in the Senate are a fairly unified group, which is likely a product of their strong majority.</p>
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>So, hopefully a helpful methodological walk-through of the NOMINATE procedure. I am not a political scientist, and what I know about New Mexico state politics I have learned while writing this post. Hopefully more well-informed folks in New Mexico will put these methods to smarter uses. General elections are nigh.</p>
+<p>So, hopefully a helpful <strong>methodological walk-through of the NOMINATE procedure</strong>. I am not a political scientist, and what I know about New Mexico state politics I have learned while writing this post. Hopefully more well-informed folks in New Mexico will put these methods to smarter uses. General elections are nigh.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
