@@ -24,15 +24,6 @@ banner: banners/corpus_query.png
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
-<div id="TOC">
-<ul>
-<li><a href="#search-syntax">Search syntax</a></li>
-<li><a href="#corpus-search">Corpus search</a></li>
-<li><a href="#search-summary">Search summary</a></li>
-<li><a href="#kwic-bow">KWIC &amp; BOW</a></li>
-<li><a href="#summary-and-shiny">Summary and shiny</a></li>
-</ul>
-</div>
 
 <p>This post demonstrates the use of a simple collection of functions from my R-package <code>corpuslingr</code>. Functions streamline two sets of corpus linguistics tasks:</p>
 <ul>
@@ -43,8 +34,7 @@ banner: banners/corpus_query.png
 <pre class="r"><code>library(tidyverse)
 library(corpuslingr) #devtools::install_github(&quot;jaytimm/corpuslingr&quot;)
 library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)</code></pre>
-<div id="search-syntax" class="section level2">
-<h2>Search syntax</h2>
+<p>##Search syntax</p>
 <p>Under the hood, <code>corpuslingr</code> search is regex-based &amp; tuple-based — akin to the <code>RegexpParser</code> function in Python’s Natural Language Toolkit (NLTK) — which facilitates search of grammatical and lexical patterns comprised of:</p>
 <ul>
 <li>different types of elements (eg, form, lemma, or part-of-speech),</li>
@@ -60,9 +50,7 @@ example search syntax
 </p>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["Simple form search","Simple lemma search","Lemma with POS search","Simple phrasal search","Phrasal search - POS/form","Phrasal search inc noun phrase","Phrasal search inc noun phrase","Suffix search","Infix search","Optional search w/ parens and ?","Multiple term search w parens and |","Multiple term search w parens and |","Indeterminate wildcard search w brackets and min/max","Multiple optional search"],["lime","DRINK","BARK~VERB","in the long run","ADJ and ADJ","VERB NPHR into VBG","VERB PRP$ way PREP NPHR","\\*tion","\\*break\\*","MD (NEG)? HAVE been","PRON (HOPE| WISH| DESIRE)","House (Republicans| Democrats)","NPHR BE (\\*){1,4} ADJ","(President)? (Bill)? Clinton"],["lime","drinks, drank, drinking","barked, barking","in the long run","happy and healthy, political and economical","trick someone into believing","make its way through the Senate","defenestration, nation, retaliation","breakable, heartbreaking","should have been, might not have been","He hoped, they wish","House Republicans, House Democrats","He was very, very happy; I'm not sure","Clinton, President Clinton, Bill Clinton"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>type<\/th>\n      <th>search_syntax<\/th>\n      <th>example<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":14,"dom":"t","order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,14,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-</div>
-<div id="corpus-search" class="section level2">
-<h2>Corpus search</h2>
+<p>##Corpus search</p>
 <p>For demo purposes, we use the <code>cdr_slate_ann</code> corpus from my <code>corpusdatr</code> package. A simple description of the corpus is available <a href="https://github.com/jaytimm/corpusdatr#slate-corpus">here</a>. Using the <code>corpuslingr::clr_set_corpus</code> function (which builds tuples and sets character onsets/offsets), we ready the corpus for search.</p>
 <pre class="r"><code>slate &lt;- corpusdatr::cdr_slate_ann %&gt;% 
   corpuslingr::clr_set_corpus()</code></pre>
@@ -80,6 +68,7 @@ SIMPLE SEARCH
   corpuslingr::clr_search_gramx(search=search1)%&gt;%
   select(doc_id,token,tag)%&gt;%
   head()</code></pre>
+<pre><code>## Column 1 [&#39;X..arbitrary.arbitrary.JJ...and.and.CC...capricious.capricious.JJ...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["doc_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["token"],"name":[2],"type":["chr"],"align":["left"]},{"label":["tag"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"1","2":"long-established and nonjudgmental","3":"JJ CC JJ"},{"1":"1","2":"quaint and archaic","3":"JJ CC JJ"},{"1":"1","2":"widespread and durable","3":"JJ CC JJ"},{"1":"2","2":"arbitrary and capricious","3":"JJ CC JJ"},{"1":"3","2":"national and international","3":"JJ CC JJ"},{"1":"3","2":"depressing and bleak","3":"JJ CC JJ"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
@@ -115,9 +104,7 @@ SEARCH IN CONTEXT
 {"columns":[{"label":["doc_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["eg"],"name":[2],"type":["int"],"align":["right"]},{"label":["searchToken"],"name":[3],"type":["chr"],"align":["left"]},{"label":["searchLemma"],"name":[4],"type":["chr"],"align":["left"]},{"label":["searchTag"],"name":[5],"type":["chr"],"align":["left"]},{"label":["searchPos"],"name":[6],"type":["chr"],"align":["left"]},{"label":["sentence_id"],"name":[7],"type":["int"],"align":["right"]},{"label":["token_id"],"name":[8],"type":["int"],"align":["right"]},{"label":["token"],"name":[9],"type":["chr"],"align":["left"]},{"label":["lemma"],"name":[10],"type":["chr"],"align":["left"]},{"label":["pos"],"name":[11],"type":["chr"],"align":["left"]},{"label":["tag"],"name":[12],"type":["chr"],"align":["left"]},{"label":["entity"],"name":[13],"type":["chr"],"align":["left"]},{"label":["tup"],"name":[14],"type":["chr"],"align":["left"]},{"label":["tupBeg"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["tupEnd"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["rw"],"name":[17],"type":["int"],"align":["right"]},{"label":["place"],"name":[18],"type":["fctr"],"align":["left"]}],"data":[{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"12","9":"systems","10":"system","11":"NOUN","12":"NNS","13":"","14":"<systems~system~NNS>","15":"6948","16":"6968","17":"443","18":"aContext"},{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"13","9":"market","10":"market","11":"NOUN","12":"NN","13":"","14":"<market~market~NN>","15":"6969","16":"6987","17":"444","18":"aContext"},{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"14","9":"to","10":"to","11":"PART","12":"TO","13":"","14":"<to~to~TO>","15":"6988","16":"6998","17":"445","18":"aContext"},{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"15","9":"bully","10":"bully","11":"VERB","12":"VB","13":"","14":"<bully~bully~VB>","15":"6999","16":"7015","17":"446","18":"aContext"},{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"16","9":"and","10":"and","11":"CCONJ","12":"CC","13":"","14":"<and~and~CC>","15":"7016","16":"7028","17":"447","18":"aContext"},{"1":"35","2":"1","3":"threaten its way into dominance","4":"threaten its way into dominance","5":"VB PRP$ NN IN NN","6":"VERB ADJ NOUN ADP NOUN","7":"22","8":"17","9":"threaten","10":"threaten","11":"VERB","12":"VB","13":"","14":"<threaten~threaten~VB>","15":"7029","16":"7051","17":"448","18":"token"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-</div>
-<div id="search-summary" class="section level2">
-<h2>Search summary</h2>
+<p>##Search summary</p>
 <p>The <code>clr_get_freq()</code> function enables quick aggregation of search results. It calculates token and text frequency for search terms, and allows the user to specify how to aggregate counts with the <code>agg_var</code> parameter.</p>
 <ul>
 <li><em>VERB up</em>, eg “pass up”</li>
@@ -133,6 +120,7 @@ SEARCH IN CONTEXT
     geom_col(width=.6, fill=&quot;steelblue&quot;) +  
     coord_flip()+
     labs(title=&quot;Top 20 instantiations of &#39;VERB up&#39; by frequency&quot;)</code></pre>
+<pre><code>## Column 1 [&#39;X..lighting.light.VBG...up.up.RB...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
 <p><img src="/post/2017-11-29-corpus-query-and-grammatical-constructions_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>Although search is quicker when searching for multiple search terms simultaneaously, in some cases it may be useful to treat multiple search terms distinctly using <code>lapply()</code>:</p>
 <pre class="r"><code>search3a &lt;- c(&quot;VERB across&quot;,
@@ -147,6 +135,10 @@ SEARCH IN CONTEXT
     mutate(search = search3a[y])
     }) %&gt;%  
   bind_rows()</code></pre>
+<pre><code>## Column 1 [&#39;X..moved.move.VBD...across.across.IN...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
+<pre><code>## Column 1 [&#39;X..go.go.VBP...through.through.IN...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
+<pre><code>## Column 1 [&#39;X..draws.draw.VBZ...out.out.RP...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
+<pre><code>## Column 1 [&#39;X..boiling.boil.VBG...down.down.RP...&#39;] of item 2 is missing in item 1. Use fill=TRUE to fill with NA (NULL for list columns), or use.names=FALSE to ignore column names. use.names=&#39;check&#39; (default from v1.12.2) emits this message and proceeds as if use.names=FALSE for  backwards compatibility. See news item 5 in v1.12.2 for options to control this message.</code></pre>
 <p>Summary by search:</p>
 <pre class="r"><code>vb_prep %&gt;%
   group_by(search) %&gt;%
@@ -157,10 +149,10 @@ SEARCH IN CONTEXT
 {"columns":[{"label":["search"],"name":[1],"type":["chr"],"align":["left"]},{"label":["gramx_freq"],"name":[2],"type":["int"],"align":["right"]},{"label":["gramx_type"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"VERB across","2":"82","3":"41"},{"1":"VERB down","2":"428","3":"130"},{"1":"VERB out","2":"1744","3":"292"},{"1":"VERB through","2":"283","3":"133"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p><br> Top 10 instantiations of each search pattern by search term: <img src="/post/2017-11-29-corpus-query-and-grammatical-constructions_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
-</div>
-<div id="kwic-bow" class="section level2">
-<h2>KWIC &amp; BOW</h2>
+<p><br>
+Top 10 instantiations of each search pattern by search term:
+<img src="/post/2017-11-29-corpus-query-and-grammatical-constructions_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>##KWIC &amp; BOW</p>
 <p>
 <h4>
 KEYWORD IN CONTEXT
@@ -227,9 +219,6 @@ BAG OF WORDS
     coord_flip()+
     labs(title=&quot;Co-occurrence frequencies for some late 20th century players&quot;)</code></pre>
 <p><img src="/post/2017-11-29-corpus-query-and-grammatical-constructions_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
-</div>
-<div id="summary-and-shiny" class="section level2">
-<h2>Summary and shiny</h2>
+<p>##Summary and shiny</p>
 <p>So, a quick demo of some <code>corpuslingr</code> functions for annotated corpus search &amp; summary of complex lexical-grammatical patterns in context.</p>
 <p>I have built a Shiny app to search/explore the Slate Magazine corpus available <a href="https://jasontimm.shinyapps.io/corpuslingr_demo/">here</a>. Code for building the app is available <a href="https://github.com/jaytimm/shiny_corpuslingr">here</a>. Swapping out the Slate corpus for a personal one should be fairly straightforward, with the caveat that the annotated corpus needs to be set/“tuple-ized” using the <code>clr_set_corpus</code> function from <code>corpuslingr</code>.</p>
-</div>

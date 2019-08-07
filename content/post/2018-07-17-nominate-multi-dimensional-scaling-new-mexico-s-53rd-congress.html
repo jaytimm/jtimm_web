@@ -150,7 +150,7 @@ library(knitr)</code></pre>
 ## 
 ## 
 ## W-NOMINATE estimation completed successfully.
-## W-NOMINATE took 3.203 seconds to execute.</code></pre>
+## W-NOMINATE took 3.168 seconds to execute.</code></pre>
 <p>The above notifications indicate that 507 out of the total 728 roll calls in the State Senate were excluded from the model by virtue of being lopsided, ie, legislation that is largely agreed upon does not shed light on how the political ideologies of legislators differ.</p>
 <p>The resulting NOMINATE object consists of seven elements. We will unpack each as we go.</p>
 <pre class="r"><code>names(ideal_2D)</code></pre>
@@ -231,7 +231,7 @@ One-dimensional model
 <pre class="r"><code>ggplot(senate_data, aes(x=reorder(Representative, coord1D), 
                        y=coord1D, 
                        label=Representative)) + 
-  geom_point(stat=&#39;identity&#39;, aes(col=Party), size=3.5)  +
+  geom_point(stat=&#39;identity&#39;, aes(col=Party), size=3.5)   +
   wnomadds::scale_color_party()+
   geom_text(size=2.5, nudge_y = -0.1) +
   labs(title=&quot;Figure 1: Legislator ideal point estimates in one-dimensional political space&quot;) + 

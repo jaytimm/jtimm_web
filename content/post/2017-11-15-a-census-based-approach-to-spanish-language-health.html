@@ -30,16 +30,6 @@ banner: banners/spanish.jpg
 <script src="/rmarkdown-libs/pymjs/pym.v1.js"></script>
 <script src="/rmarkdown-libs/widgetframe-binding/widgetframe.js"></script>
 
-<div id="TOC">
-<ul>
-<li><a href="#census-nutsbolts">Census nuts/bolts</a></li>
-<li><a href="#new-mexico-the-us">New Mexico &amp; the US</a></li>
-<li><a href="#some-macro-exploration">Some macro-exploration</a></li>
-<li><a href="#a-simple-model">A simple model</a></li>
-<li><a href="#some-final-notes">Some final notes</a></li>
-<li><a href="#references">References</a></li>
-</ul>
-</div>
 
 <p>In this post we investigate Spanish language maintenance within Hispanic communities in the US utilizing data from the US Census. Spanish language maintenance refers to the rate at which Hispanics within a given community speak Spanish.</p>
 <p>Here, we consider a census-based methodology presented in <span class="citation">Bills (<a href="#ref-bills1989us">1989</a>)</span> and <span class="citation">Bills, Chávez, and Hudson (<a href="#ref-bills1995geography">1995</a>)</span> to assess rates of Spanish language maintenance in metropolitan statistical areas (MSAs) in the US, as well as some geographic and demographic factors that may influence such rates. Ultimately, the goal is to provide a simple characterization of MSAs where Hispanics are more likely to be speaking Spanish.</p>
@@ -48,8 +38,7 @@ banner: banners/spanish.jpg
 library(tidycensus)
 library(DT)
 library(ggthemes)</code></pre>
-<div id="census-nutsbolts" class="section level2">
-<h2>Census nuts/bolts</h2>
+<p>##Census nuts/bolts</p>
 <p>Language data for the Hispanic population live in census table <code>B16006</code>, which provides summary counts of speakers by language spoken <em>at home</em> and level of English proficiency for the population over 5.</p>
 <p>To investigate variables comprising a particular census table, we can use the <code>load_variables</code> function from the <code>tidycensus</code> package.</p>
 <pre class="r"><code>spanLang &lt;- load_variables(2015, &quot;acs5&quot;, cache = FALSE) %&gt;%
@@ -104,9 +93,7 @@ Gathering ACS data
   select(NAME, GEOID, HispPopOver5, TotalPop, HispPop, PerHisp, EngMono, BiLing, SpanMono)%&gt;%
   ungroup()%&gt;%
   mutate(NAME = gsub(&quot;-.*(,)&quot;,&quot;\\1&quot;,NAME) %&gt;% gsub(&quot; Metro Area&quot;,&quot;&quot;,.))</code></pre>
-</div>
-<div id="new-mexico-the-us" class="section level2">
-<h2>New Mexico &amp; the US</h2>
+<p>##New Mexico &amp; the US</p>
 <p>So, we first take a comparative look at rates of Spanish language maintenance in New Mexico and some other MSAs rich in Hispanic heritage. Geographies in this subset, then, include the US, the state of New Mexico, all MSAs in New Mexico, and ten additional MSAs from around the country.</p>
 <pre class="r"><code>geoSample &lt;- c(&quot;1&quot;,&quot;35&quot;,&quot;10740&quot;, 
                &quot;29740&quot;, &quot;22140&quot;, 
@@ -138,7 +125,7 @@ Gathering ACS data
     backgroundPosition = &#39;right&#39;) %&gt;%
   DT::formatStyle(c(1:6),fontSize = &#39;85%&#39;)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[["Las Cruces, NM","Santa Fe, NM","Albuquerque, NM","New Mexico","Los Angeles, CA","Miami, FL","Houston, TX","Tucson, AZ","Austin, TX","Phoenix, AZ","Denver, CO","Chicago, IL-IN-WI","Farmington, NM","United States","Atlanta, GA","Jacksonville, FL"],[214,147,903,2084,13154,5861,6347,999,1889,4408,2704,9534,125,316515,5536,1402],[66.5,51.1,47.7,47.4,44.9,42.8,36.1,35.7,31.9,30,22.8,21.4,19.6,17.1,10.5,7.7],[26.5,42.4,50,42.2,19.4,10,20.8,36.1,33.7,34.1,43.2,20.7,51,26.3,18.4,38.9],[60.4,45.8,42.5,48.6,57.9,62.8,55.8,53.3,48.7,50.3,42.9,59.3,41.8,54.3,57.6,49.6],[12.9,11.5,7.2,9,22.3,26.7,23.1,10.3,17.3,15.4,13.6,19.7,6.4,19,23.5,10.5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>NAME<\/th>\n      <th>TotalPop<\/th>\n      <th>PerHisp<\/th>\n      <th>EngMono<\/th>\n      <th>BiLing<\/th>\n      <th>SpanMono<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":16,"dom":"t","scrollX":true,"fixedColumns":{"leftColumns":1},"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,16,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'85%'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-size':'85%'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background':isNaN(parseFloat(value)) || value <= 0 ? '' : 'linear-gradient(90deg, transparent ' + (100 - value)/100 * 100 + '%, cornflowerblue ' + (100 - value)/100 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0 ? '' : 'linear-gradient(90deg, transparent ' + (100 - value)/100 * 100 + '%, cornflowerblue ' + (100 - value)/100 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'background':isNaN(parseFloat(value)) || value <= 0 ? '' : 'linear-gradient(90deg, transparent ' + (100 - value)/100 * 100 + '%, cornflowerblue ' + (100 - value)/100 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'background':isNaN(parseFloat(value)) || value <= 0 ? '' : 'linear-gradient(90deg, transparent ' + (100 - value)/100 * 100 + '%, cornflowerblue ' + (100 - value)/100 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[["Las Cruces, NM","Santa Fe, NM","Albuquerque, NM","New Mexico","Los Angeles, CA","Miami, FL","Houston, TX","Tucson, AZ","Austin, TX","Phoenix, AZ","Denver, CO","Chicago, IL-IN-WI","Farmington, NM","United States","Atlanta, GA","Jacksonville, FL"],[214,147,903,2084,13154,5861,6347,999,1889,4408,2704,9534,125,316515,5536,1402],[66.5,51.1,47.7,47.4,44.9,42.8,36.1,35.7,31.9,30,22.8,21.4,19.6,17.1,10.5,7.7],[26.5,42.4,50,42.2,19.4,10,20.8,36.1,33.7,34.1,43.2,20.7,51,26.3,18.4,38.9],[60.4,45.8,42.5,48.6,57.9,62.8,55.8,53.3,48.7,50.3,42.9,59.3,41.8,54.3,57.6,49.6],[12.9,11.5,7.2,9,22.3,26.7,23.1,10.3,17.3,15.4,13.6,19.7,6.4,19,23.5,10.5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>NAME<\/th>\n      <th>TotalPop<\/th>\n      <th>PerHisp<\/th>\n      <th>EngMono<\/th>\n      <th>BiLing<\/th>\n      <th>SpanMono<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":16,"dom":"t","scrollX":true,"fixedColumns":{"leftColumns":1},"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,16,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'85%'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-size':'85%'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <p><br/></p>
 <p>As can be noted, there is a considerable amount of variation in the distribution of speaker-types across geographies. A less interactive, but more comprehensive display of this variation is presented in the figure below. The plot is sorted by rates of language maintenance (ie, <code>SpanMono</code> + <code>BiLing</code>). The percentage of Hispanics that are monolingual English speakers is transformed to a negative value to hack together a likert-like plot in a simple fashion.</p>
 <pre class="r"><code>summaryData %&gt;%
@@ -163,9 +150,7 @@ Gathering ACS data
 <li>In comparison to MSAs with higher rates of Spanish language maintenance, MSAs in New Mexico are decidedly less populous. While Hispanics comprise only 10% of Atlanta’s total population, for example, roughly 80% of Hispanics in Atlanta speak Spanish.</li>
 <li>Spanish monolinguals seem to contribute more to overall maintenance rates in MSAs outside of New Mexico.</li>
 </ul>
-</div>
-<div id="some-macro-exploration" class="section level2">
-<h2>Some macro-exploration</h2>
+<p>##Some macro-exploration</p>
 <p>Next, we consider variation in maintenance rates as a function of geographic location, Hispanic poulation density, and overall poulation for all MSAs in the (continental) US.</p>
 <p>
 <h4>
@@ -181,10 +166,2627 @@ library(sf)
 divs &lt;- tigris::divisions(cb=TRUE)%&gt;%
   st_transform(crs = &quot;+init=epsg:4326&quot;)%&gt;%
   select(NAME)</code></pre>
+<pre><code>## 
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 16 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 25 kB     
+Downloading: 41 kB     
+Downloading: 41 kB     
+Downloading: 41 kB     
+Downloading: 41 kB     
+Downloading: 49 kB     
+Downloading: 49 kB     
+Downloading: 49 kB     
+Downloading: 49 kB     
+Downloading: 49 kB     
+Downloading: 49 kB     
+Downloading: 53 kB     
+Downloading: 53 kB     
+Downloading: 53 kB     
+Downloading: 53 kB     
+Downloading: 53 kB     
+Downloading: 53 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 57 kB     
+Downloading: 73 kB     
+Downloading: 73 kB     
+Downloading: 73 kB     
+Downloading: 73 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 74 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 85 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 89 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 97 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 110 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 120 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 140 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 150 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 160 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 170 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 190 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 200 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 210 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 220 kB     
+Downloading: 240 kB     
+Downloading: 240 kB     
+Downloading: 240 kB     
+Downloading: 240 kB     
+Downloading: 240 kB     
+Downloading: 240 kB     
+Downloading: 250 kB     
+Downloading: 250 kB     
+Downloading: 250 kB     
+Downloading: 250 kB     
+Downloading: 250 kB     
+Downloading: 250 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 260 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 280 kB     
+Downloading: 290 kB     
+Downloading: 290 kB     
+Downloading: 290 kB     
+Downloading: 290 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 300 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 310 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 330 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 340 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 360 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 380 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 390 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 410 kB     
+Downloading: 420 kB     
+Downloading: 420 kB     
+Downloading: 420 kB     
+Downloading: 420 kB     
+Downloading: 420 kB     
+Downloading: 420 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 430 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 440 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 460 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 470 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 490 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 510 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 520 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 540 kB     
+Downloading: 550 kB     
+Downloading: 550 kB     
+Downloading: 550 kB     
+Downloading: 550 kB     
+Downloading: 550 kB     
+Downloading: 550 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 560 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 570 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 590 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 600 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 620 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 640 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 650 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 670 kB     
+Downloading: 680 kB     
+Downloading: 680 kB     
+Downloading: 680 kB     
+Downloading: 680 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 690 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 700 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 720 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 730 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 750 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 770 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 780 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 800 kB     
+Downloading: 810 kB     
+Downloading: 810 kB     
+Downloading: 820 kB     
+Downloading: 820 kB     
+Downloading: 830 kB     
+Downloading: 830 kB     
+Downloading: 850 kB     
+Downloading: 850 kB     
+Downloading: 850 kB     
+Downloading: 850 kB     
+Downloading: 850 kB     
+Downloading: 850 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 860 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 880 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 900 kB     
+Downloading: 910 kB     
+Downloading: 910 kB     
+Downloading: 910 kB     
+Downloading: 910 kB     
+Downloading: 930 kB     
+Downloading: 930 kB     
+Downloading: 940 kB     
+Downloading: 940 kB     
+Downloading: 950 kB     
+Downloading: 950 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 960 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 980 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 990 kB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.1 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.2 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.3 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.4 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.5 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.6 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.7 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.8 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 1.9 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.1 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.2 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.3 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.4 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.5 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB     
+Downloading: 2.6 MB</code></pre>
 <p>US divisions include:</p>
 <pre><code>## [1] &quot;New England&quot;        &quot;Middle Atlantic&quot;    &quot;East North Central&quot;
-## [4] &quot;West North Central&quot; &quot;South Atlantic&quot;     &quot;Mountain&quot;          
-## [7] &quot;Pacific&quot;            &quot;East South Central&quot; &quot;West South Central&quot;</code></pre>
+## [4] &quot;West North Central&quot; &quot;East South Central&quot; &quot;West South Central&quot;
+## [7] &quot;Mountain&quot;           &quot;South Atlantic&quot;     &quot;Pacific&quot;</code></pre>
 <p>Next, we import a MSA polygon, get the centroids of each polygon, and spatially join the US division polygon to the centroids. All of this can be accomplished in the following pipe with the help of the <code>sf</code> package.</p>
 <pre class="r"><code>metros &lt;- tigris::core_based_statistical_areas(cb=TRUE)%&gt;% #import poly
   rename(msa_name=NAME)%&gt;%
@@ -193,13 +2795,303 @@ divs &lt;- tigris::divisions(cb=TRUE)%&gt;%
   sf::st_join(divs)%&gt;% #spatial join with us divisions
   select(GEOID,NAME)%&gt;%
   na.omit</code></pre>
+<pre><code>## 
+  |                                                                       
+  |                                                                 |   0%
+  |                                                                       
+  |                                                                 |   1%
+  |                                                                       
+  |=                                                                |   1%
+  |                                                                       
+  |=                                                                |   2%
+  |                                                                       
+  |==                                                               |   3%
+  |                                                                       
+  |==                                                               |   4%
+  |                                                                       
+  |===                                                              |   4%
+  |                                                                       
+  |===                                                              |   5%
+  |                                                                       
+  |====                                                             |   5%
+  |                                                                       
+  |====                                                             |   6%
+  |                                                                       
+  |====                                                             |   7%
+  |                                                                       
+  |=====                                                            |   7%
+  |                                                                       
+  |=====                                                            |   8%
+  |                                                                       
+  |======                                                           |   9%
+  |                                                                       
+  |======                                                           |  10%
+  |                                                                       
+  |=======                                                          |  10%
+  |                                                                       
+  |=======                                                          |  11%
+  |                                                                       
+  |========                                                         |  12%
+  |                                                                       
+  |========                                                         |  13%
+  |                                                                       
+  |=========                                                        |  13%
+  |                                                                       
+  |=========                                                        |  14%
+  |                                                                       
+  |==========                                                       |  15%
+  |                                                                       
+  |==========                                                       |  16%
+  |                                                                       
+  |===========                                                      |  16%
+  |                                                                       
+  |===========                                                      |  17%
+  |                                                                       
+  |===========                                                      |  18%
+  |                                                                       
+  |============                                                     |  18%
+  |                                                                       
+  |============                                                     |  19%
+  |                                                                       
+  |=============                                                    |  19%
+  |                                                                       
+  |=============                                                    |  20%
+  |                                                                       
+  |=============                                                    |  21%
+  |                                                                       
+  |==============                                                   |  21%
+  |                                                                       
+  |==============                                                   |  22%
+  |                                                                       
+  |===============                                                  |  22%
+  |                                                                       
+  |===============                                                  |  23%
+  |                                                                       
+  |===============                                                  |  24%
+  |                                                                       
+  |================                                                 |  24%
+  |                                                                       
+  |================                                                 |  25%
+  |                                                                       
+  |=================                                                |  26%
+  |                                                                       
+  |=================                                                |  27%
+  |                                                                       
+  |==================                                               |  27%
+  |                                                                       
+  |==================                                               |  28%
+  |                                                                       
+  |===================                                              |  29%
+  |                                                                       
+  |===================                                              |  30%
+  |                                                                       
+  |====================                                             |  30%
+  |                                                                       
+  |====================                                             |  31%
+  |                                                                       
+  |=====================                                            |  32%
+  |                                                                       
+  |=====================                                            |  33%
+  |                                                                       
+  |======================                                           |  33%
+  |                                                                       
+  |======================                                           |  34%
+  |                                                                       
+  |=======================                                          |  35%
+  |                                                                       
+  |=======================                                          |  36%
+  |                                                                       
+  |========================                                         |  37%
+  |                                                                       
+  |========================                                         |  38%
+  |                                                                       
+  |=========================                                        |  38%
+  |                                                                       
+  |=========================                                        |  39%
+  |                                                                       
+  |==========================                                       |  39%
+  |                                                                       
+  |==========================                                       |  40%
+  |                                                                       
+  |===========================                                      |  41%
+  |                                                                       
+  |===========================                                      |  42%
+  |                                                                       
+  |============================                                     |  42%
+  |                                                                       
+  |============================                                     |  43%
+  |                                                                       
+  |============================                                     |  44%
+  |                                                                       
+  |=============================                                    |  44%
+  |                                                                       
+  |=============================                                    |  45%
+  |                                                                       
+  |==============================                                   |  46%
+  |                                                                       
+  |==============================                                   |  47%
+  |                                                                       
+  |===============================                                  |  47%
+  |                                                                       
+  |===============================                                  |  48%
+  |                                                                       
+  |================================                                 |  48%
+  |                                                                       
+  |================================                                 |  49%
+  |                                                                       
+  |================================                                 |  50%
+  |                                                                       
+  |=================================                                |  50%
+  |                                                                       
+  |=================================                                |  51%
+  |                                                                       
+  |=================================                                |  52%
+  |                                                                       
+  |==================================                               |  52%
+  |                                                                       
+  |==================================                               |  53%
+  |                                                                       
+  |===================================                              |  53%
+  |                                                                       
+  |===================================                              |  54%
+  |                                                                       
+  |====================================                             |  55%
+  |                                                                       
+  |====================================                             |  56%
+  |                                                                       
+  |=====================================                            |  56%
+  |                                                                       
+  |=====================================                            |  57%
+  |                                                                       
+  |=====================================                            |  58%
+  |                                                                       
+  |======================================                           |  58%
+  |                                                                       
+  |======================================                           |  59%
+  |                                                                       
+  |=======================================                          |  59%
+  |                                                                       
+  |=======================================                          |  60%
+  |                                                                       
+  |========================================                         |  61%
+  |                                                                       
+  |========================================                         |  62%
+  |                                                                       
+  |=========================================                        |  62%
+  |                                                                       
+  |=========================================                        |  63%
+  |                                                                       
+  |=========================================                        |  64%
+  |                                                                       
+  |==========================================                       |  64%
+  |                                                                       
+  |==========================================                       |  65%
+  |                                                                       
+  |===========================================                      |  66%
+  |                                                                       
+  |===========================================                      |  67%
+  |                                                                       
+  |============================================                     |  67%
+  |                                                                       
+  |============================================                     |  68%
+  |                                                                       
+  |=============================================                    |  69%
+  |                                                                       
+  |=============================================                    |  70%
+  |                                                                       
+  |==============================================                   |  70%
+  |                                                                       
+  |==============================================                   |  71%
+  |                                                                       
+  |===============================================                  |  72%
+  |                                                                       
+  |===============================================                  |  73%
+  |                                                                       
+  |================================================                 |  73%
+  |                                                                       
+  |================================================                 |  74%
+  |                                                                       
+  |=================================================                |  75%
+  |                                                                       
+  |=================================================                |  76%
+  |                                                                       
+  |==================================================               |  76%
+  |                                                                       
+  |==================================================               |  77%
+  |                                                                       
+  |==================================================               |  78%
+  |                                                                       
+  |===================================================              |  78%
+  |                                                                       
+  |===================================================              |  79%
+  |                                                                       
+  |====================================================             |  79%
+  |                                                                       
+  |====================================================             |  80%
+  |                                                                       
+  |====================================================             |  81%
+  |                                                                       
+  |=====================================================            |  81%
+  |                                                                       
+  |=====================================================            |  82%
+  |                                                                       
+  |======================================================           |  82%
+  |                                                                       
+  |======================================================           |  83%
+  |                                                                       
+  |======================================================           |  84%
+  |                                                                       
+  |=======================================================          |  84%
+  |                                                                       
+  |=======================================================          |  85%
+  |                                                                       
+  |========================================================         |  86%
+  |                                                                       
+  |========================================================         |  87%
+  |                                                                       
+  |=========================================================        |  87%
+  |                                                                       
+  |=========================================================        |  88%
+  |                                                                       
+  |==========================================================       |  89%
+  |                                                                       
+  |==========================================================       |  90%
+  |                                                                       
+  |===========================================================      |  90%
+  |                                                                       
+  |===========================================================      |  91%
+  |                                                                       
+  |============================================================     |  92%
+  |                                                                       
+  |============================================================     |  93%
+  |                                                                       
+  |=============================================================    |  93%
+  |                                                                       
+  |=============================================================    |  94%
+  |                                                                       
+  |==============================================================   |  95%
+  |                                                                       
+  |==============================================================   |  96%
+  |                                                                       
+  |===============================================================  |  96%
+  |                                                                       
+  |===============================================================  |  97%
+  |                                                                       
+  |================================================================ |  98%
+  |                                                                       
+  |================================================================ |  99%
+  |                                                                       
+  |=================================================================|  99%
+  |                                                                       
+  |=================================================================| 100%</code></pre>
 The result is a <code>sf</code> point geometry that includes MSA centroids (as lat/lon points) and the US division each MSA falls within.
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["GEOID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["NAME"],"name":[2],"type":["chr"],"align":["left"]},{"label":["geometry"],"name":[3],"type":["S3: sfc_POINT"],"align":["right"]}],"data":[{"1":"38420","2":"East North Central","3":"<S3: sfc_POINT>","_rn_":"1"},{"1":"15060","2":"Pacific","3":"<S3: sfc_POINT>","_rn_":"2"},{"1":"39420","2":"Pacific","3":"<S3: sfc_POINT>","_rn_":"3"},{"1":"33540","2":"Mountain","3":"<S3: sfc_POINT>","_rn_":"4"},{"1":"21540","2":"East North Central","3":"<S3: sfc_POINT>","_rn_":"5"},{"1":"20540","2":"East South Central","3":"<S3: sfc_POINT>","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["GEOID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["NAME"],"name":[2],"type":["chr"],"align":["left"]},{"label":["geometry"],"name":[3],"type":["S3: sfc_POINT"],"align":["right"]}],"data":[{"1":"43620","2":"West North Central","3":"<S3: sfc_POINT>","_rn_":"1"},{"1":"12660","2":"East North Central","3":"<S3: sfc_POINT>","_rn_":"2"},{"1":"40220","2":"South Atlantic","3":"<S3: sfc_POINT>","_rn_":"3"},{"1":"48660","2":"West South Central","3":"<S3: sfc_POINT>","_rn_":"4"},{"1":"22840","2":"East South Central","3":"<S3: sfc_POINT>","_rn_":"5"},{"1":"12060","2":"South Atlantic","3":"<S3: sfc_POINT>","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p><br> Limit analysis to MSAs in the continental US, and then join our new MSA-division point geometry:</p>
+<p><br>
+Limit analysis to MSAs in the continental US, and then join our new MSA-division point geometry:</p>
 <pre class="r"><code>msas_w_divs &lt;- summaryData %&gt;%
   filter(!grepl(&quot;PR|Micro|HI|AK&quot;,NAME) &amp; nchar(GEOID)&gt;2)%&gt;%
   left_join(metros %&gt;% rename(div=NAME))%&gt;%
@@ -231,7 +3123,8 @@ mp &lt;- leaflet(divs,width=&quot;100%&quot;,height=&#39;400&#39;) %&gt;%
                 title = &quot;Quantiles&quot;, 
                 opacity = 1)</code></pre>
 <p><div id="htmlwidget-3" style="width:100%;height:400px;" class="widgetframe html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html//widgets/widget_unnamed-chunk-18.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script> <br/></p>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html//widgets/widget_unnamed-chunk-18.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+<br/></p>
 <p>The map illustrates higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates.</p>
 <p>
 <h4>
@@ -253,11 +3146,18 @@ Geo-demographic variation
   facet_wrap(~langVar, ncol=1,scales = &quot;free_x&quot;) +
   scale_colour_stata() + theme_fivethirtyeight() +
   theme(legend.position = &quot;bottom&quot;) </code></pre>
+<pre><code>## Warning: funs() is soft deprecated as of dplyr 0.8.0
+## please use list() instead
+## 
+##   # Before:
+##   funs(name = f(.))
+## 
+##   # After: 
+##   list(name = ~ f(.))
+## This warning is displayed once per session.</code></pre>
 <p><img src="/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>Plots both suggest a fairly strong relationship between independent variable and Spanish language maintenance.</p>
-</div>
-<div id="a-simple-model" class="section level2">
-<h2>A simple model</h2>
+<p>##A simple model</p>
 <p>For a more comprehensive perspective on these relationships, we build a simple model with maintenance rates as the dependent variable, and Hispanic population density, total population, and US Division as independent variables.</p>
 <pre class="r"><code>summary(lm(SpanMono + BiLing ~ log(PerHisp) + log(TotalPop) + div,
            data=msas_w_divs))</code></pre>
@@ -308,20 +3208,15 @@ Some cursory explanations
 </p>
 <p>In terms of accounting for the independent effects of the two population-based metrics, on one hand, densely Hispanic MSAs imply a more pervasive Hispanic culture; on the other hand, highly populated MSAs imply an overall culture of diversity. In theory, each account provides a distinct “mechanism” for continued language use.</p>
 <p>Higher rates of Spanish language maintenance in the South likely reflect more recent immigration patterns. In contrast, lower rates in the Mountain division (including the Southwest) could reflect a combination of higher levels of acculturation among these Hispanic populations and lower immigration rates <span class="citation">(as suggested in Bills <a href="#ref-bills1989us">1989</a>)</span>.</p>
-</div>
-<div id="some-final-notes" class="section level2">
-<h2>Some final notes</h2>
+<p>##Some final notes</p>
 <p>So, a quick and very much exploratory investigation into Spanish language maintenance in the US, using census data as an imperfect proxy. Grains of salt abound for sure. Factors influencing whether or not speakers continue to use a minority language are many and complex, and are only superficially addressed here.</p>
 <p>Many of these patterns (at least in the Southwest) have been observed previously; the goal of this post was simply to demonstrate an innovative methodology based in previous research using a reproducible example.</p>
-</div>
-<div id="references" class="section level2 unnumbered">
-<h2>References</h2>
+<p>##References</p>
 <div id="refs" class="references">
 <div id="ref-bills1989us">
 <p>Bills, Garland D. 1989. “The Us Census of 1980 and Spanish in the Southwest.” <em>International Journal of the Sociology of Language</em> 1989 (79). Walter de Gruyter, Berlin/New York: 11–28.</p>
 </div>
 <div id="ref-bills1995geography">
 <p>Bills, Garland D, Eduardo Hernández Chávez, and Alan Hudson. 1995. “The Geography of Language Shift: Distance from the Mexican Border and Spanish Language Claiming in the Southwestern Us.” <em>International Journal of the Sociology of Language</em> 114 (1). De Gruyter: 9–28.</p>
-</div>
 </div>
 </div>

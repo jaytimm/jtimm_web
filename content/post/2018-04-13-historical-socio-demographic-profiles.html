@@ -15,14 +15,6 @@ banner: banners/sociodem.jpg
 ---
 
 
-<div id="TOC">
-<ul>
-<li><a href="#some-preliminaries">Some preliminaries</a></li>
-<li><a href="#socio-economic-profiles">Socio-economic profiles</a></li>
-<li><a href="#age-distribution-profiles">Age distribution profiles</a></li>
-<li><a href="#summary">Summary</a></li>
-</ul>
-</div>
 
 <p>This post demonstrates a simple workflow for building census-based, historical socio-demographic profiles using the R package <code>tidycensus</code>. The goal is to outline a reproducible method for quick visual exploration of trend data made available via the American Community Survey (ACS).</p>
 <p>We focus mostly on socio-economic summary data included in ACS <em>data profile</em> tables; however, we also consider age/sex demographic data included in detailed tables.</p>
@@ -32,8 +24,7 @@ library(tidycensus)
 library(DT)
 library(ggalt)
 library(ggthemes)</code></pre>
-<div id="some-preliminaries" class="section level2">
-<h2>Some preliminaries</h2>
+<p>##Some preliminaries</p>
 <p>First things first, we set some parameters for our ACS data query. Here we are interested in 1-year estimates from 2012 to 2016; geographies of interest include the United States, all states in the US, and all metropolitan statistical areas (MSAs) (both micro and metro) in the US.</p>
 <pre class="r"><code>year_range &lt;- c(2012:2016)
 geos_inc &lt;- c(&quot;us&quot;, 
@@ -59,9 +50,7 @@ for (i in 1:length(year)) {
       bind_rows() %&gt;% 
       mutate(year = year[i]) } 
   y %&gt;% bind_rows() }</code></pre>
-</div>
-<div id="socio-economic-profiles" class="section level2">
-<h2>Socio-economic profiles</h2>
+<p>##Socio-economic profiles</p>
 <p>Data profile tables in the ACS include tables <code>DP02</code>, <code>DP03</code>, <code>DP04</code>, and <code>DP05</code>:</p>
 <ul>
 <li>DP02: SELECTED SOCIAL CHARACTERISTICS IN THE UNITED STATES</li>
@@ -70,8 +59,7 @@ for (i in 1:length(year)) {
 <li>DP05: ACS DEMOGRAPHIC AND HOUSING ESTIMATES</li>
 </ul>
 <p>These tables include basic summary data that have been aggregated/collated from the over 1,400 detailed tables included in the ACS. Data are conveniently available as both counts and percentages, and provide easy access to some of the more popular census variables. For quickly profiling/characterizing a set of geographies historically, the tables are ideal. And no maths required.</p>
-<div id="socio-economic-profiles-1" class="section level3">
-<h3>Socio-economic profiles</h3>
+<p>###Socio-economic profiles</p>
 <p>Here we assemble a list of twelve variables from tables <code>DP02</code> and <code>DP03</code>; while largely arbitrary, the set of variables is meant to provide a broad socio-economic profile for a given set of geographies. Variable IDs are available via <a href="https://factfinder.census.gov/faces/nav/jsf/pages/index.xhtml">American FactFinder</a>, or via the <code>tidycensus</code> function <code>load_variables()</code>.</p>
 <pre class="r"><code>variable &lt;-c(&quot;DP02_0011P&quot;, 
              &quot;DP02_0067P&quot;,
@@ -105,19 +93,19 @@ for (i in 1:length(year)) {
                             year = year_range)</code></pre>
 <p>Output from the API query is summarized below:</p>
 <pre><code>## # A tibble: 59,424 x 6
-##    GEOID NAME          variable   estimate    moe  year
-##    &lt;chr&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;
-##  1 1     United States DP02_0011P    27.5   0.100  2012
-##  2 1     United States DP02_0067P    28.5   0.100  2012
-##  3 1     United States DP02_0069P     9.30  0.100  2012
-##  4 1     United States DP02_0090P    27.0   0.100  2012
-##  5 1     United States DP02_0092P    12.9   0.100  2012
-##  6 1     United States DP02_0111P    79.5   0.100  2012
-##  7 1     United States DP03_0005P     6.00  0.100  2012
-##  8 1     United States DP03_0021P     5.00  0.100  2012
-##  9 1     United States DP03_0028P    17.8   0.100  2012
-## 10 1     United States DP03_0088  28051.   78.0    2012
-## # ... with 59,414 more rows</code></pre>
+##    GEOID NAME          variable   estimate   moe  year
+##    &lt;chr&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+##  1 1     United States DP02_0011P     27.5   0.1  2012
+##  2 1     United States DP02_0067P     28.5   0.1  2012
+##  3 1     United States DP02_0069P      9.3   0.1  2012
+##  4 1     United States DP02_0090P     27     0.1  2012
+##  5 1     United States DP02_0092P     12.9   0.1  2012
+##  6 1     United States DP02_0111P     79.5   0.1  2012
+##  7 1     United States DP03_0005P      6     0.1  2012
+##  8 1     United States DP03_0021P      5     0.1  2012
+##  9 1     United States DP03_0028P     17.8   0.1  2012
+## 10 1     United States DP03_0088   28051    78    2012
+## # … with 59,414 more rows</code></pre>
 <p>So, with but a few lines of code, we have gathered five years of ACS estimates for twelve variables across roughly one thousand geographies, uniformly output in a single table. Courtesy of <code>tidycensus</code>.</p>
 <p>Having pulled data, then, we plot historical profiles for metro areas in New Mexico, the state of New Mexico, and the US:</p>
 <pre class="r"><code>#Filter data set
@@ -140,9 +128,7 @@ dp_data %&gt;%
     labs(title=&quot;Socio-economic profiles&quot;,
          subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-</div>
-<div id="comparing-health-insurance-rates" class="section level3">
-<h3>Comparing health insurance rates</h3>
+<p>###Comparing health insurance rates</p>
 <p>As the figure above attests, healthcare coverage in New Mexico has increased substantially over the last five years. Here, we take a closer look at these changes for both metro &amp; micro statistical areas in New Mexico, comparing coverage rates in 2012 to coverage rates in 2016.</p>
 <pre class="r"><code>#Filter and transform data  
 dp_data %&gt;%
@@ -170,9 +156,7 @@ dp_data %&gt;%
     theme(panel.grid.major.y=element_blank(), plot.title = element_text(size=14))</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>This particular plot does a really nice job showing how municipalities within the state of New Mexico have benefited from the Affordable Care Act relative to the United States as a whole, and, again, demonstrates the utility of using <code>tidycensus</code>/data profiles in tandem for quickly visualizing and evaluating socio-economic change historically.</p>
-</div>
-<div id="educational-attainment-profiles" class="section level3">
-<h3>Educational attainment profiles</h3>
+<p>###Educational attainment profiles</p>
 <p>Next, we consider educational attainment distributions by geography over time. Again, these data are most easily accessed via the census data profiles, specifically table <code>DP02</code>.</p>
 <pre class="r"><code>variable &lt;- c(&#39;DP02_0059P&#39;, 
               &#39;DP02_0060P&#39;, 
@@ -221,10 +205,7 @@ ed_data %&gt;%
          subtitle=&quot;NM &amp; USA, 2012-2016&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>So, we get a sense of variation in distributions of educational attainment across different geographies in New Mexico; we can also get a sense of changes in these distributions over time. Similar profiles can be built for race/ethnicity, language spoken at home, income levels, etc. simply by amending the variable parameter above.</p>
-</div>
-</div>
-<div id="age-distribution-profiles" class="section level2">
-<h2>Age distribution profiles</h2>
+<p>##Age distribution profiles</p>
 <p>Lastly, we consider age distributions historically by comparing population pyramids at 2012 and 2016. Here, we branch out from the convenience of ACS data profile tables to obtain age-by-sex data from table <code>B01001</code>. That said, we use the same query methods and functions to obtain our data.</p>
 <pre class="r"><code>variable &lt;- sprintf(&quot;%03d&quot;, c(3:25, 27:49)) %&gt;%
   paste0(&quot;B01001_&quot;,.)</code></pre>
@@ -321,8 +302,5 @@ ggplot(data = age_data_trans %&gt;%
        subtitle=&quot;NM &amp; USA: comparing 2012 (line) and 2016 (color)&quot;)</code></pre>
 <p><img src="/post/2018-04-13-historical-socio-demographic-profiles_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 <p>Indeed, quite a bit of variation in age distributions throughout MSAs in New Mexico; a fairly consistent theme, however, is that distributions have grown more top-heavy over the last five years.</p>
-</div>
-<div id="summary" class="section level2">
-<h2>Summary</h2>
+<p>##Summary</p>
 <p>So, some reproducible workflows for quickly profiling a set of geographies historically using the <code>tidycensus</code> package, along with some different approaches to visualizing trend data across multiple geographies. Code can be re-used to profile any collection of geographies in the US.</p>
-</div>

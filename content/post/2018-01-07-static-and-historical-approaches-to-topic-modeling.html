@@ -14,15 +14,6 @@ banner: banners/topic.jpg
 ---
 
 
-<div id="TOC">
-<ul>
-<li><a href="#synchronic-application">Synchronic application</a></li>
-<li><a href="#diachronic-application">Diachronic application</a></li>
-<li><a href="#topic-clusters">Topic clusters</a></li>
-<li><a href="#quick-summary">quick summary</a></li>
-<li><a href="#references">References</a></li>
-</ul>
-</div>
 
 <p>This post outlines a fairly simple workflow from annotated corpus to topic model, with a focus on the exploratory utility of topic models. We first consider some text structures relevant to topic modeling in R, and then demonstrate some approaches to visualizing model results, including variation in topic prevalence over time for a diachronic corpus. Lastly, we consider methods for visualizing relatedness among topics.</p>
 <p>For demonstration purposes, we utilize a set of corpora made avaiable via the <code>corpusdatr</code> package.</p>
@@ -38,8 +29,7 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 <li>topics are modeled as composites of features/words.</li>
 </ul>
 <p>The approach to topic modeling employed here is latent Dirichlet allocation (LDA); to fit our models, we use the <code>LDA</code> function from the <code>topicmodels</code> package <span class="citation">(Hornik and Grün <a href="#ref-hornik2011topicmodels">2011</a>)</span>.</p>
-<div id="synchronic-application" class="section level2">
-<h2>Synchronic application</h2>
+<p>##Synchronic application</p>
 <p>In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as <code>cdr_slate_ann</code> from the <code>corpusdatr</code> package. The corpus has been annotated using the <code>spacyr</code> package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.</p>
 <p>The first step in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the <code>clr_get_freq</code> function from the <code>corpuslingr</code> package. We set the lemma as our feature unit, and limit feature composition to nouns and entities.</p>
 <pre class="r"><code>dtm &lt;- corpusdatr::cdr_slate_ann %&gt;%
@@ -102,9 +92,7 @@ topicmodels::posterior(static_topic)$terms %&gt;%
     labs(title=&quot;Topic composition by feature&quot;) #</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>So, some curious times, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad. The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content.</p>
-</div>
-<div id="diachronic-application" class="section level2">
-<h2>Diachronic application</h2>
+<p>##Diachronic application</p>
 <p>Next we explore topics in a diachronic corpus, and demonstrate a straightforward approach to visualizing variation in topic prevalence over time. Here we use the <code>cdr_gnews_historical</code> corpus from the <code>corpusdatr</code> package for demonstration purposes.</p>
 <p>
 <h4>
@@ -174,20 +162,20 @@ Topic Model
   arrange(topic)</code></pre>
 <p>Topics over the three week period:</p>
 <pre><code>## # A tibble: 12 x 1
-##    dims                                                          
-##    &lt;chr&gt;                                                         
-##  1 tax, bill, Senate, Republicans, House, vote, rate             
-##  2 Moore, Alabama, woman, voter, election, Republican, Trump     
-##  3 woman, allegation, harassment, story, time, statement, people 
-##  4 film, time, first, one, people, movie, way                    
-##  5 North Korea, missile, snow, U.S., weapon, North Korean, report
-##  6 company, deal, Fox, market, price, time, Disney               
-##  7 EU, deal, government, trade, Yankees, time, Britain           
-##  8 fire, wildfire, home, man, photo, Ventura, people             
-##  9 Iran, Yemen, CNN, people, coalition, missile, time            
-## 10 game, team, time, coach, player, first, NFL                   
-## 11 Trump, president, Russia, Trump_&#39;s, official, Mueller, Flynn  
-## 12 police, Jerusalem, Israel, officer, death, city, people</code></pre>
+##    dims                                                         
+##    &lt;chr&gt;                                                        
+##  1 tax, bill, Senate, Republicans, House, vote, Democrats       
+##  2 Moore, Alabama, woman, voter, Trump, people, Republican      
+##  3 woman, allegation, harassment, statement, time, story, people
+##  4 film, first, time, one, movie, people, way                   
+##  5 North Korea, missile, snow, U.S., weapon, China, North Korean
+##  6 company, deal, market, price, Fox, time, business            
+##  7 EU, deal, government, trade, Yankees, time, Britain          
+##  8 fire, wildfire, home, photo, people, Ventura, California     
+##  9 police, man, family, child, school, home, son                
+## 10 game, team, coach, time, player, NFL, first                  
+## 11 Trump, president, Russia, Trump_&#39;s, official, Mueller, FBI   
+## 12 Jerusalem, Israel, police, capital, Iran, people, attack</code></pre>
 <p>So a busy three weeks. The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.</p>
 <p>
 <h4>
@@ -242,9 +230,7 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&qu
   theme(legend.position=&quot;none&quot;, 
         plot.title = element_text(size=14))</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
-</div>
-<div id="topic-clusters" class="section level2">
-<h2>Topic clusters</h2>
+<p>##Topic clusters</p>
 <p>Lastly, we consider the relationship among topics in the <code>cdr_gnews_historical</code> corpus via cluster analysis. The first step in this process is to create a correlation matrix of the beta values for constituent topic features.</p>
 <pre class="r"><code>cor_mat &lt;- data.frame(posterior(hist_topic)$topics)%&gt;%
    `colnames&lt;-`(paste(topic_summary$topic,topic_summary$dims, sep=&quot; - &quot;)) %&gt;%
@@ -255,16 +241,11 @@ hclust(dist(cor_mat)) %&gt;%
   ggdendrogram(., rotate=TRUE) + 
   theme_fivethirtyeight()</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
-</div>
-<div id="quick-summary" class="section level2">
-<h2>quick summary</h2>
+<p>##quick summary</p>
 <p>A brief outline for quick topic modeling, with some different applications for synchronic and diachronic corpora. For a smarter discussion of underlying assumptions and maths, see <span class="citation">Hornik and Grün (<a href="#ref-hornik2011topicmodels">2011</a>)</span>.</p>
-</div>
-<div id="references" class="section level2 unnumbered">
-<h2>References</h2>
+<p>##References</p>
 <div id="refs" class="references">
 <div id="ref-hornik2011topicmodels">
 <p>Hornik, Kurt, and Bettina Grün. 2011. “Topicmodels: An R Package for Fitting Topic Models.” <em>Journal of Statistical Software</em> 40 (13). American Statistical Association: 1–30.</p>
-</div>
 </div>
 </div>

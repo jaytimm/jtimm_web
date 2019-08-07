@@ -23,15 +23,6 @@ banner: banners/distance.png
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
-<div id="TOC">
-<ul>
-<li><a href="#concreteness-ratings-and-the-lexvarsdatr-package">Concreteness ratings and the lexvarsdatr package</a></li>
-<li><a href="#context-concreteness-scores">Context &amp; concreteness scores</a></li>
-<li><a href="#geographical-distance">Geographical distance</a></li>
-<li><a href="#fin">FIN</a></li>
-<li><a href="#references">References</a></li>
-</ul>
-</div>
 
 <p>This post considers a super-clever study presented in <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets. General idea/hypothesis:</p>
 <blockquote>
@@ -46,15 +37,13 @@ library(spacyr)</code></pre>
 library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
 library(lexvarsdatr) #devtools::install_github(&quot;jaytimm/lexvarsdatr&quot;)
 library(knitr)</code></pre>
-<div id="concreteness-ratings-and-the-lexvarsdatr-package" class="section level2">
-<h2>Concreteness ratings and the lexvarsdatr package</h2>
+<p>##Concreteness ratings and the lexvarsdatr package</p>
 <p><span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span> score the abstractness of tweets in their study using concreteness ratings for 40,000 English words derived in <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>. Ratings are made available as supplemental material, and included in a data package I have developed called <code>lexvarsdatr</code>. A more complete description of the package and its contents is available <a href="https://github.com/jaytimm/lexvarsdatr#lexvarsdatr">here</a>.</p>
 <p>Per <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>, concreteness ratings range from 1 (abstract) to 5 (concrete); ratings reflect averages based on 30 participants. In the <code>lexvarsdatr</code> package, concreteness ratings (along with age-of-acquisition ratings and response times in lexical decision) are housed in the <code>lvdr_behav_data</code> table.</p>
 <pre class="r"><code>concreteness &lt;- lvdr_behav_data%&gt;%
   select(Word, concRating)%&gt;%
   mutate(Word = toupper(Word))%&gt;%
   na.omit()</code></pre>
-<pre><code>## Warning: package &#39;bindrcpp&#39; was built under R version 3.4.4</code></pre>
 <p>Some random examples of concreteness ratings from the dataset:</p>
 <pre class="r"><code>set.seed(111)
 concreteness%&gt;%
@@ -70,9 +59,7 @@ concreteness%&gt;%
 <pre class="r"><code>ggplot(concreteness, aes(concRating)) +
   geom_histogram(binwidth = 0.1)</code></pre>
 <p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-</div>
-<div id="context-concreteness-scores" class="section level2">
-<h2>Context &amp; concreteness scores</h2>
+<p>##Context &amp; concreteness scores</p>
 <p>So, the goal here is to extract all corpus references to location, along with the surrounding context, and score the contexts based on the concreteness of their constituent features (akin to dictionary-based sentiment analysis, for example). Here, context is defined as the 15x15 window of words surrounding a given reference to location.</p>
 <p>As the annotated Slate Magazine corpus contains named entity tags, including geopolitical entities (GPEs), identifying references to location has already been sorted. Here we collapse multi-word entities to single tokens, and ready the corpus for search using <code>clr_set_corpus</code>.</p>
 <pre class="r"><code>slate &lt;- corpusdatr::cdr_slate_ann %&gt;%
@@ -113,7 +100,7 @@ gpe_contexts &lt;- corpuslingr::clr_search_context(
                 width=&quot;100%&quot;, 
                 escape=FALSE)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["drug war , \" says Sam_Vagenas , spokesman for pro-reform forces in Arizona . \" <mark> Arizona <\/mark> was an explicit rejection . \" Is the result a delegitimization of the drug war","hard to imagine that closer consultations with Israel will do so either . \" In <mark> London <\/mark> , the conservative Daily_Telegraph called for a tough line against Saddam . Saying in an","to cities in western Turkey . And since 1995 , Turkish troops have invaded northern <mark> Iraq <\/mark> three times to destroy PKK bases . Iran : The Iranian Kurds are much quieter","Zen and looks back to the tradition of the scholar-aesthete hermit imported centuries earlier from <mark> China <\/mark> . Everything is pared down , black-and-white , elemental . Some of the finest of",": Do these acts of revenge undermine the humanitarian rationale of NATO 's intervention in <mark> Kosovo <\/mark> ? Does the barbarism of a few of Slobodan_Milosevic_'s victims vitiate the justness of the"],[2.74,2.19,2.18,2.1,1.74]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[", see these Web sites from England 's Guardian , France 's Le_Monde , and <mark> Spain <\/mark> 's El_Mundo . The_Irish_Times will provide a live Web broadcast of the eclipse from 1_a.m._to_3:30_a.m.","would be forced to leave the country if a settlement is not reached soon . <mark> India <\/mark> and Pakistan condemned the hijacking ( as did the_Washington_Post ) , and each accused the","Seattle trade talks and the victory of the Indian representative in the Miss_World competition in <mark> London <\/mark> this_weekend . The Hindu said Sunday that the \" big revelation \" of the_World_Trade_Organization conference",". ) On Meet_the_Press , the incoming Reform_Party chairman -- Ventura ally Jack_Gargan -- defends <mark> Ventura <\/mark> 's right to speak , saying \" the people of Minnesota elected him as governor","by blood , friendship , sexual intrigue , and Old_World ties . Many are from <mark> Poland <\/mark> , but assimilation and war have blown them through Germany , Russia , Cuba ,"],[2.42,2.35,2.25,2.19,2.18]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Lastly, we aggregate contextual concreteness scores to obtain a single concretness score for each GPE.</p>
 <pre class="r"><code>conc_by_term &lt;-  conc_by_eg%&gt;%
   group_by(searchLemma) %&gt;%
@@ -131,10 +118,8 @@ gpe_contexts &lt;- corpuslingr::clr_search_context(
     backgroundRepeat = &#39;no-repeat&#39;,
     backgroundPosition = &#39;right&#39;) </code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["AFGHANISTAN","ALABAMA","ALASKA","ALBANIA","ARGENTINA","ARIZONA","ARKANSAS","ARLINGTON","ATLANTA","BAGHDAD","BEIJING","BELGRADE","BERLIN","BOSNIA","BOSTON","BRAZIL","BRITAIN","CALIFORNIA","CAMBODIA","CAMBRIDGE","CANADA","CHARLOTTE","CHECHNYA","CHICAGO","CHILE","CHINA","COLORADO","CROATIA","CUBA","DALLAS","DETROIT","EAST_TIMOR","EGYPT","ENGLAND","FLORIDA","FRANCE","GEORGIA","GERMANY","HOLLYWOOD","HONG_KONG","INDIA","INDONESIA","IOWA","IRAN","IRAQ","IRELAND","ISRAEL","ISTANBUL","ITALY","JAPAN","JORDAN","KANSAS","KENTUCKY","KOSOVO","LAS_VEGAS","LEBANON","LIBYA","LONDON","LOS_ANGELES","MAINE","MALAYSIA","MANHATTAN","MARYLAND","MEXICO","MIAMI","MICHIGAN","MILAN","MINNESOTA","MISSISSIPPI","MONTANA","MOSCOW","NEW_HAMPSHIRE","NEW_JERSEY","NEW_YORK","NEW_YORK_CITY","NORTH_KOREA","NORTHERN_IRELAND","OHIO","OKLAHOMA","OREGON","PAKISTAN","PARIS","POLAND","ROME","SAN_FRANCISCO","SAUDI_ARABIA","SEATTLE","SERBIA","SOUTH_AFRICA","SOUTH_CAROLINA","SOUTH_KOREA","SPAIN","SYRIA","TAIWAN","TENNESSEE","TEXAS","TIBET","TOKYO","TURKEY","VENTURA","VIETNAM","VIRGINIA","WASHINGTON","WISCONSIN"],[291,300,261,360,384,406,438,285,262,260,869,684,265,583,376,575,2257,1420,217,203,544,298,886,1183,329,3709,390,262,606,210,210,637,413,753,915,1727,473,1404,1919,809,1202,635,956,635,1738,430,2842,206,882,1761,337,372,210,4124,309,247,305,1936,795,208,249,536,244,468,217,246,426,252,215,212,747,897,294,3041,453,240,553,369,243,301,757,1237,251,634,293,227,796,472,296,428,210,436,624,698,344,1323,310,315,967,278,1298,468,5316,242],[670.16,791.9,694.09,867.53,972.38,1015.27,1034.85,753.17,731.39,648.66,2137.5,1575.25,615.28,1295.5,857.73,1445.06,5273.93,3421.51,537.41,480.51,1222.69,841.76,2107.96,3023.15,708.85,9101.46,1008.99,496.4,1445.26,495.5,503.38,1539.86,864.38,1781.18,2360.74,4051.27,1076.17,3179.25,4838.94,2005.21,2966.18,1584.4,2396.19,1365.59,3894.26,1006.1,6354.33,550.87,1999.58,4356.79,763.29,950.51,506.9,9504.97,835.78,561.45,710.85,4666.99,1915.24,497.12,622.86,1347.58,625.27,1119.74,526.82,622.62,742.71,570.02,547.89,575.38,1793.39,2179,718.2,7421.19,1117.93,585.87,1275.09,879.24,619.76,847.06,1890.19,3054.79,548.88,1419.88,734.57,528.26,2074.06,1114.27,656.99,1164.64,481.7,1006.56,1264.3,1736.87,891.27,3450.09,655.49,814.67,2129.06,582.33,3224.15,1187.9,12764.14,562.88],[2.3,2.64,2.66,2.41,2.53,2.5,2.36,2.64,2.79,2.49,2.46,2.3,2.32,2.22,2.28,2.51,2.34,2.41,2.48,2.37,2.25,2.82,2.38,2.56,2.15,2.45,2.59,1.89,2.38,2.36,2.4,2.42,2.09,2.37,2.58,2.35,2.28,2.26,2.52,2.48,2.47,2.5,2.51,2.15,2.24,2.34,2.24,2.67,2.27,2.47,2.26,2.56,2.41,2.3,2.7,2.27,2.33,2.41,2.41,2.39,2.5,2.51,2.56,2.39,2.43,2.53,1.74,2.26,2.55,2.71,2.4,2.43,2.44,2.44,2.47,2.44,2.31,2.38,2.55,2.81,2.5,2.47,2.19,2.24,2.51,2.33,2.61,2.36,2.22,2.72,2.29,2.31,2.03,2.49,2.59,2.61,2.11,2.59,2.2,2.09,2.48,2.54,2.4,2.33]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>searchLemma<\/th>\n      <th>n<\/th>\n      <th>conc<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 1.74 ? '' : 'linear-gradient(90deg, transparent ' + (2.82 - value)/1.08 * 100 + '%, cornflowerblue ' + (2.82 - value)/1.08 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-</div>
-<div id="geographical-distance" class="section level2">
-<h2>Geographical distance</h2>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["AFGHANISTAN","ALABAMA","ALASKA","ALBANIA","ARGENTINA","ARIZONA","ARKANSAS","ARLINGTON","ATLANTA","BAGHDAD","BEIJING","BELGRADE","BERLIN","BOSNIA","BOSTON","BRAZIL","BRITAIN","CALIFORNIA","CAMBODIA","CAMBRIDGE","CANADA","CHARLOTTE","CHECHNYA","CHICAGO","CHILE","CHINA","COLORADO","CROATIA","CUBA","DALLAS","DETROIT","EAST_TIMOR","EGYPT","ENGLAND","FLORIDA","FRANCE","GEORGIA","GERMANY","HOLLYWOOD","HONG_KONG","INDIA","INDONESIA","IOWA","IRAN","IRAQ","IRELAND","ISRAEL","ISTANBUL","ITALY","JAPAN","JORDAN","KANSAS","KENTUCKY","KOSOVO","LAS_VEGAS","LEBANON","LIBYA","LONDON","LOS_ANGELES","MAINE","MALAYSIA","MANHATTAN","MARYLAND","MEXICO","MIAMI","MICHIGAN","MILAN","MINNESOTA","MISSISSIPPI","MONTANA","MOSCOW","NEW_HAMPSHIRE","NEW_JERSEY","NEW_YORK","NEW_YORK_CITY","NORTH_KOREA","NORTHERN_IRELAND","OHIO","OKLAHOMA","OREGON","PAKISTAN","PARIS","POLAND","ROME","SAN_FRANCISCO","SAUDI_ARABIA","SEATTLE","SERBIA","SOUTH_AFRICA","SOUTH_CAROLINA","SOUTH_KOREA","SPAIN","SYRIA","TAIWAN","TENNESSEE","TEXAS","TIBET","TOKYO","TURKEY","VENTURA","VIETNAM","VIRGINIA","WASHINGTON","WISCONSIN"],[291,300,261,360,384,406,438,285,262,260,869,684,265,583,376,575,2257,1420,217,203,544,298,886,1183,329,3709,390,262,606,210,210,637,413,753,915,1727,473,1404,1919,809,1202,635,956,635,1738,430,2842,206,882,1761,337,372,210,4124,309,247,305,1936,795,208,249,536,244,468,217,246,426,252,215,212,747,897,294,3041,453,240,553,369,243,301,757,1237,251,634,293,227,796,472,296,428,210,436,624,698,344,1323,310,315,967,278,1298,468,5316,242],[670.16,791.9,694.09,867.53,972.38,1015.27,1034.85,753.17,731.39,648.66,2137.5,1575.25,615.28,1295.5,857.73,1445.06,5273.93,3421.51,537.41,480.51,1222.69,841.76,2107.96,3023.15,708.85,9101.46,1008.99,496.4,1445.26,495.5,503.38,1539.86,864.38,1781.18,2360.74,4051.27,1076.17,3179.25,4838.94,2005.21,2966.18,1584.4,2396.19,1365.59,3894.26,1006.1,6354.33,550.87,1999.58,4356.79,763.29,950.51,506.9,9504.97,835.78,561.45,710.85,4666.99,1915.24,497.12,622.86,1347.58,625.27,1119.74,526.82,622.62,742.71,570.02,547.89,575.38,1793.39,2179,718.2,7421.19,1117.93,585.87,1275.09,879.24,619.76,847.06,1890.19,3054.79,548.88,1419.88,734.57,528.26,2074.06,1114.27,656.99,1164.64,481.7,1006.56,1264.3,1736.87,891.27,3450.09,655.49,814.67,2129.06,582.33,3224.15,1187.9,12764.14,562.88],[2.3,2.64,2.66,2.41,2.53,2.5,2.36,2.64,2.79,2.49,2.46,2.3,2.32,2.22,2.28,2.51,2.34,2.41,2.48,2.37,2.25,2.82,2.38,2.56,2.15,2.45,2.59,1.89,2.38,2.36,2.4,2.42,2.09,2.37,2.58,2.35,2.28,2.26,2.52,2.48,2.47,2.5,2.51,2.15,2.24,2.34,2.24,2.67,2.27,2.47,2.26,2.56,2.41,2.3,2.7,2.27,2.33,2.41,2.41,2.39,2.5,2.51,2.56,2.39,2.43,2.53,1.74,2.26,2.55,2.71,2.4,2.43,2.44,2.44,2.47,2.44,2.31,2.38,2.55,2.81,2.5,2.47,2.19,2.24,2.51,2.33,2.61,2.36,2.22,2.72,2.29,2.31,2.03,2.49,2.59,2.61,2.11,2.59,2.2,2.09,2.48,2.54,2.4,2.33]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>searchLemma<\/th>\n      <th>n<\/th>\n      <th>conc<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 1.740000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (2.820000 - value)/1.080000 * 100 + '%, cornflowerblue ' + (2.820000 - value)/1.080000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<p>##Geographical distance</p>
 <p>
 <h3>
 Method
@@ -224,19 +209,14 @@ Some very cursory explanations
 </p>
 <p>Collectively, the first two observations could reflect the influence of perceived distance on language use, at least from a “here in the (concrete) USA” versus “over there in (abstract) Europe” perspective. This particular interpretation would recast the epicenter of Slate magazine narrative as the US instead of Washington DC, which probably makes sense.</p>
 <p>The up-swing in the use of concrete language in reference to ~Asian GPEs runs counter to theory, but perhaps could be explained by the content of the conversation surrounding some of these GPEs, eg, Indonesian occupation of East Timor (ca. late 20th century), in which the (presumably more concrete) language of conflict trumps the effects of perceived distance. Or any number of other interpretations.</p>
-</div>
-<div id="fin" class="section level2">
-<h2>FIN</h2>
+<p>##FIN</p>
 <p>Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small. From this perspective, hopefully we have demonstrated the utility of <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>’s cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.</p>
-</div>
-<div id="references" class="section level2 unnumbered">
-<h2>References</h2>
+<p>##References</p>
 <div id="refs" class="references">
 <div id="ref-brysbaert2014concreteness">
 <p>Brysbaert, Marc, Amy Beth Warriner, and Victor Kuperman. 2014. “Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.” <em>Behavior Research Methods</em> 46 (3). Springer: 904–11.</p>
 </div>
 <div id="ref-snefjella2015concreteness">
 <p>Snefjella, Bryor, and Victor Kuperman. 2015. “Concreteness and Psychological Distance in Natural Language Use.” <em>Psychological Science</em> 26 (9). Sage Publications Sage CA: Los Angeles, CA: 1449–60.</p>
-</div>
 </div>
 </div>

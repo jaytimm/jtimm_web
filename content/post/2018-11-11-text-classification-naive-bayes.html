@@ -1,20 +1,3 @@
----
-title: genre, text classification & naive bayes
-description: 'Predicting text genre via a Naive Bayes classifier.'
-author: ''
-date: '2018-11-15'
-slug: text-classification-naive-bayes
-output:
-  blogdown::html_page:
-    toc: true
-    toc_depth: 2
-bibliography: biblio.bib
-link-citations: yes
-categories: []
-tags: ['rstats', 'corpus-ling']
-banner: banners/naivebayes.png
----
-
 
 <div id="TOC">
 <ul>
@@ -113,7 +96,7 @@ qnews_tif &lt;- readRDS(&#39;qnews_eg_tif.rds&#39;) %&gt;%
   theme(legend.position = &quot;bottom&quot;)+
   scale_y_continuous(labels = function(x) paste0(format(x/1000000), &#39; mil&#39;)) +
   labs(title = &quot;Composition of corpus (in tokens) over time&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><img src="2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>Lastly, and largely for good measure, we take a quick look at corpus composition in terms of article sources. The plot below summarizes the top content generators within each genre as measured by article counts.</p>
 <pre class="r"><code>qnews_tif %&gt;% 
   group_by(search, source) %&gt;% 
@@ -137,7 +120,7 @@ qnews_tif &lt;- readRDS(&#39;qnews_eg_tif.rds&#39;) %&gt;%
   theme(plot.title = element_text(size=12))+ 
   coord_flip()+
   labs(title=&quot;Most frequent domains by Google News search topic&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
 <div id="building-a-naive-bayes-classifier" class="section level2">
 <h2>Building a Naive Bayes classifier</h2>
@@ -201,7 +184,7 @@ classifier &lt;- e1071::naiveBayes(as.matrix(train_data),
           axis.text.x=element_text(angle=45,
                                    hjust=1)) + 
     labs(title=&quot;Confusion Matrix&quot;)</code></pre>
-<p><img src="/post/2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="2018-11-11-text-classification-naive-bayes_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Output from the <code>confusionMatrix</code> function also includes a host of model diagnostics. The table below summarizes some of the more common diagnostics by genre, including <em>sensitivity</em> (1 - proportion of false negatives), <em>specificity</em> (1 - proportion of false positives), and the average of the two, <em>balanced accuracy</em>.</p>
 <pre class="r"><code>cfm$byClass %&gt;% data.frame() %&gt;%
   select (Sensitivity, Specificity, Balanced.Accuracy) %&gt;%
