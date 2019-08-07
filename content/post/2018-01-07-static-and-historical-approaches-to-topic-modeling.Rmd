@@ -39,7 +39,7 @@ Very quickly, topic modeling is an unsupervised text classification methodology 
 The approach to topic modeling employed here is latent Dirichlet allocation (LDA); to fit our models, we use the `LDA` function from the `topicmodels` package [@hornik2011topicmodels]. 
 
 
-##Synchronic application
+## Synchronic application
 
 In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as `cdr_slate_ann` from the `corpusdatr` package.  The corpus has been annotated using the `spacyr` package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.
 
@@ -118,7 +118,7 @@ topicmodels::posterior(static_topic)$terms %>%
 So, some curious times, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad.  The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content. 
 
 
-##Diachronic application
+## Diachronic application
 
 Next we explore topics in a diachronic corpus, and demonstrate a straightforward approach to visualizing variation in topic prevalence over time. Here we use the `cdr_gnews_historical` corpus from the `corpusdatr` package for demonstration purposes.  
 
@@ -266,7 +266,7 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == "2017-11-27",],
 ```
 
 
-##Topic clusters
+## Topic clusters
 
 Lastly, we consider the relationship among topics in the `cdr_gnews_historical` corpus via cluster analysis.  The first step in this process is to create a correlation matrix of the beta values for constituent topic features.
 
@@ -287,9 +287,9 @@ hclust(dist(cor_mat)) %>%
 ```
 
 
-##quick summary
+## quick summary
 
 A brief outline for quick topic modeling, with some different applications for synchronic and diachronic corpora. For a smarter discussion of underlying assumptions and maths, see @hornik2011topicmodels. 
 
 
-##References
+## References
