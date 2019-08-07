@@ -19,7 +19,7 @@ banner: banners/topic.jpg
 <li><a href="#synchronic-application">Synchronic application</a></li>
 <li><a href="#diachronic-application">Diachronic application</a></li>
 <li><a href="#topic-clusters">Topic clusters</a></li>
-<li><a href="#quick-summary">quick summary</a></li>
+<li><a href="#quick-summary">Quick summary</a></li>
 <li><a href="#references">References</a></li>
 </ul>
 </div>
@@ -41,14 +41,14 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 <div id="synchronic-application" class="section level2">
 <h2>Synchronic application</h2>
 <p>In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as <code>cdr_slate_ann</code> from the <code>corpusdatr</code> package. The corpus has been annotated using the <code>spacyr</code> package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.</p>
-<p>The first step in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the <code>clr_get_freq</code> function from the <code>corpuslingr</code> package. We set the lemma as our feature unit, and limit feature composition to nouns and entities.</p>
+<p><strong>The first step</strong> in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the <code>clr_get_freq</code> function from the <code>corpuslingr</code> package. We set the lemma as our feature unit, and limit feature composition to nouns and entities.</p>
 <pre class="r"><code>dtm &lt;- corpusdatr::cdr_slate_ann %&gt;%
   spacyr::entity_consolidate() %&gt;%
   filter(tag %in% c(&quot;NN&quot;, &quot;NNS&quot;) | pos ==&#39;ENTITY&#39;)%&gt;%
   corpuslingr::clr_get_freq(agg_var=c(&#39;doc_id&#39;,&#39;lemma&#39;),
                             toupper=FALSE)%&gt;%
   arrange(doc_id)</code></pre>
-<p>Example portion of the corpus-as-BOW:</p>
+<p><strong>Example portion</strong> of the corpus-as-BOW:</p>
 <pre><code>##   doc_id   lemma txtf docf
 ## 1      1   noise   14   25
 ## 2      1     lip    9   24
@@ -71,7 +71,7 @@ library(corpuslingr)#devtools::install_github(&quot;jaytimm/corpuslingr&quot;)</
 ##   .. ..$ : chr [1:5434] &quot;noise&quot; &quot;lip&quot; &quot;talk&quot; &quot;walk&quot; ...
 ##   ..@ x       : num [1:161352] 14 1 1 1 1 1 1 1 1 2 ...
 ##   ..@ factors : list()</code></pre>
-<p>Lastly, we fit the model, specifying an eight topic solution:</p>
+<p>Lastly, we <strong>fit the model</strong>, specifying an eight topic solution:</p>
 <pre class="r"><code>static_topic &lt;- topicmodels::LDA(static_DTM, 
                                  k = 8, 
                                  control=list(seed=12)) #11</code></pre>
@@ -101,7 +101,7 @@ topicmodels::posterior(static_topic)$terms %&gt;%
     theme(plot.title = element_text(size=14)) +
     labs(title=&quot;Topic composition by feature&quot;) #</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p>So, some curious times, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad. The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content.</p>
+<p>So, <strong>some curious times</strong>, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad. The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content.</p>
 </div>
 <div id="diachronic-application" class="section level2">
 <h2>Diachronic application</h2>
@@ -113,7 +113,7 @@ Corpus and some descriptives
 </p>
 <p>The corpus is comprised of web-based news articles published during a three-week time period (11-27/17 to 12/20/17). Articles were retrieved using my <code>quicknews</code> package, which leverages Goggle News’ RSS feed to direct search, and annotated using the <code>spacyr</code> package.</p>
 <p>For the sake of avoiding copyright issues, each constituent article in the corpus has already been reduced to a BOW. The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.</p>
-<p>Example corpus metadata:</p>
+<p>Example corpus <strong>metadata</strong>:</p>
 <pre class="r"><code>head(cdr_gnews_meta)[1:4]</code></pre>
 <pre><code>##   doc_id   pubdates          source
 ## 1      1 2017-11-27  New York Times
@@ -129,7 +129,7 @@ Corpus and some descriptives
 ## 4                           Melania Trump unveils White House holiday decor
 ## 5        Trump&#39;s latest conspiracy? The &#39;Access Hollywood&#39; tape was a fake!
 ## 6                  Trump attacks media in his first post-Thanksgiving tweet</code></pre>
-<p>Some basic corpus descriptives:</p>
+<p>Some basic <strong>corpus descriptives</strong>:</p>
 <pre class="r"><code>cdr_gnews_meta%&gt;%
   group_by(pubdates) %&gt;%
   summarize_at(vars(docN),funs(sum))%&gt;%
@@ -140,7 +140,7 @@ Corpus and some descriptives
   labs(title=&quot;Daily corpus size&quot;, 
        subtitle = &quot;11-27-17 to 12-20-17&quot;)</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p>The corpus is comprised predominantly of articles from the Washington Post, CNN, and the New York Times. It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.</p>
+<p><strong>The corpus is comprised</strong> predominantly of articles from the Washington Post, CNN, and the New York Times. It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.</p>
 <pre class="r"><code>cdr_gnews_meta %&gt;%
   group_by(source) %&gt;%
   summarize_at(vars(docN),funs(sum))%&gt;%
@@ -165,14 +165,14 @@ Topic Model
   topicmodels::LDA(., 
                    k = 12, 
                    control = list(verbose = 0, seed=999))</code></pre>
-<p>Extract the topic summary of the model:</p>
+<p><strong>Extract</strong> the topic summary of the model:</p>
 <pre class="r"><code>topic_summary &lt;- data.frame(topicmodels::terms(hist_topic,7)) %&gt;%
   gather(key=&#39;topic&#39;,value=&#39;val&#39;,Topic.1:Topic.12) %&gt;%
   group_by(topic)%&gt;%
   summarize (dims = paste(val,collapse=&#39;, &#39;))%&gt;%
   mutate(topic = as.numeric(gsub(&#39;Topic.&#39;,&#39;&#39;,topic)))%&gt;%
   arrange(topic)</code></pre>
-<p>Topics over the three week period:</p>
+<p><strong>Topics</strong> over the three week period:</p>
 <pre><code>## # A tibble: 12 x 1
 ##    dims                                                         
 ##    &lt;chr&gt;                                                        
@@ -188,13 +188,13 @@ Topic Model
 ## 10 game, team, coach, time, player, NFL, first                  
 ## 11 Trump, president, Russia, Trump_&#39;s, official, Mueller, FBI   
 ## 12 Jerusalem, Israel, police, capital, Iran, people, attack</code></pre>
-<p>So a busy three weeks. The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.</p>
+<p><strong>So a busy three weeks</strong>. The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.</p>
 <p>
 <h4>
 Topic prevalence historically
 </h4>
 </p>
-<p>In order to quantify the prevalence of these topics over time, we shift focus from topic composition in terms of words/features to document composition in terms of topics. So, we first extract the posterior probabilities of the topics for each document; then we join corpus metadata and topic summary details.</p>
+<p>In order to quantify the <strong>prevalence of these topics over time</strong>, we shift focus from topic composition in terms of words/features to document composition in terms of topics. So, we first extract the posterior probabilities of the topics for each document; then we join corpus metadata and topic summary details.</p>
 <pre class="r"><code>hist_beta &lt;- topicmodels::posterior(hist_topic)$topics %&gt;%
   data.frame() %&gt;%
   mutate(doc_id = row.names(.))%&gt;%
@@ -203,7 +203,7 @@ Topic prevalence historically
   gather(key=&quot;topic&quot;,value=&quot;val&quot;,X1:X12) %&gt;%
   mutate(topic = as.numeric(gsub(&#39;X&#39;,&#39;&#39;,topic)))%&gt;%
   left_join(topic_summary)</code></pre>
-<p>Based on this set of model results, each document in our corpus can be represented as a composite of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9.</p>
+<p>Based on this set of model results, each document in our corpus can be represented as <strong>a composite</strong> of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9.</p>
 <pre class="r"><code>hist_beta %&gt;%
   filter(doc_id %in% c(&#39;183&#39;, &#39;631&#39;,&#39;896&#39;)) %&gt;%
   ggplot(aes(x=reorder(paste(topic,dims, sep=&quot; - &quot;), -topic), 
@@ -218,13 +218,13 @@ Topic prevalence historically
   labs(title=&quot;Text by topic&quot;) +
   theme(legend.position=&quot;none&quot;)</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
-<p>Topic prevalence over time, then, is simply the aggregate of these topic probabilities for each document by publication date.</p>
+<p><strong>Topic prevalence over time</strong>, then, is simply the aggregate of these topic probabilities for each document by publication date.</p>
 <pre class="r"><code>agg_hist_beta &lt;- hist_beta %&gt;%
   group_by(pubdates,topic,dims) %&gt;% 
   summarize_at(vars(val),funs(sum))%&gt;%
   ungroup()</code></pre>
 <p>Finally, we plot the results. The size of plot points represents aggregate posterior probabilities, which can be interpreted as the likelihood that some article <strong>a</strong> written on day <strong>d</strong> was about some topic <strong>z</strong>.</p>
-<p>The top six words associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.</p>
+<p><strong>The top six words</strong> associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.</p>
 <pre class="r"><code>p &lt;- ggplot(agg_hist_beta) +
      geom_point(aes(x = pubdates, 
                     y = reorder(topic,-topic), 
@@ -240,7 +240,7 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&qu
   labs(title=&quot;Topic prevalence over time&quot;, 
        subtitle=&quot;11-27-2017 to 12-20-2017&quot;)+
   theme(legend.position=&quot;none&quot;, 
-        plot.title = element_text(size=14))</code></pre>
+        plot.title = element_text(size=12))</code></pre>
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 </div>
 <div id="topic-clusters" class="section level2">
@@ -249,7 +249,7 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == &quot;2017-11-27&qu
 <pre class="r"><code>cor_mat &lt;- data.frame(posterior(hist_topic)$topics)%&gt;%
    `colnames&lt;-`(paste(topic_summary$topic,topic_summary$dims, sep=&quot; - &quot;)) %&gt;%
     cor(.)</code></pre>
-<p>Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform hierarchical clustering analysis on the resulting matrix. We use the <code>ggdendro</code> package to plot results. Per plot below, some intuitive relationships, some less so.</p>
+<p>Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform <strong>hierarchical clustering analysis</strong> on the resulting matrix. We use the <code>ggdendro</code> package to plot results. Per plot below, some intuitive relationships, some less so.</p>
 <pre class="r"><code>library(ggdendro)
 hclust(dist(cor_mat)) %&gt;%
   ggdendrogram(., rotate=TRUE) + 
@@ -257,7 +257,7 @@ hclust(dist(cor_mat)) %&gt;%
 <p><img src="/post/2018-01-07-static-and-historical-approaches-to-topic-modeling_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 </div>
 <div id="quick-summary" class="section level2">
-<h2>quick summary</h2>
+<h2>Quick summary</h2>
 <p>A brief outline for quick topic modeling, with some different applications for synchronic and diachronic corpora. For a smarter discussion of underlying assumptions and maths, see <span class="citation">Hornik and Grün (<a href="#ref-hornik2011topicmodels">2011</a>)</span>.</p>
 </div>
 <div id="references" class="section level2 unnumbered">

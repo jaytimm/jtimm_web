@@ -43,7 +43,7 @@ The approach to topic modeling employed here is latent Dirichlet allocation (LDA
 
 In our first example, we investigate topics in the annotated Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words), available as `cdr_slate_ann` from the `corpusdatr` package.  The corpus has been annotated using the `spacyr` package, and is functionally a synchronic (or static) corpus by virtue of not containing publication date information.
 
-The first step in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the `clr_get_freq` function from the `corpuslingr` package.  We set the lemma as our feature unit, and limit feature composition to nouns and entities.
+**The first step** in building the model is to summarize our corpus; here, this means representing each document in the corpus in terms of its constitutent features and feature frequencies, ie, as a bag-of-words (BOW). To accomplish this task, we use the `clr_get_freq` function from the `corpuslingr` package.  We set the lemma as our feature unit, and limit feature composition to nouns and entities.
 
 ```{r}
 dtm <- corpusdatr::cdr_slate_ann %>%
@@ -55,7 +55,9 @@ dtm <- corpusdatr::cdr_slate_ann %>%
 ```
 
 
-Example portion of the corpus-as-BOW:
+
+**Example portion** of the corpus-as-BOW:
+
 ```{r echo=FALSE}
 head(dtm)
 ```
@@ -72,13 +74,17 @@ static_DTM <- dtm%>%
 ```
 
 
+
 Which has the following structure:
+
 ```{r echo=FALSE}
 str(static_DTM)
 ```
 
 
-Lastly, we fit the model, specifying an eight topic solution:
+
+Lastly, we **fit the model**, specifying an eight topic solution:
+
 ```{r message=FALSE, warning=FALSE}
 static_topic <- topicmodels::LDA(static_DTM, 
                                  k = 8, 
@@ -115,7 +121,8 @@ topicmodels::posterior(static_topic)$terms %>%
     labs(title="Topic composition by feature") #
 ```
 
-So, some curious times, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad.  The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content. 
+So, **some curious times**, the close of the 20th century: A lame-duck president in some hot water, presidential primaries, a war abroad.  The model seems to paint a fairly clear picture of the socio-political happenings of the time period, and provides a nice macro-vantage from which to view/explore corpus content. 
+
 
 
 ## Diachronic application
@@ -129,13 +136,15 @@ The corpus is comprised of web-based news articles published during a three-week
 
 For the sake of avoiding copyright issues, each constituent article in the corpus has already been reduced to a BOW.  The corpus is comprised of ~1,500 texts, ~1.3 million words, and ~200 unique media sources.
 
-Example corpus metadata:
+
+Example corpus **metadata**:
+
 ```{r}
 head(cdr_gnews_meta)[1:4]
 ```
 
 
-Some basic corpus descriptives:
+Some basic **corpus descriptives**:
 
 ```{r fig.height=3.5, message=FALSE, warning=FALSE}
 cdr_gnews_meta%>%
@@ -149,7 +158,8 @@ cdr_gnews_meta%>%
        subtitle = "11-27-17 to 12-20-17")
 ```
 
-The corpus is comprised predominantly of articles from the Washington Post, CNN, and the New York Times.  It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.  
+
+**The corpus is comprised** predominantly of articles from the Washington Post, CNN, and the New York Times.  It is unclear if these sources generate the most content, or if this is a bias of the news aggregator, or if these sites care less about folks scraping content from their sites.  
 
 ```{r fig.height=4}
 cdr_gnews_meta %>%
@@ -180,7 +190,9 @@ hist_topic <- corpusdatr::cdr_gnews_historical %>%
 ```
 
 
-Extract the topic summary of the model:
+
+**Extract** the topic summary of the model:
+
 ```{r message=FALSE, warning=FALSE}
 topic_summary <- data.frame(topicmodels::terms(hist_topic,7)) %>%
   gather(key='topic',value='val',Topic.1:Topic.12) %>%
@@ -191,17 +203,19 @@ topic_summary <- data.frame(topicmodels::terms(hist_topic,7)) %>%
 ```
 
 
-Topics over the three week period:
+**Topics** over the three week period:
+
 ```{r echo=FALSE, paged.print=TRUE}
 topic_summary[1:12,2]
 ```
 
-So a busy three weeks.  The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.
+
+**So a busy three weeks**.  The special Senate election in Alabama (and surrounding controversey), wildfires in California, North Korea, the Mueller investigation, tax reform, the #MeToo movement.
 
 
 <p><h4>Topic prevalence historically</h4></p>
 
-In order to quantify the prevalence of these topics over time, we shift focus from topic composition in terms of words/features to document composition in terms of topics. So, we first extract the posterior probabilities of the topics for each document; then we join corpus metadata and topic summary details.
+In order to quantify the **prevalence of these topics over time**, we shift focus from topic composition in terms of words/features to document composition in terms of topics. So, we first extract the posterior probabilities of the topics for each document; then we join corpus metadata and topic summary details.
 
 ```{r message=FALSE, warning=FALSE}
 hist_beta <- topicmodels::posterior(hist_topic)$topics %>%
@@ -214,7 +228,8 @@ hist_beta <- topicmodels::posterior(hist_topic)$topics %>%
   left_join(topic_summary)
 ```
 
-Based on this set of model results, each document in our corpus can be represented as a composite of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9. 
+
+Based on this set of model results, each document in our corpus can be represented as **a composite** of the sixteen topics summarized above; topic composites for an example set of texts are illustrated in the figure below. Per the figure, text 183 is comprised (in varying degrees) of topics 2, 3, 4, and 9. 
 
 ```{r}
 hist_beta %>%
@@ -232,7 +247,10 @@ hist_beta %>%
   theme(legend.position="none")
 ```
 
-Topic prevalence over time, then, is simply the aggregate of these topic probabilities for each document by publication date.   
+
+
+**Topic prevalence over time**, then, is simply the aggregate of these topic probabilities for each document by publication date.   
+
 
 ```{r message=FALSE, warning=FALSE}
 agg_hist_beta <- hist_beta %>%
@@ -244,7 +262,7 @@ agg_hist_beta <- hist_beta %>%
 
 Finally, we plot the results.  The size of plot points represents aggregate posterior probabilities, which can be interpreted as the likelihood that some article **a** written on day **d** was about some topic **z**.  
 
-The top six words associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.
+**The top six words** associated with each topic are displayed as well. For a relatively small corpus (comprised of a wide range of content), the plot provides a nice overview of variation in topic prevalence over time.
 
 ```{r fig.height=8}
 p <- ggplot(agg_hist_beta) +
@@ -262,7 +280,7 @@ p + geom_text(data = agg_hist_beta[agg_hist_beta$pubdates == "2017-11-27",],
   labs(title="Topic prevalence over time", 
        subtitle="11-27-2017 to 12-20-2017")+
   theme(legend.position="none", 
-        plot.title = element_text(size=14))
+        plot.title = element_text(size=12))
 ```
 
 
@@ -277,7 +295,7 @@ cor_mat <- data.frame(posterior(hist_topic)$topics)%>%
 ```
 
 
-Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform hierarchical clustering analysis on the resulting matrix.  We use the `ggdendro` package to plot results.  Per plot below, some intuitive relationships, some less so.  
+Next, we compute the distances (ie, dissimilarities) between topic-pairs, and perform **hierarchical clustering analysis** on the resulting matrix.  We use the `ggdendro` package to plot results.  Per plot below, some intuitive relationships, some less so.  
 
 ```{r fig.height=6, message=FALSE, warning=FALSE}
 library(ggdendro)
@@ -287,7 +305,7 @@ hclust(dist(cor_mat)) %>%
 ```
 
 
-## quick summary
+## Quick summary
 
 A brief outline for quick topic modeling, with some different applications for synchronic and diachronic corpora. For a smarter discussion of underlying assumptions and maths, see @hornik2011topicmodels. 
 
