@@ -48,7 +48,7 @@ spanLang <- load_variables(2015, "acs5", cache = FALSE) %>%
   select(-concept)
 ```
 
-The table below summarizes the variables included in census table `B16006`. A third column, `speakerType`, is added, which reflects a re-categorization of census variables per our purposes here.
+**The table below** summarizes the variables included in census table `B16006`. A third column, `speakerType`, is added, which reflects a re-categorization of census variables per our purposes here.
 
 ```{r echo=FALSE}
 speakerType <- c("Hispanic population over 5","Hispanic English monolinguals","Hispanic Spanish speakers:", rep("Hispanic Spanish speakers: Spanish-English bilinguals",2), rep("Hispanic Spanish speakers: Spanish monolinguals",2))
@@ -84,7 +84,9 @@ langVars <- c("B16006_001",
 ```
 
 
-Relevant geographies include all metropolitan statistical areas (MSAs), all US States, and the US.  
+
+**Relevant geographies** include all metropolitan statistical areas (MSAs), all US States, and the US.
+
 ```{r}
 geos <- c("us", 
           "metropolitan statistical area/micropolitan statistical area", 
@@ -92,7 +94,9 @@ geos <- c("us",
 ```
 
 
+
 We then apply the `tidycensus::get_acs` function across each geography to obtain our data set. 
+
 ```{r message=FALSE, warning=FALSE}
 summaryData <- lapply(geos, function (x) {
   tidycensus::get_acs (geography= x, 
@@ -103,7 +107,9 @@ summaryData <- lapply(geos, function (x) {
 ```
 
 
-Lastly, we perform some data cleaning & transformation processes.
+
+Lastly, we perform some data **cleaning & transformation** processes.
+
 ```{r}
 summaryData<- summaryData %>%
   rename(HispPopOver5=B16006_001E, HispPop=B01001I_001E, TotalPop=B01001_001E)%>%
@@ -160,9 +166,8 @@ summaryData %>%
   DT::formatStyle(c(1:6),fontSize = '85%')
 ```
 
-<br/>
 
-As can be noted, there is a considerable amount of variation in the distribution of speaker-types across geographies.  A less interactive, but more comprehensive display of this variation is presented in the figure below. The plot is sorted by rates of language maintenance (ie, `SpanMono` + `BiLing`).  The percentage of Hispanics that are monolingual English speakers is transformed to a negative value to hack together a likert-like plot in a simple fashion. 
+**As can be noted**, there is a considerable amount of variation in the distribution of speaker-types across geographies.  A less interactive, but more comprehensive display of this variation is presented in the figure below. The plot is sorted by rates of language maintenance (ie, `SpanMono` + `BiLing`).  The percentage of Hispanics that are monolingual English speakers is transformed to a negative value to hack together a likert-like plot in a simple fashion. 
 
 ```{r fig.height=7}
 summaryData %>%
@@ -183,7 +188,7 @@ summaryData %>%
 ```
 
 
-So, some quick observations from the table and figure.
+So, **some quick observations** from the table and figure.
 
 * Relative to other MSAs in the US, Spanish language maintenance rates in New Mexican MSAs are some of the lowest, despite some of the highest rates of Hispanic population density in the country.  Las Cruces is an exception. 
 * In comparison to MSAs with higher rates of Spanish language maintenance, MSAs in New Mexico are decidedly less populous. While Hispanics comprise only 10% of Atlanta's total population, for example, roughly 80% of Hispanics in Atlanta speak Spanish. 
@@ -207,10 +212,15 @@ divs <- tigris::divisions(cb=TRUE)%>%
   select(NAME)
 ```
 
+
+
 US divisions include:
+
 ```{r echo=FALSE}
 unique(divs$NAME)
 ```
+
+
 
 Next, we import a MSA polygon, get the centroids of each polygon, and spatially join the US division polygon to the centroids. All of this can be accomplished in the following pipe with the help of the `sf` package. 
 
@@ -224,13 +234,16 @@ metros <- tigris::core_based_statistical_areas(cb=TRUE)%>% #import poly
   na.omit
 ```
 
+<br>
+
 The result is a `sf` point geometry that includes MSA centroids (as lat/lon points) and the US division each MSA falls within.
 ```{r echo=FALSE}
-head(metros)
+head(metros) %>% knitr::kable()
 ```
 
-<br>
+
 Limit analysis to MSAs in the continental US, and then join our new MSA-division point geometry:
+
 ```{r message=FALSE, warning=FALSE}
 msas_w_divs <- summaryData %>%
   filter(!grepl("PR|Micro|HI|AK",NAME) & nchar(GEOID)>2)%>%
@@ -239,7 +252,7 @@ msas_w_divs <- summaryData %>%
   st_as_sf()
 ```
 
-Finally, we map rates of Spanish language maintenance by MSA using the `leaflet` package.  In the map below, rates have been transformed into nine quantiles to get a clearer look at variation.  The reddest points reflect rates in the lowest 11% of the distribution; the bluest points reflect rates in the highest 11% of the distribution.  Yellow points reflect median rates of Spanish language health. Polygons are US divisions. 
+Finally, we map rates of **Spanish language maintenance** by MSA using the `leaflet` package.  In the map below, rates have been transformed into nine quantiles to get a clearer look at variation.  The reddest points reflect rates in the lowest 11% of the distribution; the bluest points reflect rates in the highest 11% of the distribution.  Yellow points reflect median rates of Spanish language health. Polygons are US divisions. 
 
 Hover over the legend to see how quantiles translate to underlying rates of Spanish language maintenance.  
 
@@ -274,7 +287,7 @@ frameWidget(mp)
 ```
 <br/>
 
-The map illustrates higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates. 
+**The map illustrates** higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates. 
 
 
 <p><h4>Geo-demographic variation</h4></p>
@@ -299,7 +312,7 @@ msas_w_divs%>%
   theme(legend.position = "bottom") 
 ```
 
-Plots both suggest a fairly strong relationship between independent variable and Spanish language maintenance.   
+**Plots both suggest** a fairly strong relationship between independent variable and Spanish language maintenance.   
 
 
 ## A simple model

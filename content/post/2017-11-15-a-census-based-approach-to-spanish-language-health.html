@@ -59,7 +59,7 @@ options(tigris_class = &quot;sf&quot;,tigris_use_cache = TRUE)</code></pre>
   filter(grepl(&quot;B16006&quot;,name)==TRUE &amp; !grepl(&quot;Margin|other&quot;,label))%&gt;%
   mutate(name=gsub(&quot;E&quot;,&quot;&quot;,name),label=gsub(&quot;:&quot;,&quot;&quot;,label))%&gt;%
   select(-concept)</code></pre>
-<p>The table below summarizes the variables included in census table <code>B16006</code>. A third column, <code>speakerType</code>, is added, which reflects a re-categorization of census variables per our purposes here.</p>
+<p><strong>The table below</strong> summarizes the variables included in census table <code>B16006</code>. A third column, <code>speakerType</code>, is added, which reflects a re-categorization of census variables per our purposes here.</p>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["B16006_001","B16006_002","B16006_003","B16006_004","B16006_005","B16006_006","B16006_007"],["Estimate!!Total","Estimate!!Total!!Speak only English","Estimate!!Total!!Speak Spanish","Estimate!!Total!!Speak Spanish!!Speak English \"very well\"","Estimate!!Total!!Speak Spanish!!Speak English \"well\"","Estimate!!Total!!Speak Spanish!!Speak English \"not well\"","Estimate!!Total!!Speak Spanish!!Speak English \"not at all\""],["Hispanic population over 5","Hispanic English monolinguals","Hispanic Spanish speakers:","Hispanic Spanish speakers: Spanish-English bilinguals","Hispanic Spanish speakers: Spanish-English bilinguals","Hispanic Spanish speakers: Spanish monolinguals","Hispanic Spanish speakers: Spanish monolinguals"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>name<\/th>\n      <th>label<\/th>\n      <th>speakerType<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>
@@ -85,7 +85,7 @@ Gathering ACS data
               &quot;B16006_007&quot;, 
               &quot;B01001I_001&quot;, 
               &quot;B01001_001&quot;)</code></pre>
-<p>Relevant geographies include all metropolitan statistical areas (MSAs), all US States, and the US.</p>
+<p><strong>Relevant geographies</strong> include all metropolitan statistical areas (MSAs), all US States, and the US.</p>
 <pre class="r"><code>geos &lt;- c(&quot;us&quot;, 
           &quot;metropolitan statistical area/micropolitan statistical area&quot;, 
           &quot;state&quot;)</code></pre>
@@ -96,7 +96,7 @@ Gathering ACS data
                        output=&quot;wide&quot;, 
                        year=2015)}) %&gt;%
   bind_rows() </code></pre>
-<p>Lastly, we perform some data cleaning &amp; transformation processes.</p>
+<p>Lastly, we perform some data <strong>cleaning &amp; transformation</strong> processes.</p>
 <pre class="r"><code>summaryData&lt;- summaryData %&gt;%
   rename(HispPopOver5=B16006_001E, HispPop=B01001I_001E, TotalPop=B01001_001E)%&gt;%
   group_by(NAME)%&gt;%
@@ -142,8 +142,7 @@ Gathering ACS data
   DT::formatStyle(c(1:6),fontSize = &#39;85%&#39;)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[["Las Cruces, NM","Santa Fe, NM","Albuquerque, NM","New Mexico","Los Angeles, CA","Miami, FL","Houston, TX","Tucson, AZ","Austin, TX","Phoenix, AZ","Denver, CO","Chicago, IL-IN-WI","Farmington, NM","United States","Atlanta, GA","Jacksonville, FL"],[214,147,903,2084,13154,5861,6347,999,1889,4408,2704,9534,125,316515,5536,1402],[66.5,51.1,47.7,47.4,44.9,42.8,36.1,35.7,31.9,30,22.8,21.4,19.6,17.1,10.5,7.7],[26.5,42.4,50,42.2,19.4,10,20.8,36.1,33.7,34.1,43.2,20.7,51,26.3,18.4,38.9],[60.4,45.8,42.5,48.6,57.9,62.8,55.8,53.3,48.7,50.3,42.9,59.3,41.8,54.3,57.6,49.6],[12.9,11.5,7.2,9,22.3,26.7,23.1,10.3,17.3,15.4,13.6,19.7,6.4,19,23.5,10.5]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>NAME<\/th>\n      <th>TotalPop<\/th>\n      <th>PerHisp<\/th>\n      <th>EngMono<\/th>\n      <th>BiLing<\/th>\n      <th>SpanMono<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":16,"dom":"t","scrollX":true,"fixedColumns":{"leftColumns":1},"columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,16,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.000000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (100.000000 - value)/100.000000 * 100 + '%, cornflowerblue ' + (100.000000 - value)/100.000000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'85%'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'85%'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'85%'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'85%'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-size':'85%'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'font-size':'85%'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<p><br/></p>
-<p>As can be noted, there is a considerable amount of variation in the distribution of speaker-types across geographies. A less interactive, but more comprehensive display of this variation is presented in the figure below. The plot is sorted by rates of language maintenance (ie, <code>SpanMono</code> + <code>BiLing</code>). The percentage of Hispanics that are monolingual English speakers is transformed to a negative value to hack together a likert-like plot in a simple fashion.</p>
+<p><strong>As can be noted</strong>, there is a considerable amount of variation in the distribution of speaker-types across geographies. A less interactive, but more comprehensive display of this variation is presented in the figure below. The plot is sorted by rates of language maintenance (ie, <code>SpanMono</code> + <code>BiLing</code>). The percentage of Hispanics that are monolingual English speakers is transformed to a negative value to hack together a likert-like plot in a simple fashion.</p>
 <pre class="r"><code>summaryData %&gt;%
   filter(GEOID %in% geoSample) %&gt;%
   select(NAME, EngMono, BiLing, SpanMono)%&gt;%
@@ -160,7 +159,7 @@ Gathering ACS data
           plot.title = element_text(size=15))+ 
       labs(title = &quot;Language maintenance rates by geography&quot;)</code></pre>
 <p><img src="/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
-<p>So, some quick observations from the table and figure.</p>
+<p>So, <strong>some quick observations</strong> from the table and figure.</p>
 <ul>
 <li>Relative to other MSAs in the US, Spanish language maintenance rates in New Mexican MSAs are some of the lowest, despite some of the highest rates of Hispanic population density in the country. Las Cruces is an exception.</li>
 <li>In comparison to MSAs with higher rates of Spanish language maintenance, MSAs in New Mexico are decidedly less populous. While Hispanics comprise only 10% of Atlanta’s total population, for example, roughly 80% of Hispanics in Atlanta speak Spanish.</li>
@@ -192,20 +191,56 @@ Geospatial variation
   sf::st_join(divs)%&gt;% #spatial join with us divisions
   select(GEOID,NAME)%&gt;%
   na.omit</code></pre>
-The result is a <code>sf</code> point geometry that includes MSA centroids (as lat/lon points) and the US division each MSA falls within.
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["GEOID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["NAME"],"name":[2],"type":["chr"],"align":["left"]},{"label":["geometry"],"name":[3],"type":["S3: sfc_POINT"],"align":["right"]}],"data":[{"1":"43620","2":"West North Central","3":"<S3: sfc_POINT>","_rn_":"1"},{"1":"12660","2":"East North Central","3":"<S3: sfc_POINT>","_rn_":"2"},{"1":"40220","2":"South Atlantic","3":"<S3: sfc_POINT>","_rn_":"3"},{"1":"48660","2":"West South Central","3":"<S3: sfc_POINT>","_rn_":"4"},{"1":"22840","2":"East South Central","3":"<S3: sfc_POINT>","_rn_":"5"},{"1":"12060","2":"South Atlantic","3":"<S3: sfc_POINT>","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-<p><br>
-Limit analysis to MSAs in the continental US, and then join our new MSA-division point geometry:</p>
+<p><br></p>
+<p>The result is a <code>sf</code> point geometry that includes MSA centroids (as lat/lon points) and the US division each MSA falls within.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">GEOID</th>
+<th align="left">NAME</th>
+<th align="left">geometry</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">43620</td>
+<td align="left">West North Central</td>
+<td align="left">c(-96.9900433933392, 43.499693408657)</td>
+</tr>
+<tr class="even">
+<td align="left">12660</td>
+<td align="left">East North Central</td>
+<td align="left">c(-89.9482246126306, 43.426665725178)</td>
+</tr>
+<tr class="odd">
+<td align="left">40220</td>
+<td align="left">South Atlantic</td>
+<td align="left">c(-79.9465601885137, 37.2860844061547)</td>
+</tr>
+<tr class="even">
+<td align="left">48660</td>
+<td align="left">West South Central</td>
+<td align="left">c(-98.4914061726921, 33.7746914167356)</td>
+</tr>
+<tr class="odd">
+<td align="left">22840</td>
+<td align="left">East South Central</td>
+<td align="left">c(-85.8041086647976, 34.459801244324)</td>
+</tr>
+<tr class="even">
+<td align="left">12060</td>
+<td align="left">South Atlantic</td>
+<td align="left">c(-84.3996061927503, 33.6927975921385)</td>
+</tr>
+</tbody>
+</table>
+<p>Limit analysis to MSAs in the continental US, and then join our new MSA-division point geometry:</p>
 <pre class="r"><code>msas_w_divs &lt;- summaryData %&gt;%
   filter(!grepl(&quot;PR|Micro|HI|AK&quot;,NAME) &amp; nchar(GEOID)&gt;2)%&gt;%
   left_join(metros %&gt;% rename(div=NAME))%&gt;%
   mutate(speak_span = BiLing+SpanMono)%&gt;%
   st_as_sf()</code></pre>
-<p>Finally, we map rates of Spanish language maintenance by MSA using the <code>leaflet</code> package. In the map below, rates have been transformed into nine quantiles to get a clearer look at variation. The reddest points reflect rates in the lowest 11% of the distribution; the bluest points reflect rates in the highest 11% of the distribution. Yellow points reflect median rates of Spanish language health. Polygons are US divisions.</p>
+<p>Finally, we map rates of <strong>Spanish language maintenance</strong> by MSA using the <code>leaflet</code> package. In the map below, rates have been transformed into nine quantiles to get a clearer look at variation. The reddest points reflect rates in the lowest 11% of the distribution; the bluest points reflect rates in the highest 11% of the distribution. Yellow points reflect median rates of Spanish language health. Polygons are US divisions.</p>
 <p>Hover over the legend to see how quantiles translate to underlying rates of Spanish language maintenance.</p>
 <pre class="r"><code>library(leaflet)
 library(widgetframe)
@@ -233,7 +268,7 @@ mp &lt;- leaflet(divs,width=&quot;100%&quot;,height=&#39;400&#39;) %&gt;%
 <p><div id="htmlwidget-3" style="width:100%;height:400px;" class="widgetframe html-widget"></div>
 <script type="application/json" data-for="htmlwidget-3">{"x":{"url":"/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html//widgets/widget_unnamed-chunk-18.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
 <br/></p>
-<p>The map illustrates higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates.</p>
+<p><strong>The map illustrates</strong> higher rates of Spanish language maintenance in coastal and border states. Per our previous observation, MSAs in the Southwest (with a few exceptions) are largely in the red (ie, below-median) when it comes to maintenance rates.</p>
 <p>
 <h4>
 Geo-demographic variation
@@ -264,7 +299,7 @@ Geo-demographic variation
 ##   list(name = ~ f(.))
 ## This warning is displayed once per session.</code></pre>
 <p><img src="/post/2017-11-15-a-census-based-approach-to-spanish-language-health_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
-<p>Plots both suggest a fairly strong relationship between independent variable and Spanish language maintenance.</p>
+<p><strong>Plots both suggest</strong> a fairly strong relationship between independent variable and Spanish language maintenance.</p>
 </div>
 <div id="a-simple-model" class="section level2">
 <h2>A simple model</h2>
