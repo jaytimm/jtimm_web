@@ -15,7 +15,7 @@ banner: banners/53congress.png
 
  In this post, we introduce a new R data package, `nmlegisdatr`, that makes available roll call data for New Mexico's 53rd (2017-18) State Legislature (NMSL53).  While these data are publicly available via [nmlegis.gov](https://www.nmlegis.gov), they are wrapped up in thousands of PDFs and, hence, largely inaccessible. 
 
-I have scraped roll calls and legislation details from these PDFs, and tidied things up some as a collection of data frames^[Roll call data for older legislatures are also available online. However, roll call tables in these PDFs are structured poorly/idiosyncratically, making the scraping process challenging. If the state makes historical roll call data available in a nice, shiny spreadsheet, joke's on me.]; a full code-through of how the package was built is available [here](https://github.com/jaytimm/nmlegisdatr/blob/master/data-raw/scrape_nmsl_data.md).  The package can be downloaded [here](https://github.com/jaytimm/nmlegisdatr).
+**I have scraped roll calls and legislation details** from these PDFs, and tidied things up some as a collection of data frames^[Roll call data for older legislatures are also available online. However, roll call tables in these PDFs are structured poorly/idiosyncratically, making the scraping process challenging. If the state makes historical roll call data available in a nice, shiny spreadsheet, joke's on me.]; a full code-through of how the package was built is available [here](https://github.com/jaytimm/nmlegisdatr/blob/master/data-raw/scrape_nmsl_data.md).  The package can be downloaded [here](https://github.com/jaytimm/nmlegisdatr).
 
 In this post, then, we demonstrate the contents/structure of the package, as well as its utility as an analytical tool. Ultimately, the goal is to make voting histories available (in an actionable format) for interested folks in New Mexico, as **general elections for all 70 House seats are in November**. This is the first in a series of posts investigating NMSL53.   
 
@@ -35,7 +35,7 @@ library(data.table)
 
 
 
-##Package descriptives
+## Package descriptives
 
 The table below details the different data frames included in the `nmlegisdatr` package.  Column names are consistent across tables, facilitating easy joining.  We will demonstrate their specific contents as we go.
 
@@ -48,10 +48,10 @@ data.frame(Table_Name, Description)%>%
 ```
 
 
-##NMSL53: an overview
+## NMSL53: an overview
 
 
-We first consider some high level characteristics of NMSL53.  Based on the `nml_legislators` data frame included in `nmlegisdatr`, the table below summarizes chamber composition by political affiliation. As can be noted, a slight majority in the House for Democrats, and a more sizable one in the Senate.  So, unified party control in New Mexico's legislative branch.  (See [postscript]() for a code-through of visualizing congressional compositions.) 
+We first consider some **high level characteristics of NMSL53**.  Based on the `nml_legislators` data frame included in `nmlegisdatr`, the table below summarizes chamber composition by political affiliation. As can be noted, a slight majority in the House for Democrats, and a more sizable one in the Senate.  So, unified party control in New Mexico's legislative branch.  (See [postscript]() for a code-through of visualizing congressional compositions.) 
 
 ```{r message=FALSE, warning=FALSE}
 nmlegisdatr::nml_legislators %>%
@@ -67,7 +67,7 @@ nmlegisdatr::nml_legislators %>%
 
 
 
-Roll call results are summarized in the `nml_rollcall_results` table. Counts of legislation reaching a vote in NMSL53 are summarized below by chamber and session/year.  The first session (2017) is two months in duration while the second session (2018) is only one month in duration.
+**Roll call results** are summarized in the `nml_rollcall_results` table. Counts of legislation reaching a vote in NMSL53 are summarized below by chamber and session/year.  The first session (2017) is two months in duration while the second session (2018) is only one month in duration.
 
 ```{r message=TRUE, warning=FALSE}
 nmlegisdatr::nml_rollcall_results %>%
@@ -89,7 +89,7 @@ nmlegisdatr::nml_rollcall_results %>% filter(Chamber == 'House') %>%
 ```
 
 
-Based on this table, we can get a sense of the degree of bi-partisanship in both houses.  Here, we classify each roll call as one of the following:
+**Based on this table**, we can get a sense of the degree of bi-partisanship in both houses.  Here, we classify each roll call as one of the following:
 
 * **Full consensus**: All yea's
 * **Bi-partisan**: Over 50% yea's in both parties
@@ -117,7 +117,7 @@ votes <- nmlegisdatr::nml_rollcall_results %>%
 
 
 
-The table below summarizes these distributions. Both chambers, then, vote largely in full consensus.  I am not sure if this is typical of state legislatures, or if this is good or bad. That said, quite a bit of legislation is largely symbolic, eg. memorials, for which there is little contention.
+**The table below summarizes these distributions**. Both chambers, then, vote largely in full consensus.  I am not sure if this is typical of state legislatures, or if this is good or bad. That said, quite a bit of legislation is largely symbolic, eg. memorials, for which there is little contention.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 votes %>%
@@ -129,9 +129,9 @@ votes %>%
 
 
 
-##Attendance & party loyalty
+## Attendance & party loyalty
 
-Next, we consider some details about the aggregate voting records of lawmakers in NMSL53. The `nm_legislator_descs` table summarizes the total votes cast, party loyalty, and attendance rates for each lawmaker. A portion of the table is presented below.  
+Next, we consider some details about the **aggregate voting records** of lawmakers in NMSL53. The `nm_legislator_descs` table summarizes the total votes cast, party loyalty, and attendance rates for each lawmaker. A portion of the table is presented below.  
 
 **Votes Cast** is the number of times a given legislator voted 'Yea' or 'Nay' in the legislature.  **Party Loyalty** is the percentage of total roll calls that a given legislator voted in the same direction as the majority of his/her party.  **Attendance** is the percentage of total roll calls for which a given legislator was not absent (ie, being excused/recused is counted as being present). 
 
@@ -142,7 +142,7 @@ nmlegisdatr::nml_legislator_descs %>%
 ```
 
 
-The plot below summarizes attendance rate distributions by political affiliation for each house.  While attendance rates are generally quite high, Democratic lawmakers are less likely to miss roll calls than their Republican counterparts.  
+The plot below summarizes **attendance rate** distributions by political affiliation for each house.  While attendance rates are generally quite high, Democratic lawmakers are less likely to miss roll calls than their Republican counterparts.  
 
 ```{r}
 nmlegisdatr::nml_legislator_descs %>%
@@ -158,7 +158,7 @@ ggplot( aes(Attendance, fill = Party, colour = Party)) +
 
 
 
-The plot below summarizes party loyalty rate distributions by political affiliation for each house.  Again, party loyalty rates are quite high in each party; however, in both the Senate and the House, Republicans are less loyal to party than Democrats.  
+The plot below summarizes **party loyalty rate** distributions by political affiliation for each house.  Again, party loyalty rates are quite high in each party; however, in both the Senate and the House, Republicans are less loyal to party than Democrats.  
 
 This discrepancy is clearly a complicated one.  Certainly relevant is Democratic majorities (and fairly sizable ones) in both chambers.  Also relevant is potential variation of political ideologies among Republicans in a cash-strapped state that has become solidly blue.  
 
@@ -189,9 +189,9 @@ nmlegisdatr::nml_get_legislator(legislator = 'TOWNSEND',
 
 
 
-##Health care-related roll calls
+## Health care-related roll calls
 
-Next, we take a more detailed perspective on NMSL53, and investigate the results of individual roll calls.  For demonstration purposes, we focus on legislation that references either "Health Care" or "Health Coverage" in their descriptions.  Bill descriptions and details are available as a data frame in `nml_legislation`; an example piece of legislation is presented below.
+Next, we take a more **detailed perspective on NMSL53**, and investigate the results of individual roll calls.  For demonstration purposes, we focus on legislation that references either "Health Care" or "Health Coverage" in their descriptions.  Bill descriptions and details are available as a data frame in `nml_legislation`; an example piece of legislation is presented below.
 
 
 ```{r}
@@ -206,7 +206,7 @@ eg %>% select (2) %>% kable()
 ```
 
 
-We can search these bill descriptions for reference to "Health Care/ Health Coverage" with a quick/simple call to the `gregexpr` function --- the table below summarizes the results of this search.
+We can **search** these bill descriptions for reference to "Health Care/ Health Coverage" with a quick/simple call to the `gregexpr` function --- the table below summarizes the results of this search.
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -230,7 +230,7 @@ bills1 %>%
 ```
 
 
-Then we summarize roll calls for Health care-related legislation that actually went to vote in the House. The faceted plot below illustrates vote results by party affiliation; we use the `nml_fill_vote` to color-code votes by party affiliation akin to the color scheme used at [VoteView](https://voteview.com/). So, a nice high-level perspective.
+Then we summarize roll calls for **Health care-related legislation** that actually went to vote in the House. The faceted plot below illustrates vote results by party affiliation; we use the `nml_fill_vote` to color-code votes by party affiliation akin to the color scheme used at [VoteView](https://voteview.com/). So, a nice high-level perspective.
 
 ```{r fig.height=8.5}
 nmlegisdatr::nml_rollcall %>%
@@ -251,11 +251,11 @@ nmlegisdatr::nml_rollcall %>%
 ```
 
 
-While most roll calls in this subset are lopsided in full consensus (ie, yea's all-around), there are some examples of party-line votes as well as some in-party divisiveness (mostly among Republican state lawmakers).
+While most roll calls in this subset are **lopsided in full consensus** (ie, yea's all-around), there are some examples of party-line votes as well as some in-party divisiveness (mostly among Republican state lawmakers).
 
 
 
-##Roll call details
+## Roll call details
 
 The `nmlegisdatr` package includes a simple roll call search function, `nml_get_bill`, that allows users to quickly obtain details about a given piece of legislation. The `year`, `session`, `bill`, and `chamber` parameters can be used to identify legislation.  The function more or less just filters the multiple tables included in `nmlegisdatr` and collates bill details in one place (akin to the `nml_get_legislators` function presented above).
 
@@ -268,7 +268,7 @@ bill_dets <- nmlegisdatr::nml_get_bill(year = '2018',
 
 
 
-The resulting object contains seven elements:
+**The resulting object** contains seven elements:
 
 ```{r}
 names(bill_dets)
@@ -310,7 +310,7 @@ bill_dets$Vote %>%
 
 
 
-The `Rollcall` element details how each legislator voted on a given piece of legislation.  Here, we map votes by party affiliation and legislative district.  Via the `tigris` package, we obtain a shape file for lower house legislative districts in New Mexico, and join the `Rollcall` data frame.
+The `Rollcall` element details **how each legislator voted on a given piece of legislation**.  Here, we map votes by party affiliation and legislative district.  Via the `tigris` package, we obtain a shape file for lower house legislative districts in New Mexico, and join the `Rollcall` data frame.
 
 ```{r message=FALSE, warning=FALSE}
 house_shape <- tigris::state_legislative_districts("New Mexico", 
@@ -322,7 +322,7 @@ house_shape <- tigris::state_legislative_districts("New Mexico",
 
 
 
-We then map roll call results by legislative district using the `leaflet` package, again using the `nml_fill_vote` function to classify votes by party affiliation. Among other things, the map illustrates an aversion to gross receipt tax exemptions among Republicans in southeastern New Mexico.
+We then **map roll call results by legislative district** using the `leaflet` package, again using the `nml_fill_vote` function to classify votes by party affiliation. Among other things, the map illustrates an aversion to gross receipt tax exemptions among Republicans in southeastern New Mexico.
 
 ```{r message=FALSE, warning=FALSE}
 library(leaflet)
@@ -348,115 +348,16 @@ addPolygons(popup = ~ Representative,
 
 
 
+## Summary
 
-##Incorporating census data
-
-```{r, include=FALSE}
-census_api_key("b508704c99f3ae9bc5b5e7c41e3dd77e59d52722")
-```
-
-
-Lastly, we investigate the potential relationship between (1) how legislators voted in the House Bill 79 roll call and (2) selected socio-demographic characteristics of the legislative districts (ie, constituents) they represent.  Ultimately, the goal is to provide an aggregate socio-demographic characterization of constituents based on the vote and party affiliation of legislators. 
-
-We use the `tidycensus` package to gather several socio-economic variables by lower house district from the American Community Survey (5-Year estimates, 2012-2016). We collect estimates as counts to facilitate aggregation and the computation of margin of errors for each vote/party affiliation combination.  Variables included are largely arbitrary, and simply for demonstration purposes.
-
-```{r}
-census_labs <- c('Hispanic', 'AmericanIndian', 'Under5',
-                 "Unemployed", "BelowFPL", "Renters")
-
-census_vars <- list( c('DP05_0066','DP05_0074', 'DP05_0004'),
-                     c("DP03_0005"), 
-                     c("B06012_002"),
-                     c("B25003_003") )
-
-denoms <- list( c('DP05_0001'),
-                c('DP03_0003'),
-                c('B06012_001'),
-                c('B25001_001') )
-                
-geo <- "state legislative district (lower chamber)"
-```
-
-
-
-Here, we apply the `tidycensus::get_acs` function across each census variable and denominator pair.
-
-```{r message=FALSE, warning=FALSE}
-census_data <- lapply(1:length(census_vars), function(x)
-  tidycensus::get_acs (geography = geo, 
-                                    variables = census_vars[[x]], 
-                                    summary_var = denoms[[x]],
-                                    state = 'NM') ) %>%
-  bind_rows() 
-```
-
-
-
-Then we do some cleaning.
-
-```{r message=FALSE, warning=FALSE}
-census_data1 <- census_data%>%
-  left_join (data.frame(cbind(census_labs,variable=unlist(census_vars)), 
-                        stringsAsFactors = FALSE)) %>%
-  mutate(District = as.character(as.numeric(gsub('^...', '',GEOID)))) 
-```
-
-
-
-Next, we aggregate census estimates by vote/party affiliation and convert counts to percentages (via denominators from above). We use a combination of the `moe_sum` and `moe_prop` functions from the `tidycensus` package to calculate margins of error for aggregated estimates and (then) for percentages.
-
-```{r message=FALSE, warning=FALSE}
-census_moe <- census_data1%>%
-  left_join(bill_dets$Rollcall) %>%
-  group_by(census_labs, Party_Member_Vote) %>%
-  dplyr::summarize(new_est = sum(estimate), 
-                   new_moe = moe_sum(moe, estimate),
-                   new_denom = sum(unique(summary_est)),
-                   new_d_moe = moe_sum((summary_moe), (summary_est))) %>%
-  mutate(per = new_est/new_denom*100, 
-         per_moe = moe_prop(new_est, new_denom, new_moe, new_d_moe)*100) 
-```
-
-
-```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
-library(units)
-units::set_units(sf::st_area(house_shape), mi^2)
-```
-
-
-
-The plot below summarizes the aggregate socio-demographic characteristics of constituents based on the vote and party affiliation of their legislators.  Values are percentages, and margins of error included as black lines.  
-
-So, lots going on. Aside from unemployment rates, some systematic differences between the constituents of Republican House legislators who voted 'Yea' on HB0079 (2018 Regular session) relative to the constituents of Republican House legislators who voted 'Nay'.  
-
-```{r message=FALSE, warning=FALSE}
-census_moe %>%
-  ggplot(aes(x=factor(Party_Member_Vote), y=per, fill= Party_Member_Vote,
-             ymin = per - per_moe, ymax= per + per_moe)) + 
-    geom_col(width=.65, color = 'lightgray') + 
-    geom_errorbar(width=0.3) +
-    wnomadds::scale_color_rollcall(aesthetics = c("fill")) +
-    scale_x_discrete(limits = rev(levels(census_moe$Party_Member_Vote)))+
-    coord_flip() +
-    ggthemes::theme_fivethirtyeight()+
-    theme(legend.position = "none",
-          plot.title = element_text(size=12))+
-    facet_wrap(~census_labs, scales = 'free_x')+
-    labs(title = "Some socio-demographics by party & vote for HB0079")
-```
-
-
-
-##Summary
-
-So, a bit of a walk-about through some roll call data in New Mexico. Hopefully folks in New Mexico will put this package to smarter uses to help inform local politics. [General elections](https://ballotpedia.org/New_Mexico_House_of_Representatives_elections,_2018) for the 54th Legislature in the House of Representatives are in November.  Many incumbents (with voting records) are up for re-election.  Know how your representative votes.
+So, a bit of a walk-about through some **roll call data in New Mexico**. Hopefully folks in New Mexico will put this package to smarter uses to help inform local politics. [General elections](https://ballotpedia.org/New_Mexico_House_of_Representatives_elections,_2018) for the 54th Legislature in the House of Representatives are in November.  Many incumbents (with voting records) are up for re-election.  Know how your representative votes.
 
 
 
 
-##Postscript: Vizualizing congressional composition
+## Postscript: Vizualizing congressional composition
 
-Here we demonstrate how to create a visual representation of the composition of each house that displays congressional seats color-coded by political affiliation (per, eg, [Wikipedia](https://en.wikipedia.org/wiki/New_Mexico_Senate)).  
+Here we demonstrate how to create a **visual representation of the composition of each house** that displays congressional seats color-coded by political affiliation (per, eg, [Wikipedia](https://en.wikipedia.org/wiki/New_Mexico_Senate)).  
 
 
 ```{r}
