@@ -4,7 +4,7 @@ description: 'Some different methodologies for exploring the geographical inform
 author: ''
 date: '2018-03-12'
 slug: text-geography-and-semantic-space
-tags: ['rstats', 'corpus ling', 'geo', 'LSA', 'MDS']
+tags: ['rstats', 'corpus ling', 'geo']
 output:
   blogdown::html_page:
     toc: yes
@@ -27,6 +27,14 @@ banner: banners/geotext.png
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
+<div id="TOC">
+<ul>
+<li><a href="#from-text-to-map">From text to map</a></li>
+<li><a href="#corpus-search-and-context">Corpus search and context</a></li>
+<li><a href="#lsa-mds-and-semantic-space">LSA, MDS, and semantic space</a></li>
+<li><a href="#fin">FIN</a></li>
+</ul>
+</div>
 
 <p>In this post, we demonstrate some different methodologies for exploring the geographical information found in text. First, we address some of the practical issues of extracting places/place-names from an annotated corpus, and demonstrate how to (1) map their geospatial distribution via geocoding and (2) append additional geographic detail to these locations via spatial joins.</p>
 <p>We then consider how these locations “map” in semantic space by comparing context-based word embeddings for each location. Ultimately, the endgame is to investigate the extent to which geospatial proximity is reflected (or not) in distributional similarity in a corpus. In the process, we demonstrate some methods for getting from lexical co-occurrence to a 2D semantic map via latent semantic analysis (LSA) and classical multi-dimensional scaling (MDS).</p>
@@ -35,14 +43,15 @@ library(ggthemes)
 library(corpuslingr) #devtools::install_github(&quot;jaytimm/corpuslingr&quot;)
 library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
 library(knitr)</code></pre>
-<p>##From text to map</p>
+<div id="from-text-to-map" class="section level2">
+<h2>From text to map</h2>
 <p>
 <h3>
 Slate corpus &amp; geopolitical entities
 </h3>
 </p>
 <p>For demo purposes, we use the annotated Slate magazine corpus made available as <code>cdr_slate_ann</code> via the <code>corpusdatr</code>. Content of articles comprising the corpus is largely political in nature, so lots of reference to place and location, namely foreign and domestic political entities. The first task, then, is to get a rollcall of the geopolitical entities included in the corpus.</p>
-<p>The Slate Magazine corpus has been annotated using the <code>spacyr</code> package, and contains named entity tags, including geopolitical entities (GPEs). Here we collapse multi-word entities (eg, “New” “York”) to single tokens (eg, “New_York”), and ready the corpus for search using <code>clr_set_corpus</code>.</p>
+<p><strong>The Slate Magazine corpus</strong> has been annotated using the <code>spacyr</code> package, and contains named entity tags, including geopolitical entities (GPEs). Here we collapse multi-word entities (eg, “New” “York”) to single tokens (eg, “New_York”), and ready the corpus for search using <code>clr_set_corpus</code>.</p>
 <pre class="r"><code>slate &lt;- corpusdatr::cdr_slate_ann %&gt;%
   spacyr::entity_consolidate() %&gt;%
   corpuslingr::clr_set_corpus(ent_as_tag=TRUE)</code></pre>
@@ -52,7 +61,7 @@ Slate corpus &amp; geopolitical entities
   filter(tag == &#39;NNGPE&#39;)%&gt;%
   corpuslingr::clr_get_freq(agg_var=&#39;lemma&#39;,toupper=TRUE) %&gt;%
   filter(txtf&gt;9 &amp; !grepl(&#39;US|USA|AMERICA|UNITED_STATES|THE_UNITED_STATES|U.S.|U.S.A&#39;,lemma))</code></pre>
-<p>The most frequently referenced GPEs in the Slate corpus (not including the US):</p>
+<p><strong>The most frequently referenced GPEs</strong> in the Slate corpus (not including the US):</p>
 <table>
 <thead>
 <tr class="header">
@@ -101,7 +110,7 @@ Geocoding
 </p>
 <p>To visualize the geographical distribution of GPEs in the Slate Magazine corpus, we use the <code>geocode</code> function from the <code>ggmap</code> package to transform our corpus locations to lat/lon coordinates that can be mapped. While <code>ggmap</code> works best with proper addresses (eg, street, city, zip, etc), country and city names can be geolocated as well.</p>
 <p>Note that while GPEs are geographical areas, this method approximates GPE location as a single point in lat/long space at the center (or centroid) of these areas. For our purposes here, this approximation is fine.</p>
-<p>The following pipe geocodes the GPEs, removes GPEs that Google Maps cannot geocode, and transforms the new dataframe with lat/lon coordinates into an <code>sf</code> spatial object. The last step enables convenient mapping/geospatial processing within the <code>sf</code> framework.</p>
+<p><strong>The following pipe</strong> geocodes the GPEs, removes GPEs that Google Maps cannot geocode, and transforms the new dataframe with lat/lon coordinates into an <code>sf</code> spatial object. The last step enables convenient mapping/geospatial processing within the <code>sf</code> framework.</p>
 <pre class="r"><code>library(ggmap)
 library(sf)
 
@@ -112,7 +121,7 @@ slate_gpe_geo &lt;- ggmap::geocode(slate_gpe$lemma,
   filter(complete.cases(.))%&gt;%
   sf::st_as_sf(coords = c(&quot;lon&quot;, &quot;lat&quot;), 
                crs = 4326)</code></pre>
-<p>We then map the geolocated GPEs using the <code>leaflet</code> package; circle radius reflects frequency of occurrence in the slate corpus.</p>
+<p>We then <strong>map the geolocated GPEs</strong> using the <code>leaflet</code> package; circle radius reflects frequency of occurrence in the slate corpus.</p>
 <pre class="r"><code>library(leaflet)
 library(widgetframe)
 
@@ -137,7 +146,7 @@ Spatial joins
 <p>The <code>spData</code> package conveniently makes available a variety of shapefiles/geopolitical polygons as <code>sf</code> objects, including a world country map. Having geocoded the GPEs, we can add features from this country map (eg, country, subregion, continent) to our GPE points via a spatial join. We use the <code>st_join</code> function from the <code>sf</code> package to accomplish this task.</p>
 <pre class="r"><code>library(spData)
 slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
-<p>Per the spatial join, we now have information regarding country, continent, and subregion for each GPE from the Slate Magazine corpus.</p>
+<p><strong>Per the spatial join</strong>, we now have information regarding country, continent, and subregion for each GPE from the Slate Magazine corpus.</p>
 <table>
 <thead>
 <tr class="header">
@@ -207,9 +216,11 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
   labs(title = &quot;Document vs. text frequency for GPEs outside of Northern America&quot;, 
        subtitle=&quot;By Subregion&quot;)</code></pre>
 <p><img src="/post/2018-01-22-text-geography-and-semantic-space_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p>##Corpus search and context</p>
+</div>
+<div id="corpus-search-and-context" class="section level2">
+<h2>Corpus search and context</h2>
 <p>So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location. <em>What does a map derived from patterns of lexical co-occurrence in text look like?</em></p>
-<p>The first step in accomplishing this task is to search the Slate Magazine corpus for GPEs in context. For each occurrence of each GPE in the corpus, then, token and surrounding context are extracted using the <code>corpuslingr::clr_search_context</code> function. Here, context is defined as the 15x15 window of words surrounding a given token of a GPE. We limit our search to the 100 most frequent GPEs.</p>
+<p>The first step in accomplishing this task is to <strong>search the Slate Magazine corpus for GPEs in context</strong>. For each occurrence of each GPE in the corpus, then, token and surrounding context are extracted using the <code>corpuslingr::clr_search_context</code> function. Here, context is defined as the 15x15 window of words surrounding a given token of a GPE. We limit our search to the 100 most frequent GPEs.</p>
 <pre class="r"><code>gpe_search &lt;- data.frame(slate_gpe_geo) %&gt;%
   arrange(desc(txtf))%&gt;%
   slice(1:100)%&gt;%
@@ -219,17 +230,21 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
   search = gpe_search$lemma, 
   corp=slate, 
   LW=15, RW=15)</code></pre>
-<p>A small random sample of the search results are presented below in context. The <code>clr_context_kwic</code> function quickly rebuilds the original user-specified search context, with the search term highlighted.</p>
-<pre class="r"><code>gpe_contexts %&gt;%
+<p><strong>A small random sample</strong> of the search results are presented below in context. The <code>clr_context_kwic</code> function quickly rebuilds the original user-specified search context, with the search term highlighted.</p>
+<pre class="r"><code>viz &lt;- gpe_contexts %&gt;%
   corpuslingr::clr_context_kwic(include=c(&#39;doc_id&#39;)) %&gt;%
-  sample_n(5)%&gt;%
-  DT::datatable(class = &#39;cell-border stripe&#39;, 
+  sample_n(10)%&gt;%
+  DT::datatable(options = list(pageLength = 10,
+                               dom = &#39;t&#39;),
+                class = &#39;cell-border stripe&#39;, 
                 rownames = FALSE,
                 width=&quot;100%&quot;, 
                 escape=FALSE)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["168","25","508","508","100"],[", but said that , as Albanians , they had no right to be in <mark> Kosovo <\/mark> . \" I had to follow my orders , and anyway , I knew there","at a meeting in Bari , Italy , on Monday . Corriere della Sera of <mark> Milan <\/mark> said Germany 's peace initiatives have also been cold-shouldered by the alliance . China 's","than the reality that lies between them . A pilot who flew with Bush in <mark> Texas <\/mark> told the News that their service was \" a non-threatening way to do your military","ducking military service altogether -- against which the course he chose looks better . In <mark> Vietnam <\/mark> , he told the_Houston_Chronicle this_year , \" [ y]our options either were to avoid the",", but we 're planning a trip later in the_fall -- pre-Y2 K -- to <mark> Israel <\/mark> ."]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-<p>##LSA, MDS, and semantic space</p>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["615","961","674","882","773","884","863","953","15","67"],["financial superstar is all about funky , colorful graphics , markedly different from the mainland <mark> China <\/mark> Web experience . Even the Hong_Kong government sports a surprisingly fun Web site , which","liberal , \" \" permissive , \" \" sex and violence , \" and \" <mark> Hollywood <\/mark> , television , and video games , \" and it was the media that bore",": Someone ( possessing a naiveté perhaps reminiscent of the 27-year-old who ran off to <mark> Paris <\/mark> to write ) offers someone else his or her love and is let down ,","never been practical ; and U.S. investors felt less nervous about putting their money in <mark> Canada <\/mark> than anywhere else . Given those uncontrolled movements of capital , Canada could not fix","country . Despite Italian protests , trafficking in drugs , weapons , and prostitutes between <mark> Albania <\/mark> and southern Italy has increased rather than diminished , the paper said . \" Moreover","Apparently , Button turned 100_degrees off his flight path and flew 500_miles straight into central <mark> Colorado <\/mark> . His altitude veered wildly . Sometimes he hugged terrain below_2,000_feet . Other times ,","with it . Just a smooth transition ... Almost Everything You Need to Know About <mark> Washington <\/mark> in One Quote : In the April_12 Post , Peter_Baker reported on White_House aides who","But what happened is that Iraq began by denouncing the secretary-general , then turned on <mark> Egypt <\/mark> , and then on the other Arab states from the Atlantic to the Gulf !","slide back again into stagnation . Or as an old local joke has it , <mark> Brazil <\/mark> is the country of the future -- and always will be . But what has","history of those cities , he says , are the Los_Angeles riots of 1965_and_1992 ; <mark> New_York <\/mark> Mayor John_Lindsay 's attempt to forge a New Deal liberalism by expanding welfare and creating"]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>doc_id<\/th>\n      <th>kwic<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="lsa-mds-and-semantic-space" class="section level2">
+<h2>LSA, MDS, and semantic space</h2>
 <p>So, having extracted all contexts from the corpus, we can now build a GPE-feature matrix (ie, word embeddings by GPE) by applying the <code>clr_context_bow</code> function to the output of <code>clr_search_context</code>. We limit our definition of features to only content words, and aggregate feature frequencies by lemma.</p>
 <pre class="r"><code>term_feat_mat &lt;- gpe_contexts %&gt;%
   corpuslingr::clr_context_bow(
@@ -286,8 +301,7 @@ slate_gpe_details &lt;- sf::st_join(slate_gpe_geo, spData::world)</code></pre>
 </tr>
 </tbody>
 </table>
-<p><br>
-Next, we create a cosine-based similarity matrix using the <code>LSA</code> package:</p>
+<p>Next, we create a <strong>cosine-based similarity matrix</strong> using the <code>LSA</code> package:</p>
 <pre class="r"><code>library(lsa)
 sim_mat &lt;- term_feat_mat %&gt;%
   select(2:ncol(term_feat_mat)) %&gt;%
@@ -298,9 +312,9 @@ sim_mat &lt;- term_feat_mat %&gt;%
 ## AFGHANISTAN   1.0000000 0.1663644 0.1089837
 ## ALABAMA       0.1663644 1.0000000 0.1570805
 ## ALASKA        0.1089837 0.1570805 1.0000000</code></pre>
-<p>The last step is to transform the similarities between co-occurrence vectors into two-dimensional space, such that context-based (ie, semantic) similarity is reflected in spatial proximity.</p>
-<p>To accomplish this task, we apply classical scaling to the similarity matrix using the base r function <code>cmdscale</code>. Two-dimensional coordinates are then extracted from the <code>points</code> element of the <code>cmdscale</code> output. We join the <code>slate_gpe_details</code> object to the ouput in order to color GPEs in the plot by continent.</p>
-<p>As the plot demonstrates, we get a fairly good sense of geo-political space (from the perspective of Slate Magazine contributors) by comparing word embeddings derived from a corpus of only 1 million words.</p>
+<p>The last step is to transform the similarities between co-occurrence vectors into <strong>two-dimensional space</strong>, such that context-based (ie, semantic) similarity is reflected in spatial proximity.</p>
+<p>To accomplish this task, we apply <strong>classical scaling</strong> to the similarity matrix using the base r function <code>cmdscale</code>. Two-dimensional coordinates are then extracted from the <code>points</code> element of the <code>cmdscale</code> output. We join the <code>slate_gpe_details</code> object to the ouput in order to color GPEs in the plot by continent.</p>
+<p><strong>As the plot demonstrates</strong>, we get a fairly good sense of geo-political space (from the perspective of Slate Magazine contributors) by comparing word embeddings derived from a corpus of only 1 million words.</p>
 <pre class="r"><code>cmdscale(1-sim_mat, eig = TRUE, k = 2)$points %&gt;% 
   data.frame() %&gt;%
   mutate (lemma = rownames(sim_mat))%&gt;%
@@ -314,8 +328,11 @@ sim_mat &lt;- term_feat_mat %&gt;%
         plot.title = element_text(size=14))+ 
   labs(title=&quot;Slate GPEs in semantic space&quot;,
        subtitle=&quot;A two-dimensional solution&quot;)</code></pre>
-<p><img src="/post/2018-01-22-text-geography-and-semantic-space_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
-<p>The first dimension (x-axis) seems to do a very nice job capturing a “Domestic - Foreign” distinction, with some obvious exceptions. The second dimension (y-axis) seems to capture a “City - State” distinction, or an “Urban - Non-urban” distinction. Also, there seems to be a “Europe - Non-Europe” element to the second dimension on the “Foreign” side of the plot.</p>
-<p>Someone better versed in the geo-political happenings of the waning 20th century could likely provide a more detailed analysis here. Suffice it to say, there is some very intuitive structure to the plot above derived from co-occcurence vectors. While not exclusively geospatial, as a “map” of the geo-political “lay of the land” it certainly has utility.</p>
-<p>##FIN
-So, we have weaved together here a set of methodologies that are often discussed in different classrooms, and demonstrated some different approaches to extracting and analyzing the geospatial information contained in text. Maps and “maps.”</p>
+<p><img src="/post/2018-01-22-text-geography-and-semantic-space_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><strong>The first dimension</strong> (x-axis) seems to do a very nice job capturing a “Domestic - Foreign” distinction, with some obvious exceptions. <strong>The second dimension</strong> (y-axis) seems to capture a “City - State” distinction, or an “Urban - Non-urban” distinction. Also, there seems to be a “Europe - Non-Europe” element to the second dimension on the “Foreign” side of the plot.</p>
+<p>Someone better versed in the <strong>geo-political happenings of the waning 20th century</strong> could likely provide a more detailed analysis here. Suffice it to say, there is some very intuitive structure to the plot above derived from co-occcurence vectors. While not exclusively geospatial, as a “map” of the geo-political “lay of the land” it certainly has utility.</p>
+</div>
+<div id="fin" class="section level2">
+<h2>FIN</h2>
+<p>So, we have weaved together here a set of methodologies that are often discussed in different classrooms, and demonstrated some different approaches to extracting and analyzing the geospatial information contained in text. Maps and “maps.”</p>
+</div>
