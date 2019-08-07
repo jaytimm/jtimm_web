@@ -29,6 +29,7 @@ banner: banners/distance.png
 <li><a href="#context-concreteness-scores">Context &amp; concreteness scores</a></li>
 <li><a href="#geographical-distance">Geographical distance</a></li>
 <li><a href="#fin">FIN</a></li>
+<li><a href="#references">References</a></li>
 </ul>
 </div>
 
@@ -36,8 +37,8 @@ banner: banners/distance.png
 <blockquote>
 <p>The more we perceive an event/entity as (geographically) proximal to self, the more concrete our language when referencing said event/entity; the more we perceive an event/entity as (geographically) distant from self, the more abstract our language when referencing said event/entity. In other words, perceived distance is reflected in the language that we use, and in a graded way.</p>
 </blockquote>
-<p>In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter’s location and the referenced location increases. In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the <code>corpusdatr</code> package.</p>
-<p>Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between Washington, DC and referenced location in the corpus; instead of the abstractness of language in a tweet, we consider the abstractness of language in the context surrounding the referenced location in the corpus. Imperfect, but sufficient to demonstrate some methodologies.</p>
+<p><strong>In support of this hypothesis</strong>, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter’s location and the referenced location increases. In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the <code>corpusdatr</code> package.</p>
+<p>Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between <strong>Washington, DC</strong> and <strong>referenced location in the corpus</strong>; instead of the abstractness of language in a tweet, we consider the <strong>abstractness of language in the context surrounding the referenced location</strong> in the corpus. Imperfect, but sufficient to demonstrate some methodologies.</p>
 <pre class="r"><code>library(tidyverse) 
 library(sf)
 library(spacyr)</code></pre>
@@ -100,18 +101,20 @@ gpe_contexts &lt;- corpuslingr::clr_search_context(
 <pre class="r"><code>ggplot(conc_by_eg, aes(ave_conc)) +
   geom_histogram(binwidth = 0.1)</code></pre>
 <p><img src="/post/2018-02-11-psychological-and-geographical-distance-in-text_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>Joining these scores to the <code>KWIC</code> object from the results of our original search, we can investigate how an example set of contexts has been scored.</p>
+<p><strong>Joining</strong> these scores to the <code>KWIC</code> object from the results of our original search, we can investigate how an example set of contexts has been scored.</p>
 <pre class="r"><code>corpuslingr::clr_context_kwic(gpe_contexts,include=c(&#39;doc_id&#39;,&#39;eg&#39;,&#39;lemma&#39;)) %&gt;%
   left_join(conc_by_eg)%&gt;%
-  sample_n(5)%&gt;%
+  sample_n(10)%&gt;%
   select(kwic,ave_conc)%&gt;%
-  arrange(desc(ave_conc))%&gt;%
-  DT::datatable(class = &#39;cell-border stripe&#39;, 
+  arrange(desc(ave_conc)) %&gt;%
+  DT::datatable(options = list(pageLength = 10,
+                               dom = &#39;t&#39;),
+                class = &#39;cell-border stripe&#39;, 
                 rownames = FALSE,
                 width=&quot;100%&quot;, 
                 escape=FALSE)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[", see these Web sites from England 's Guardian , France 's Le_Monde , and <mark> Spain <\/mark> 's El_Mundo . The_Irish_Times will provide a live Web broadcast of the eclipse from 1_a.m._to_3:30_a.m.","would be forced to leave the country if a settlement is not reached soon . <mark> India <\/mark> and Pakistan condemned the hijacking ( as did the_Washington_Post ) , and each accused the","Seattle trade talks and the victory of the Indian representative in the Miss_World competition in <mark> London <\/mark> this_weekend . The Hindu said Sunday that the \" big revelation \" of the_World_Trade_Organization conference",". ) On Meet_the_Press , the incoming Reform_Party chairman -- Ventura ally Jack_Gargan -- defends <mark> Ventura <\/mark> 's right to speak , saying \" the people of Minnesota elected him as governor","by blood , friendship , sexual intrigue , and Old_World ties . Many are from <mark> Poland <\/mark> , but assimilation and war have blown them through Germany , Russia , Cuba ,"],[2.42,2.35,2.25,2.19,2.18]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["the premise of Return to Paradise : Three young guys have a way-cool vacation in <mark> Malaysia <\/mark> . They screw a lot of Asian babes in hammocks and smoke a lot of",". An ironic one , too , given Paz 's record as a critic of <mark> Mexico <\/mark> 's addiction to patriarchal power . All his life , he had seen the temptations",", see these Web sites from England 's Guardian , France 's Le_Monde , and <mark> Spain <\/mark> 's El_Mundo . The_Irish_Times will provide a live Web broadcast of the eclipse from 1_a.m._to_3:30_a.m.","would be forced to leave the country if a settlement is not reached soon . <mark> India <\/mark> and Pakistan condemned the hijacking ( as did the_Washington_Post ) , and each accused the","borders drawn by the Western empires , hearkening back to the glorious Arab caliphates . <mark> Britain <\/mark> and France , who vanquished Turkey in the war , had other ideas , and","Kosovo were the two countries that have seen most mines laid in the_past_year . In <mark> Paris <\/mark> , the daily Libération published an interview Monday with Jonas_Savimbi , the leader of Angola","Seattle trade talks and the victory of the Indian representative in the Miss_World competition in <mark> London <\/mark> this_weekend . The Hindu said Sunday that the \" big revelation \" of the_World_Trade_Organization conference",". ) On Meet_the_Press , the incoming Reform_Party chairman -- Ventura ally Jack_Gargan -- defends <mark> Ventura <\/mark> 's right to speak , saying \" the people of Minnesota elected him as governor","by blood , friendship , sexual intrigue , and Old_World ties . Many are from <mark> Poland <\/mark> , but assimilation and war have blown them through Germany , Russia , Cuba ,","be chaos . But it 's not chaos . Here 's who is where on <mark> Kosovo <\/mark> , and how they got there . Doves Into Hawks 1 . The Europeanists Sen."],[3.45,2.54,2.42,2.35,2.33,2.29,2.25,2.19,2.18,2.14]],"container":"<table class=\"cell-border stripe\">\n  <thead>\n    <tr>\n      <th>kwic<\/th>\n      <th>ave_conc<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"t","columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Lastly, we <strong>aggregate contextual concreteness scores</strong> to obtain a single concretness score for each GPE.</p>
 <pre class="r"><code>conc_by_term &lt;-  conc_by_eg%&gt;%
   group_by(searchLemma) %&gt;%
@@ -145,7 +148,7 @@ Method
 <pre class="r"><code>gpe_dists &lt;- corpusdatr::cdr_slate_gpe %&gt;% 
   mutate(miles_from_dc = round(as.numeric(st_distance(geometry,dc))*0.000621371,0)) 
 #Convert to miles.</code></pre>
-<p>** Distances** from DC:</p>
+<p><strong>Distances</strong> from DC:</p>
 <table>
 <thead>
 <tr class="header">
@@ -226,7 +229,9 @@ Some very cursory explanations
 <div id="fin" class="section level2">
 <h2>FIN</h2>
 <p>Indeed, some interesting results; ultimately, however, the focus here should be methodology, as our corpus and sample of GPEs are both relatively small. From this perspective, hopefully we have demonstrated the utility of <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>’s cross-disciplinary approach to testing psychological theory using a combination of text, behavioral, and geographical data.</p>
-<p>##References</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
 <div id="refs" class="references">
 <div id="ref-brysbaert2014concreteness">
 <p>Brysbaert, Marc, Amy Beth Warriner, and Victor Kuperman. 2014. “Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.” <em>Behavior Research Methods</em> 46 (3). Springer: 904–11.</p>

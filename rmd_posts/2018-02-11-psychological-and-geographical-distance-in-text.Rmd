@@ -17,9 +17,9 @@ banner: banners/distance.png
 
 >The more we perceive an event/entity as (geographically) proximal to self, the more concrete our language when referencing said event/entity; the more we perceive an event/entity as (geographically) distant from self, the more abstract our language when referencing said event/entity. In other words, perceived distance is reflected in the language that we use, and in a graded way.
 
-In support of this hypothesis, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter's location and the referenced location increases. In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the `corpusdatr` package. 
+**In support of this hypothesis**, the authors demonstrate that tweets referencing location become more abstract (ie, less concrete) as the distance between a tweeter's location and the referenced location increases. In this post, then, we perform a similar (yet decidedly less rigorous) analysis using the Slate Magazine corpus (ca 1996-2000, 1K texts, 1m words) from the `corpusdatr` package. 
 
-Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between Washington, DC and referenced location in the corpus; instead of the abstractness of language in a tweet, we consider the abstractness of language in the context surrounding the referenced location in the corpus.  Imperfect, but sufficient to demonstrate some methodologies.
+Slate Magazine predominantly covers American politics and is headquartered in Washington DC. So, instead of the distance between tweeter location and referenced location in a tweet, we consider the distance between **Washington, DC** and **referenced location in the corpus**; instead of the abstractness of language in a tweet, we consider the **abstractness of language in the context surrounding the referenced location** in the corpus.  Imperfect, but sufficient to demonstrate some methodologies.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse) 
@@ -128,15 +128,17 @@ ggplot(conc_by_eg, aes(ave_conc)) +
 ```
 
 
-Joining these scores to the `KWIC` object from the results of our original search, we can investigate how an example set of contexts has been scored. 
+**Joining** these scores to the `KWIC` object from the results of our original search, we can investigate how an example set of contexts has been scored. 
 
 ```{r message=FALSE, warning=FALSE}
 corpuslingr::clr_context_kwic(gpe_contexts,include=c('doc_id','eg','lemma')) %>%
   left_join(conc_by_eg)%>%
-  sample_n(5)%>%
+  sample_n(10)%>%
   select(kwic,ave_conc)%>%
-  arrange(desc(ave_conc))%>%
-  DT::datatable(class = 'cell-border stripe', 
+  arrange(desc(ave_conc)) %>%
+  DT::datatable(options = list(pageLength = 10,
+                               dom = 't'),
+                class = 'cell-border stripe', 
                 rownames = FALSE,
                 width="100%", 
                 escape=FALSE)
@@ -192,7 +194,7 @@ gpe_dists <- corpusdatr::cdr_slate_gpe %>%
 ```
 
 
-** Distances** from DC:
+**Distances** from DC:
 
 ```{r echo=FALSE}
 head(gpe_dists) %>% data.frame() %>% select(lemma,miles_from_dc,geometry) %>% kable()
@@ -239,7 +241,7 @@ Indeed, some interesting results; ultimately, however, the focus here should be 
 
 
 
-##References
+## References
 
 
 
