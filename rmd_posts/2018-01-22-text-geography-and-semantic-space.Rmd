@@ -1,0 +1,248 @@
+---
+title: 'place from text: geography & distributional semantics'
+description: 'Some different methodologies for exploring the geographical information found in text.'
+author: ''
+date: '2018-03-12'
+slug: text-geography-and-semantic-space
+tags: ['rstats', 'corpus ling', 'geo', 'LSA', 'MDS']
+output:
+  blogdown::html_page:
+    toc: yes
+    df_print: paged
+banner: banners/geotext.png
+
+---
+
+ In this post, we demonstrate some different methodologies for exploring the geographical information found in text. First, we address some of the practical issues of extracting places/place-names from an annotated corpus, and demonstrate how to (1) map their geospatial distribution via geocoding and (2) append additional geographic detail to these locations via spatial joins. 
+
+We then consider how these locations "map" in semantic space by comparing context-based word embeddings for each location.  Ultimately, the endgame is to investigate the extent to which geospatial proximity is reflected (or not) in distributional similarity in a corpus.  In the process, we demonstrate some methods for getting from lexical co-occurrence to a 2D semantic map via latent semantic analysis (LSA) and classical multi-dimensional scaling (MDS).
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(corpuslingr) #devtools::install_github("jaytimm/corpuslingr")
+library(corpusdatr) #devtools::install_github("jaytimm/corpusdatr")
+library(knitr)
+```
+
+
+##From text to map
+
+<p><h3>Slate corpus & geopolitical entities</h3></p>
+
+For demo purposes, we use the annotated Slate magazine corpus made available as `cdr_slate_ann` via the `corpusdatr`.  Content of articles comprising the corpus is largely political in nature, so lots of reference to place and location, namely foreign and domestic political entities.  The first task, then, is to get a rollcall of the geopolitical entities included in the corpus.
+
+The Slate Magazine corpus has been annotated using the `spacyr` package, and contains named entity tags, including geopolitical entities (GPEs). Here we collapse multi-word entities (eg, "New" "York") to single tokens (eg, "New_York"), and ready the corpus for search using `clr_set_corpus`. 
+
+```{r}
+slate <- corpusdatr::cdr_slate_ann %>%
+  spacyr::entity_consolidate() %>%
+  corpuslingr::clr_set_corpus(ent_as_tag=TRUE)
+```
+
+
+Next, we obtain text and document frequencies for GPEs included in the corpus, and filter to only those occurring in 1% or greater of articles comprising the corpus.
+
+```{r message=FALSE, warning=FALSE}
+slate_gpe <- slate %>%
+  bind_rows()%>%
+  filter(tag == 'NNGPE')%>%
+  corpuslingr::clr_get_freq(agg_var='lemma',toupper=TRUE) %>%
+  filter(txtf>9 & !grepl('US|USA|AMERICA|UNITED_STATES|THE_UNITED_STATES|U.S.|U.S.A',lemma))
+```
+
+The most frequently referenced GPEs in the Slate corpus (not including the US):
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+head(slate_gpe)%>%
+  kable()
+```
+
+<p><h3>Geocoding</h3></p>
+
+To visualize the geographical distribution of GPEs in the Slate Magazine corpus, we use the `geocode` function from the `ggmap` package to transform our corpus locations to lat/lon coordinates that can be mapped.  While `ggmap` works best with proper addresses (eg, street, city, zip, etc), country and city names can be geolocated as well.  
+
+Note that while GPEs are geographical areas, this method approximates GPE location as a single point in lat/long space at the center (or centroid) of these areas.  For our purposes here, this approximation is fine.
+
+The following pipe geocodes the GPEs, removes GPEs that Google Maps cannot geocode, and transforms the new dataframe with lat/lon coordinates into an `sf` spatial object.  The last step enables convenient mapping/geospatial processing within the `sf` framework.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE}
+library(ggmap)
+library(sf)
+
+slate_gpe_geo <- ggmap::geocode(slate_gpe$lemma, 
+                                output = c("latlon"), 
+                                messaging = FALSE) %>%
+  bind_cols(slate_gpe)%>%
+  filter(complete.cases(.))%>%
+  sf::st_as_sf(coords = c("lon", "lat"), 
+               crs = 4326)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+slate_gpe_geo <- cdr_slate_gpe
+```
+
+We then map the geolocated GPEs using the `leaflet` package; circle radius reflects frequency of occurrence in the slate corpus.
+
+```{r message=FALSE, warning=FALSE}
+library(leaflet)
+library(widgetframe)
+
+x <- slate_gpe_geo %>%
+  leaflet(width="100%") %>%
+  setView(lng = -5, lat = 31, zoom = 2) %>%
+  addProviderTiles ("CartoDB.Positron",
+                    options = providerTileOptions (minZoom = 2, maxZoom = 4))%>%
+  addCircleMarkers(
+    radius = ~txtf/25,
+    stroke = FALSE, fillOpacity = .75,
+    label=~lemma)
+
+frameWidget(x)
+```
+
+<p><h3>Spatial joins</h3></p>
+
+The `spData` package conveniently makes available a variety of shapefiles/geopolitical polygons as `sf` objects, including a world country map.  Having geocoded the GPEs, we can add features from this country map (eg, country, subregion, continent) to our GPE points via a spatial join. We use the `st_join` function from the `sf` package to accomplish this task.  
+
+```{r message=FALSE, warning=FALSE}
+library(spData)
+slate_gpe_details <- sf::st_join(slate_gpe_geo, spData::world)
+```
+
+Per the spatial join, we now have information regarding country, continent, and subregion for each GPE from the Slate Magazine corpus.
+
+```{r echo=FALSE}
+slate_gpe_details[4:9,c(1,5:6,8)] %>% data.frame() %>% select(-geometry) %>% kable()
+```
+
+We can use this information, for example, to aggregate GPE text and document frequencies to the subregion level:
+
+```{r fig.height=6}
+slate_gpe_details %>%
+  data.frame()%>%
+  group_by(subregion) %>%
+  summarize (txtf=sum(txtf),docf=sum(docf))%>%
+  filter(subregion!='Northern America')%>%
+  ggplot(aes(x=docf, y=txtf)) + 
+  geom_text(aes(label=toupper(subregion)), 
+            size=3, 
+            check_overlap = TRUE,
+            hjust = "inward")+
+  labs(title = "Document vs. text frequency for GPEs outside of Northern America", 
+       subtitle="By Subregion")
+```
+
+
+
+
+##Corpus search and context
+
+So, our next task is to map the GPEs in 2D (semantic) space by comparing context-based word embeddings for each location. *What does a map derived from patterns of lexical co-occurrence in text look like?* 
+
+The first step in accomplishing this task is to search the Slate Magazine corpus for GPEs in context. For each occurrence of each GPE in the corpus, then, token and surrounding context are extracted using the `corpuslingr::clr_search_context` function. Here, context is defined as the 15x15 window of words surrounding a given token of a GPE. We limit our search to the 100 most frequent GPEs.
+
+
+```{r}
+gpe_search <- data.frame(slate_gpe_geo) %>%
+  arrange(desc(txtf))%>%
+  slice(1:100)%>%
+  mutate(lemma=paste0(lemma,'~GPE'))
+```
+
+
+
+Perform search:
+```{r}
+gpe_contexts <- corpuslingr::clr_search_context(
+  search = gpe_search$lemma, 
+  corp=slate, 
+  LW=15, RW=15)
+```
+
+
+A small random sample of the search results are presented below in context.  The `clr_context_kwic` function quickly rebuilds the original user-specified search context, with the search term highlighted.
+
+
+```{r}
+gpe_contexts %>%
+  corpuslingr::clr_context_kwic(include=c('doc_id')) %>%
+  sample_n(5)%>%
+  DT::datatable(class = 'cell-border stripe', 
+                rownames = FALSE,
+                width="100%", 
+                escape=FALSE)
+```
+
+
+
+
+##LSA, MDS, and semantic space
+
+So, having extracted all contexts from the corpus, we can now build a GPE-feature matrix (ie, word embeddings by GPE) by applying the `clr_context_bow` function to the output of `clr_search_context`. We limit our definition of features to only content words, and aggregate feature frequencies by lemma.
+
+```{r message=FALSE, warning=FALSE}
+term_feat_mat <- gpe_contexts %>%
+  corpuslingr::clr_context_bow(
+    agg_var = c('searchLemma','lemma'),
+    content_only=TRUE)%>%
+  spread (searchLemma,cofreq)%>%
+  replace(is.na(.), 0)
+```
+
+Some of the matrix:
+```{r echo=FALSE}
+term_feat_mat[5263:5268,1:4] %>% kable()
+```
+
+<br>
+Next, we create a cosine-based similarity matrix using the `LSA` package:
+```{r message=FALSE, warning=FALSE}
+library(lsa)
+sim_mat <- term_feat_mat %>%
+  select(2:ncol(term_feat_mat)) %>%
+  data.matrix()%>%
+  lsa::cosine(.)
+```
+
+
+The `lsa::cosine` function computes cosine measures between all GPE vectors of the term-feature matrix.  The higher the cosine measure between two vectors, the greater their similarity in composition.  The top-left portion of this matrix is presented below:
+
+```{r echo=FALSE}
+sim_mat[1:3,1:3]
+```
+
+
+The last step is to transform the similarities between co-occurrence vectors into two-dimensional space, such that context-based (ie, semantic) similarity is reflected in spatial proximity. 
+
+To accomplish this task, we apply classical scaling to the similarity matrix using the base r function `cmdscale`.  Two-dimensional coordinates are then extracted from the `points` element of the `cmdscale` output.  We join the `slate_gpe_details` object to the ouput in order to color GPEs in the plot by continent.
+
+As the plot demonstrates, we get a fairly good sense of geo-political space (from the perspective of Slate Magazine contributors) by comparing word embeddings derived from a corpus of only 1 million words.
+
+```{r fig.height=7, message=FALSE, warning=FALSE}
+cmdscale(1-sim_mat, eig = TRUE, k = 2)$points %>% 
+  data.frame() %>%
+  mutate (lemma = rownames(sim_mat))%>%
+  left_join(slate_gpe_details)%>%
+  ggplot(aes(X1,X2)) +
+  geom_text(aes(label=colnames(sim_mat),col=continent), 
+            size=2.5, 
+            check_overlap = TRUE)+
+  scale_colour_stata() + theme_fivethirtyeight() +
+  theme(legend.position = "none",
+        plot.title = element_text(size=14))+ 
+  labs(title="Slate GPEs in semantic space",
+       subtitle="A two-dimensional solution")
+```
+
+The first dimension (x-axis) seems to do a very nice job capturing a "Domestic - Foreign" distinction, with some obvious exceptions.  The second dimension (y-axis) seems to capture a "City - State" distinction, or an "Urban - Non-urban" distinction. Also, there seems to be a "Europe - Non-Europe" element to the second dimension on the "Foreign" side of the plot.  
+
+Someone better versed in the geo-political happenings of the waning 20th century could likely provide a more detailed analysis here. Suffice it to say, there is some very intuitive structure to the plot above derived from co-occcurence vectors.  While not exclusively geospatial, as a "map" of the geo-political "lay of the land" it certainly has utility.
+
+
+##FIN
+So, we have weaved together here a set of methodologies that are often discussed in different classrooms, and demonstrated some different approaches to extracting and analyzing the geospatial information contained in text.  Maps and "maps."
+
+
+
