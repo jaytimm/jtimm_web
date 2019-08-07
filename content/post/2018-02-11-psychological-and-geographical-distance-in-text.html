@@ -23,6 +23,11 @@ banner: banners/distance.png
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
+<div id="TOC">
+<ul>
+<li><a href="#concreteness-ratings-and-the-lexvarsdatr-package">Concreteness ratings and the lexvarsdatr package</a></li>
+</ul>
+</div>
 
 <p>This post considers a super-clever study presented in <span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span>, in which the authors investigate the relationship between psychological distance and geographical distance using geolocated tweets. General idea/hypothesis:</p>
 <blockquote>
@@ -37,7 +42,8 @@ library(spacyr)</code></pre>
 library(corpusdatr) #devtools::install_github(&quot;jaytimm/corpusdatr&quot;)
 library(lexvarsdatr) #devtools::install_github(&quot;jaytimm/lexvarsdatr&quot;)
 library(knitr)</code></pre>
-<p>##Concreteness ratings and the lexvarsdatr package</p>
+<div id="concreteness-ratings-and-the-lexvarsdatr-package" class="section level2">
+<h2>Concreteness ratings and the lexvarsdatr package</h2>
 <p><span class="citation">Snefjella and Kuperman (<a href="#ref-snefjella2015concreteness">2015</a>)</span> score the abstractness of tweets in their study using concreteness ratings for 40,000 English words derived in <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>. Ratings are made available as supplemental material, and included in a data package I have developed called <code>lexvarsdatr</code>. A more complete description of the package and its contents is available <a href="https://github.com/jaytimm/lexvarsdatr#lexvarsdatr">here</a>.</p>
 <p>Per <span class="citation">Brysbaert, Warriner, and Kuperman (<a href="#ref-brysbaert2014concreteness">2014</a>)</span>, concreteness ratings range from 1 (abstract) to 5 (concrete); ratings reflect averages based on 30 participants. In the <code>lexvarsdatr</code> package, concreteness ratings (along with age-of-acquisition ratings and response times in lexical decision) are housed in the <code>lvdr_behav_data</code> table.</p>
 <pre class="r"><code>concreteness &lt;- lvdr_behav_data%&gt;%
@@ -218,5 +224,6 @@ Some very cursory explanations
 </div>
 <div id="ref-snefjella2015concreteness">
 <p>Snefjella, Bryor, and Victor Kuperman. 2015. “Concreteness and Psychological Distance in Natural Language Use.” <em>Psychological Science</em> 26 (9). Sage Publications Sage CA: Los Angeles, CA: 1449–60.</p>
+</div>
 </div>
 </div>
