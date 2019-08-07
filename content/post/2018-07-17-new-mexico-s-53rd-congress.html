@@ -377,7 +377,7 @@ library(data.table)</code></pre>
 <p>The plot below summarizes <strong>attendance rate</strong> distributions by political affiliation for each house. While attendance rates are generally quite high, Democratic lawmakers are less likely to miss roll calls than their Republican counterparts.</p>
 <pre class="r"><code>nmlegisdatr::nml_legislator_descs %&gt;%
 ggplot( aes(Attendance, fill = Party, colour = Party)) +
-  wnomadds::scale_color_rollcall(aesthetics = c(&quot;fill&quot;,&quot;color&quot;)) + 
+  wnomadds::scale_color_party (aesthetics = c(&quot;fill&quot;,&quot;color&quot;)) + 
   ggthemes::theme_fivethirtyeight()+
   geom_density(alpha = 0.4)+
   facet_wrap(~Chamber)+
@@ -389,7 +389,7 @@ ggplot( aes(Attendance, fill = Party, colour = Party)) +
 <p>This discrepancy is clearly a complicated one. Certainly relevant is Democratic majorities (and fairly sizable ones) in both chambers. Also relevant is potential variation of political ideologies among Republicans in a cash-strapped state that has become solidly blue.</p>
 <pre class="r"><code>nmlegisdatr::nml_legislator_descs %&gt;%
 ggplot( aes(Party_Loyalty, fill = Party, colour = Party)) +
-  wnomadds::scale_color_rollcall(aesthetics = c(&quot;fill&quot;,&quot;color&quot;)) + 
+  wnomadds::scale_color_party (aesthetics = c(&quot;fill&quot;,&quot;color&quot;)) + 
   ggthemes::theme_fivethirtyeight()+
   geom_density(alpha = 0.4)+
   facet_wrap(~Chamber)+
@@ -661,7 +661,7 @@ senate &lt;- election(seats(42,4), subset(legs$Count, legs$Chamber == &#39;Senat
 bind_rows(house, senate) %&gt;%
   ggplot() +
   geom_point(aes(x,y, color=as.factor(party)), size = 6)+
-  wnomadds::scale_color_rollcall(aesthetics = c(&quot;color&quot;)) +
+  wnomadds::scale_color_party(aesthetics = c(&quot;color&quot;)) +
   ggthemes::theme_fivethirtyeight()+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),

@@ -147,7 +147,7 @@ The plot below summarizes **attendance rate** distributions by political affilia
 ```{r}
 nmlegisdatr::nml_legislator_descs %>%
 ggplot( aes(Attendance, fill = Party, colour = Party)) +
-  wnomadds::scale_color_rollcall(aesthetics = c("fill","color")) + 
+  wnomadds::scale_color_party (aesthetics = c("fill","color")) + 
   ggthemes::theme_fivethirtyeight()+
   geom_density(alpha = 0.4)+
   facet_wrap(~Chamber)+
@@ -165,7 +165,7 @@ This discrepancy is clearly a complicated one.  Certainly relevant is Democratic
 ```{r}
 nmlegisdatr::nml_legislator_descs %>%
 ggplot( aes(Party_Loyalty, fill = Party, colour = Party)) +
-  wnomadds::scale_color_rollcall(aesthetics = c("fill","color")) + 
+  wnomadds::scale_color_party (aesthetics = c("fill","color")) + 
   ggthemes::theme_fivethirtyeight()+
   geom_density(alpha = 0.4)+
   facet_wrap(~Chamber)+
@@ -417,7 +417,7 @@ library(ggthemes)
 bind_rows(house, senate) %>%
   ggplot() +
   geom_point(aes(x,y, color=as.factor(party)), size = 6)+
-  wnomadds::scale_color_rollcall(aesthetics = c("color")) +
+  wnomadds::scale_color_party(aesthetics = c("color")) +
   ggthemes::theme_fivethirtyeight()+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
