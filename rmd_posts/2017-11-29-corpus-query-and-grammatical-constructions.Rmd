@@ -29,7 +29,7 @@ library(corpusdatr) #devtools::install_github("jaytimm/corpusdatr")
 
 
 
-##Search syntax
+## Search syntax
 
 Under the hood, `corpuslingr` search is regex-based & tuple-based --- akin to the `RegexpParser` function in Python's Natural Language Toolkit (NLTK) --- which facilitates search of grammatical and lexical patterns comprised of:
 
@@ -53,12 +53,11 @@ corpuslingr::clr_ref_search_egs%>%
                 class = 'cell-border stripe', 
                 rownames = FALSE,
                 width="100%", 
-                escape=FALSE)%>%
-  DT::formatStyle(c(1:3),fontSize = '85%')
+                escape=FALSE)
 ```
 
 
-##Corpus search
+## Corpus search
 
 For demo purposes, we use the `cdr_slate_ann` corpus from my `corpusdatr` package. A simple description of the corpus is available [here](https://github.com/jaytimm/corpusdatr#slate-corpus).  Using the `corpuslingr::clr_set_corpus` function (which builds tuples and sets character onsets/offsets), we ready the corpus for search. 
 
@@ -76,16 +75,17 @@ The `clr_search_gramx()` function returns instantiations of a search pattern wit
 
 * *ADJECTIVE and ADJECTIVE*, eg "happy and healthy"
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 search1 <- "ADJ and ADJ"  
 ```
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 slate %>%
   corpuslingr::clr_search_gramx(search=search1)%>%
   select(doc_id,token,tag)%>%
-  head()
+  head() %>%
+  knitr::kable()
 ```
 
 
@@ -124,7 +124,7 @@ searchResults$BOW %>% head()
 
 
 
-##Search summary
+## Search summary
 
 The `clr_get_freq()` function enables quick aggregation of search results.  It calculates token and text frequency for search terms, and allows the user to specify how to aggregate counts with the `agg_var` parameter. 
 
@@ -134,9 +134,10 @@ The `clr_get_freq()` function enables quick aggregation of search results.  It c
 search3 <- "VERB up"
 ```
 
-The figure below illustrates the top 20 instantiations of the grammatical construction *VERB up*. 
 
-```{r}
+**The figure below** illustrates the top 20 instantiations of the grammatical construction *VERB up*. 
+
+```{r message=FALSE, warning=FALSE}
 slate %>%
   corpuslingr::clr_search_gramx(search=search3)%>%
   corpuslingr::clr_get_freq(agg_var=c("lemma"),
@@ -149,7 +150,7 @@ slate %>%
 ```
 
 
-Although search is quicker when searching for multiple search terms simultaneaously, in some cases it may be useful to treat multiple search terms distinctly using `lapply()`:
+Although search is quicker when searching for multiple search terms simultaneaously, in some cases it may be useful to treat **multiple search terms** distinctly using `lapply()`:
 
 ```{r}
 search3a <- c("VERB across",
@@ -158,7 +159,7 @@ search3a <- c("VERB across",
               "VERB down")
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 vb_prep <- lapply(1:length(search3a), function(y) {
     corpuslingr::clr_search_gramx(corp=slate, 
                                   search=search3a[y])%>%
@@ -170,17 +171,22 @@ vb_prep <- lapply(1:length(search3a), function(y) {
 ```
 
 
-Summary by search:
+
+**Summary by search**:
+
 ```{r}
 vb_prep %>%
   group_by(search) %>%
   summarize(gramx_freq = sum(txtf), 
-            gramx_type = n())
+            gramx_type = n())%>%
+  knitr::kable()
 ```
 
-<br>
-Top 10 instantiations of each search pattern by search term:
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+
+**Top 10** instantiations of each search pattern by search term:
+
+```{r message=FALSE, warning=FALSE}
 library(ggthemes)
 vb_prep %>%
   group_by(search)%>%
@@ -196,7 +202,7 @@ vb_prep %>%
 ```
 
 
-##KWIC & BOW
+## KWIC & BOW
 
 <p><h4>KEYWORD IN CONTEXT</h4></p>
 
@@ -211,15 +217,19 @@ search4 <- "VERB NPHR into VBG"
 
 
 ```{r message=FALSE, warning=FALSE}
-slate %>%
+viz <- slate %>%
   corpuslingr::clr_search_context(search=search4, 
                                   LW=10, 
                                   RW = 10) %>%
   corpuslingr::clr_context_kwic(include=c('doc_id')) %>%
   DT::datatable(class = 'cell-border stripe', 
                 rownames = FALSE,width="100%", 
-                escape=FALSE) %>%
-  DT::formatStyle(c(1:2),fontSize = '85%')
+                escape=FALSE) 
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+viz
 ```
 
 
@@ -238,7 +248,9 @@ search5 <- c("Clinton", "Lewinsky",
              "China", "Russia")
 ```
 
-Here we search for some prominent players of the late 90s (when articles in the `cdr_slate_ann` corpus were published), and plot the most frequent co-occurring features of each search term.
+
+
+Here we search for some **prominent players of the late 90s** (when articles in the `cdr_slate_ann` corpus were published), and plot the most frequent co-occurring features of each search term.
 
 ```{r message=FALSE, warning=FALSE}
 co_occur <- slate %>%
@@ -250,7 +262,9 @@ co_occur <- slate %>%
 ```
 
 
+
 Plotting facets in `ggplot` is problematic when within-facet categories contain some overlap.  We add a couple of hacks to address this.  
+
 ```{r fig.height=9, message=FALSE, warning=FALSE}
 co_occur %>%
   filter(pos=="NOUN")%>%
@@ -279,10 +293,10 @@ co_occur %>%
 
 
 
-##Summary and shiny
+## Summary and shiny
 
 So, a quick demo of some `corpuslingr` functions for annotated corpus search & summary of complex lexical-grammatical patterns in context. 
 
-I have built a Shiny app to search/explore the Slate Magazine corpus available [here](https://jasontimm.shinyapps.io/corpuslingr_demo/).  Code for building the app is available [here](https://github.com/jaytimm/shiny_corpuslingr).  Swapping out the Slate corpus for a personal one should be fairly straightforward, with the caveat that the annotated corpus needs to be set/"tuple-ized" using the `clr_set_corpus` function from `corpuslingr`.    
+I have built a **Shiny app** to search/explore the Slate Magazine corpus available [here](https://jasontimm.shinyapps.io/corpuslingr_demo/).  Code for building the app is available [here](https://github.com/jaytimm/shiny_corpuslingr).  Swapping out the Slate corpus for a personal one should be fairly straightforward, with the caveat that the annotated corpus needs to be set/"tuple-ized" using the `clr_set_corpus` function from `corpuslingr`.    
 
 
