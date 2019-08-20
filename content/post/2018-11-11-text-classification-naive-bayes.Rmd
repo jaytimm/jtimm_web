@@ -232,6 +232,6 @@ cfm$byClass %>% data.frame() %>%
 
 
 
-## Summary
+## Summary 
 
 So, a super-quick code-through for building a fairly simple Naive Bayes classifier for genre-based text classification.  Largely an excuse on my end to collate some thoughts & resources, and to have a resource to point to (which seems to be lacking re NB text classification in R).  Cheers.  
