@@ -25,7 +25,7 @@ library(DT)
 ```
 
 
-## Defining potential keyphrases 
+##Defining potential keyphrases 
 
 Ideally, keyphrases are semantically rich noun phrases that shed light on the content of a particular text.  For illustrative purposes, three noun phrases of varying degrees of complexity and informativeness are presented below:  
 
@@ -61,7 +61,7 @@ keyPhrase <- "(ADJ )*(NOUNX )+((PREP )(ADJ )*(NOUNX )+)?"
 
 
 
-## Corpus search for potential keyphrases
+##Corpus search for potential keyphrases
 
 Per this definition, the next step is to search the Slate magazine corpus for potential keyphrases.  So, we first set the corpus for search (within the `corpuslingr` framework) using the `clr_set_corpus` function: 
 
@@ -99,7 +99,7 @@ kps%>%
 
 
 
-## Selecting descriptive keyphrases with the *tf-idf* statisitic
+##Selecting descriptive keyphrases with the *tf-idf* statisitic
 
 The term frequency - inverse document frequency (tf-idf) statistic is a super simple, unsupervised approach to keyphrase extraction. As a metric it is meant to capture (or weigh) how frequent a given phrase is in a text (ie, text frequency) relative to how dispersed the phrase is across documents comprising the corpus (ie, document frequency).  
 
@@ -138,9 +138,6 @@ kpsAgg%>%
                 width="100%", 
                 escape=FALSE)
 ```
-
-
-
-## Summary
+<br>
 
 Scrolling through the table, we can see some fairly informative keyphrases, and keyphrases that would seem to align with text titles in semantically intuitive ways.  So, while a comparatively simple approach to the issue of keyphrase extraction, *td-idf* weights seem to perform quite well.  An informal overview of alternative approaches to keyphrase identification/extraction is available [here](http://www.bnosac.be/index.php/blog/77-an-overview-of-keyword-extraction-techniques).
