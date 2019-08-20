@@ -1,8 +1,8 @@
 ---
 title: 'Referring to POTUS on Twitter: a stance-based perspective on variation in the 116th House'
-description: 'A look at some cds in the usa.'
+description: 'Some Twitter & sociolinguistics'
 author: ''
-date: '2019-07-20'
+date: '2019-08-20'
 slug: referring-to-potus
 output:
   blogdown::html_page:

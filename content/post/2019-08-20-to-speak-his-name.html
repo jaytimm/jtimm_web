@@ -1,8 +1,8 @@
 ---
 title: 'Referring to POTUS on Twitter: a stance-based perspective on variation in the 116th House'
-description: 'A look at some cds in the usa.'
+description: 'Some Twitter & sociolinguistics'
 author: ''
-date: '2019-07-20'
+date: '2019-08-20'
 slug: referring-to-potus
 output:
   blogdown::html_page:
@@ -114,7 +114,7 @@ total_tweets %&gt;%
                color = &#39;gray&#39;)+
   labs(title=&quot;116th House Rep tweet counts by party affiliation&quot;)+
   theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 <p><strong>Some additional summary statistics</strong> about the tweeting habits of House Reps by party affiliation:</p>
 <pre class="r"><code>x &lt;- list(
   &#39;REP&#39; = summary(total_tweets$all_tweets[total_tweets$party == &#39;Republican&#39;]),
@@ -428,7 +428,7 @@ ratios %&gt;%
   xlab(&#39;&#39;) + ylab(&#39;Polarity&#39;)+
   ylim(-7, 7) +
   coord_flip()</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <p><strong>So, some real nice variation</strong>. Recall our initial (&amp; very generic) formality cline presented in the introduction:</p>
 <ol style="list-style-type: decimal">
 <li>First name only &lt; Last name only &lt; Full name &lt; Title and last name &lt; Title and full name</li>
@@ -486,7 +486,7 @@ wide %&gt;%
         axis.title.y=element_blank()) +
   scale_fill_manual(values = pal) +
   ggtitle(&#39;Example degrees of formality in the 116th House&#39;)</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
 <p><strong>Based on these distributions</strong>, we define a given House Rep’s degree of formality as the (log) ratio of the number of <code>formal terms</code> used to refer to 45 to the number of <code>less formal terms</code> used to refer to 45. Neutral terms are ignored.</p>
 <p>Values greater than one indicate a prevalence for referring expressions that highlight the status of 45; values less than one indicate a prevalence for referring expressions that downplay the status of 45. The former reflecting a positive/supportive stance; the latter a negative/less supportive stance. A relative &amp; rough approximation.</p>
 <pre class="r"><code>wide1 &lt;- wide %&gt;%
@@ -518,7 +518,7 @@ wide %&gt;%
         axis.title = element_text())+
   xlab(&#39;2016 Trump Vote Margin&#39;) + ylab(&#39;Degree of Formality&#39;)+
   ggtitle(&#39;2016 Trump Margins vs. Degree of Formality on Twitter&#39;)</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>So, not only are there systematic differences in how Dems &amp; Reps reference 45 on Twitter, these differences are gradient within/across party affiliation: <strong>formality in reference to 45 increases as 2016 Trump margins increase</strong>. House Reps are not only hip to how their constituents (the audience) feel about 45 (the referent), but they choose referring expressions (and mediate stance) accordingly.</p>
 </div>
 <div id="prevalence-of-45-reference" class="section level2">
@@ -540,7 +540,7 @@ ggplot( aes(per_prez,
                color = &#39;gray&#39;)+
   labs(title=&quot;Rates of reference to 45 on Twitter&quot;)+
   theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>The table below summarizes 45 tweet <strong>reference rates</strong> for members of the 116th House, along with total tweets &amp; 2016 Trump vote margins for some context. Lots going on for sure. Curious to note that Maxine Waters (CA-43) and Adam Schiff (CA-28) reference 45 on Twitter at the highest rates, despite being fairly infrequent tweeters in general. Almost as if they use Twitter for the express purpose of commenting on the president and/or defending themselves from the president’s Twitter-ire.</p>
 <pre class="r"><code>out &lt;- wide2 %&gt;%
   DT::datatable(extensions = &#39;FixedColumns&#39;,
@@ -578,7 +578,7 @@ ggplot( aes(per_prez,
   scale_y_continuous(limits = c(0,.4)) +
   xlab(&#39;2016 Trump Margin&#39;) + ylab(&#39;Reference-to-Trump Rate&#39;) +
   ggtitle(&#39;2016 Trump Margins vs. Reference-to-Trump Rates&#39;)</code></pre>
-<p><img src="/post/2019-07-20-to-speak-his-name_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<p><img src="/post/2019-08-20-to-speak-his-name_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
 <p><strong>Seemingly a no-brainer</strong> if you don’t want to ruffle any feathers within an ideologically heterogeneous constituency, and if you want to fly under 45’s Twitter-radar. On the other hand, House Reps in safer (ie, ideologically more uniform) districts (especially Dems) are more likely to comment (or sound-off) on the doings of 45.</p>
 </div>
 <div id="summary" class="section level2">
