@@ -1,6 +1,6 @@
 ---
-title: 'Referring to POTUS on Twitter: a stance-based perspective on variation in the 116th House'
-description: 'Some Twitter & sociolinguistics'
+title: 'How House Reps refer to POTUS on Twitter: a stance-based perspective'
+description: 'An investigation into how (& how often) members of the 116th House of Representatives refer to the 45th president of the United States on Twitter.'
 author: ''
 date: '2019-08-20'
 slug: referring-to-potus
