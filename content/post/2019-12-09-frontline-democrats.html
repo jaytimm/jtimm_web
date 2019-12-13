@@ -1,0 +1,686 @@
+---
+title: 'front-line house democrats: a quick guide'
+description: ''
+author: ''
+date: '2019-12-13'
+slug: frontline-democrats
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - open-government
+  - 116th Congress
+banner: banners/cd31.png
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#house-presidential-election-returns">House &amp; presidential election returns</a></li>
+<li><a href="#trump-margins-in-2016">Trump margins in 2016</a></li>
+<li><a href="#flipped-house-districts-from-2016-to-2018">Flipped House Districts from 2016 to 2018</a></li>
+<li><a href="#the-31-house-democrats-in-trump-supportive-districts">The 31 House Democrats in Trump-supportive districts</a></li>
+<li><a href="#a-quick-geographical-perspective">A quick geographical perspective</a></li>
+<li><a href="#the-13-house-democrats-in-solid-trump-districts">The 13 House Democrats in solid Trump districts</a></li>
+<li><a href="#voting-patterns-in-presidential-elections">Voting patterns in presidential elections</a></li>
+<li><a href="#voting-patterns-for-the-31-trump-house-dem-districts">Voting patterns for the 31 Trump-House Dem districts</a></li>
+<li><a href="#the-5-house-democrats-that-should-probably-vote-against-impeachment">The 5 House Democrats that should probably vote against impeachment</a></li>
+<li><a href="#front-line-freshmen-house-democrats">Front-line Freshmen House Democrats</a></li>
+<li><a href="#data-set">Data set</a></li>
+</ul>
+</div>
+
+<p>So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the <strong>31 House Democrats</strong> that represent congressional districts won by the sitting president in 2016. Here, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives. We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms.</p>
+<p>Pundits constantly cite these districts and count them in different ways; and I am constantly trying to recreate these counts. As open source federal election data can be a bit of a mess, this is an attempt to organize &amp; collate some data sources.</p>
+<div id="house-presidential-election-returns" class="section level2">
+<h2>House &amp; presidential election returns</h2>
+<p>The R data package <code>uspoliticalextras</code> includes federal election returns from a couple of sources, namely the <a href="https://www.dailykos.com/">Daily Kos</a> and the <a href="https://electionlab.mit.edu/">MIT Election Data and Science Lab</a>. I use the package as a bit of a cache for US political data; it is available via <a href="https://github.com/jaytimm/uspoliticalextras">Git Hub</a>. The focus here will be on the last Presidential election (2016) &amp; the last two House races (2016 &amp; 2018).</p>
+<pre class="r"><code>library(tidyverse)
+#devtools::install_github(&quot;jaytimm/uspoliticalextras&quot;)  
+pres &lt;- uspoliticalextras::uspol_dkos_returns_pres_cd 
+house &lt;- uspoliticalextras::uspol_medsl_returns_house_cd %&gt;%
+  filter(year &gt; 2015) %&gt;%
+  mutate(party = ifelse(party == &#39;Independent&#39;, &#39;Republican Party&#39;, party)) # Amash</code></pre>
+</div>
+<div id="trump-margins-in-2016" class="section level2">
+<h2>Trump margins in 2016</h2>
+<p>Number of congressional districts carried by DJT &amp; HRC.</p>
+<pre class="r"><code>pres %&gt;%
+  filter(year == 2016) %&gt;%
+  group_by(candidate) %&gt;%
+  count() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">candidate</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Clinton</td>
+<td align="right">205</td>
+</tr>
+<tr class="even">
+<td align="left">Trump</td>
+<td align="right">230</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trump margins</strong> by congressional district in 2016.</p>
+<pre class="r"><code>library(sf)
+to_map &lt;- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %&gt;%
+  select(GEOID) %&gt;%
+  left_join(pres %&gt;% 
+              filter(year == 2016) %&gt;% 
+              mutate(trump_margin = republican - democrat),
+            by = &#39;GEOID&#39;) 
+to_map %&gt;%
+  ggplot() + 
+  geom_sf(aes(fill = trump_margin),
+          color = &#39;white&#39;) +
+  geom_sf(data=uspoliticalextras::uspol_dkos_equalarea_sf$hex_states, 
+          fill = NA, 
+          show.legend = F, 
+          color=&quot;#5a5c5b&quot;, 
+          lwd=.5) +
+  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds,
+                          aes(label = district_code), 
+                          size = 2,
+                          color=&#39;black&#39;) +
+  scale_fill_distiller(palette = &quot;RdBu&quot;, direction=-1) +
+  theme_minimal()+
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = &#39;none&#39;) +
+  labs(title = &quot;2016 Trump Margins by Congressional District&quot;,
+       caption = &#39;Source: Daily Kos&#39;)</code></pre>
+<p><img src="/post/2019-12-09-frontline-democrats_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="flipped-house-districts-from-2016-to-2018" class="section level2">
+<h2>Flipped House Districts from 2016 to 2018</h2>
+<p>Congressional districts that elected a Republican representative in 2016 and a Democratic representative in 2018.</p>
+<pre class="r"><code>house_flips &lt;- house %&gt;%
+  select(GEOID, congress,party) %&gt;%
+  spread(congress, party) %&gt;%
+  left_join(house %&gt;% 
+              filter(year == 2018) %&gt;% 
+              mutate(house_rep_margin = round(republican - democrat, 1)) %&gt;%
+              select(GEOID, state, district_code, candidate, house_rep_margin) %&gt;% 
+              rename(house_rep = candidate))</code></pre>
+<p><em>Some corrections/amendments for Pennsylvania districts per 2019 redistricting.</em></p>
+<pre class="r"><code>pa16_rs &lt;- c(&#39;4201&#39;, &#39;4205&#39;, &#39;4206&#39;,
+           &#39;4207&#39;, &#39;4209&#39;, &#39;4210&#39;,
+           &#39;4211&#39;, &#39;4212&#39;, &#39;4213&#39;,&#39;4215&#39;,
+           &#39;4216&#39;, &#39;4217&#39;)
+pa16_ds &lt;- c(&#39;4202&#39;, &#39;4203&#39;, &#39;4204&#39;,
+           &#39;4208&#39;,  &#39;4214&#39;,
+           &#39;4218&#39;)
+pa18_rs &lt;- c(&#39;4203&#39;, &#39;4204&#39;, &#39;4205&#39;, &#39;4218&#39;)
+pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
+<pre class="r"><code>house_flips1 &lt;-  house_flips %&gt;%
+  mutate(`115` = ifelse(GEOID %in% pa16_rs, &#39;Republican Party&#39;, `115`),
+         `115` = ifelse(GEOID %in% pa16_ds, &#39;Democratic Party&#39;, `115`)) %&gt;%
+  mutate(house_flip = paste0(`115`, &#39; | &#39;, `116`)) %&gt;%
+  left_join(to_map %&gt;% 
+              sf::st_drop_geometry() %&gt;% 
+              select(GEOID, candidate, trump_margin)) %&gt;%
+  rename(Pres16 = candidate) %&gt;%
+  mutate(`116` = ifelse(GEOID %in% pa18_rs, &#39;Republican Party&#39;, `116`),
+         `116` = ifelse(GEOID %in% pa18_ds, &#39;Democratic Party&#39;, `116`)) %&gt;%  
+  mutate(Pres16_House18 = paste0(Pres16, &#39; | &#39;, `116`))</code></pre>
+<p><strong>Democrats netted a total of 40 seats</strong> in the midterm elections in 2018. The numbers &amp; districts presented below align with those presented on <a href="https://ballotpedia.org/United_States_House_of_Representatives_elections,_2020">Bollotpedia</a>.</p>
+<pre class="r"><code>house_flips1 %&gt;%
+  group_by(house_flip) %&gt;%
+  count() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">house_flip</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Democratic Party | Democratic Party</td>
+<td align="right">192</td>
+</tr>
+<tr class="even">
+<td align="left">Democratic Party | Republican Party</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Republican Party | Democratic Party</td>
+<td align="right">43</td>
+</tr>
+<tr class="even">
+<td align="left">Republican Party | Republican Party</td>
+<td align="right">197</td>
+</tr>
+</tbody>
+</table>
+<p><strong>House Representatives</strong> from flipped districts:</p>
+<pre class="r"><code>house_flips1 %&gt;%
+  filter(house_flip %in% 
+           c(&#39;Democratic Party | Republican Party&#39;, 
+             &#39;Republican Party | Democratic Party&#39;)) %&gt;%
+  mutate(house_flip = ifelse(grepl(&#39;^D&#39;, house_flip), &#39;D -&gt; R&#39;, &#39;R -&gt; D&#39;)) %&gt;%
+  select(house_flip, state, district_code, house_rep) %&gt;%
+  DT::datatable(rownames = FALSE)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D"],["Arizona","California","California","California","California","California","California","California","Colorado","Florida","Florida","Georgia","Illinois","Illinois","Iowa","Iowa","Kansas","Maine","Michigan","Michigan","Minnesota","Minnesota","Minnesota","Minnesota","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","South Carolina","Texas","Texas","Utah","Virginia","Virginia","Virginia","Washington"],[2,10,21,25,39,45,48,49,6,26,27,6,6,14,1,3,3,2,8,11,1,2,3,8,2,3,7,11,2,11,19,22,5,5,6,7,14,17,1,7,32,4,2,7,10,8],["KIRKPATRICK, Ann","HARDER, Josh","COX, TJ","HILL, Katie","CISNEROS, Gil","PORTER, Katie","ROUDA, Harley","LEVIN, Mike","CROW, Jason","MUCARSEL-POWELL, Debbie","SHALALA, Donna","McBATH, Lucy","CASTEN, Sean","UNDERWOOD, Lauren","FINKENAUER, Abby","AXNE, Cynthia","DAVIDS, Sharice","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","HAGEDORN, Jim","CRAIG, Angela","PHILLIPS, Dean","STAUBER, Peter","VAN DREW, Jefferson","KIM, Andy","MALINOWSKI, Tomaz","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","SCANLON, Mary Gay","HOULAHAN, Christina","WILD, Susan","RESCHENTHALER, Guy","LAMB, Conor","CUNNINGHAM, Joe","FLETCHER, Elizabeth","ALLRED, Colin","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","WEXTON, Jennifer","SCHRIER, Kim"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>house_flip<\/th>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="the-31-house-democrats-in-trump-supportive-districts" class="section level2">
+<h2>The 31 House Democrats in Trump-supportive districts</h2>
+<p>The table below summarizes how districts voted in the 2016 presidential election and House elections in 2018. Again, 31 House Democrats represent congressional districts that Trump won in 2016’s presidential election. In contrast, only three Republicans represent districts carried by HRC. Note: Numbers &amp; districts align with those presented in <a href="https://thehill.com/homenews/house/434113-the-31-trump-districts-that-will-determine-the-next-house-majority">this article</a> from <em>The Hill</em>.</p>
+<pre class="r"><code>house_flips1 %&gt;%
+  group_by(Pres16_House18) %&gt;%
+  count() %&gt;%
+  #mutate(n = formattable::color_tile(&#39;white&#39;, &#39;steelblue&#39;)(n)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Pres16_House18</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Clinton | Democratic Party</td>
+<td align="right">202</td>
+</tr>
+<tr class="even">
+<td align="left">Clinton | Republican Party</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Trump | Democratic Party</td>
+<td align="right">31</td>
+</tr>
+<tr class="even">
+<td align="left">Trump | Republican Party</td>
+<td align="right">199</td>
+</tr>
+</tbody>
+</table>
+<p>The 31 Democratic lawmakers representing Trump won districts include:</p>
+<pre class="r"><code>house_flips1 %&gt;%
+  filter(Pres16_House18 == &#39;Trump | Democratic Party&#39;) %&gt;%
+  select(state, district_code, house_rep) %&gt;%
+  DT::datatable(rownames = FALSE)</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Arizona","Georgia","Illinois","Illinois","Iowa","Iowa","Iowa","Maine","Michigan","Michigan","Minnesota","Minnesota","Nevada","New Hampshire","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","South Carolina","Utah","Virginia","Virginia","Wisconsin"],[1,6,14,17,1,2,3,2,8,11,2,7,3,1,2,3,5,11,2,11,18,19,22,5,8,17,1,4,2,7,3],["O'HALLERAN, Thomas C.","McBATH, Lucy","UNDERWOOD, Lauren","BUSTOS, Cheri","FINKENAUER, Abby","LOEBSACK, Dave","AXNE, Cynthia","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","CRAIG, Angela","PETERSON, Collin Clark","LEE, Susie","PAPPAS, Chris","VAN DREW, Jefferson","KIM, Andy","GOTTHEIMER, Josh S.","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","MALONEY, Sean Patrick","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","CARTWRIGHT, Matt","LAMB, Conor","CUNNINGHAM, Joe","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","KIND, Ron"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="a-quick-geographical-perspective" class="section level2">
+<h2>A quick geographical perspective</h2>
+<pre class="r"><code>to_map2 &lt;- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %&gt;%
+  select(GEOID) %&gt;%
+  left_join(house_flips1, by = &#39;GEOID&#39;) 
+
+to_map2 %&gt;%
+  ggplot() + 
+  geom_sf(aes(fill = Pres16_House18),
+          alpha = .75,
+          color = &#39;white&#39;) +
+  geom_sf(data=uspoliticalextras::uspol_dkos_equalarea_sf$hex_states, 
+          fill = NA, 
+          show.legend = F, 
+          color=&quot;black&quot;, 
+          lwd=.5) +
+  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds,
+                          aes(label = district_code), 
+                          size = 2,
+                          color=&#39;black&#39;) +
+  ggthemes::scale_fill_stata() +
+  theme_minimal()+
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = &#39;bottom&#39;) +
+  labs(title = &quot;2016 Presidential Support &amp; 2018 House Representative&quot;,
+       subtitle = &#39;By Congressional District&#39;)</code></pre>
+<p><img src="/post/2019-12-09-frontline-democrats_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="the-13-house-democrats-in-solid-trump-districts" class="section level2">
+<h2>The 13 House Democrats in solid Trump districts</h2>
+<p>Of the 31, 13 Democrats represent districts Trump carried by more than 6 points.</p>
+<pre class="r"><code>house_flips1 %&gt;%
+  filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; trump_margin &gt; 6) %&gt;%
+  select(state, district_code, house_rep, trump_margin, house_rep_margin) %&gt;%
+  arrange(desc(trump_margin)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">state</th>
+<th align="right">district_code</th>
+<th align="left">house_rep</th>
+<th align="right">trump_margin</th>
+<th align="right">house_rep_margin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Minnesota</td>
+<td align="right">7</td>
+<td align="left">PETERSON, Collin Clark</td>
+<td align="right">30.8</td>
+<td align="right">-4.3</td>
+</tr>
+<tr class="even">
+<td align="left">New York</td>
+<td align="right">22</td>
+<td align="left">BRINDISI, Anthony</td>
+<td align="right">15.5</td>
+<td align="right">-1.8</td>
+</tr>
+<tr class="odd">
+<td align="left">Oklahoma</td>
+<td align="right">5</td>
+<td align="left">HORN, Kendra</td>
+<td align="right">13.4</td>
+<td align="right">-1.4</td>
+</tr>
+<tr class="even">
+<td align="left">South Carolina</td>
+<td align="right">1</td>
+<td align="left">CUNNINGHAM, Joe</td>
+<td align="right">13.1</td>
+<td align="right">-1.4</td>
+</tr>
+<tr class="odd">
+<td align="left">Maine</td>
+<td align="right">2</td>
+<td align="left">GOLDEN, Jared</td>
+<td align="right">10.3</td>
+<td align="right">-1.2</td>
+</tr>
+<tr class="even">
+<td align="left">New Mexico</td>
+<td align="right">2</td>
+<td align="left">TORRES SMALL, Xochitl</td>
+<td align="right">10.2</td>
+<td align="right">-1.9</td>
+</tr>
+<tr class="odd">
+<td align="left">Pennsylvania</td>
+<td align="right">17</td>
+<td align="left">LAMB, Conor</td>
+<td align="right">10.1</td>
+<td align="right">-12.5</td>
+</tr>
+<tr class="even">
+<td align="left">New York</td>
+<td align="right">11</td>
+<td align="left">ROSE, Max</td>
+<td align="right">9.8</td>
+<td align="right">-6.5</td>
+</tr>
+<tr class="odd">
+<td align="left">New York</td>
+<td align="right">19</td>
+<td align="left">DELGADO, Antonio</td>
+<td align="right">6.8</td>
+<td align="right">-5.2</td>
+</tr>
+<tr class="even">
+<td align="left">Michigan</td>
+<td align="right">8</td>
+<td align="left">SLOTKIN, Elissa</td>
+<td align="right">6.7</td>
+<td align="right">-3.8</td>
+</tr>
+<tr class="odd">
+<td align="left">Utah</td>
+<td align="right">4</td>
+<td align="left">McADAMS, Ben</td>
+<td align="right">6.7</td>
+<td align="right">-0.3</td>
+</tr>
+<tr class="even">
+<td align="left">Virginia</td>
+<td align="right">7</td>
+<td align="left">SPANBERGER, Abigail</td>
+<td align="right">6.5</td>
+<td align="right">-1.9</td>
+</tr>
+<tr class="odd">
+<td align="left">New Jersey</td>
+<td align="right">3</td>
+<td align="left">KIM, Andy</td>
+<td align="right">6.2</td>
+<td align="right">-1.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="voting-patterns-in-presidential-elections" class="section level2">
+<h2>Voting patterns in presidential elections</h2>
+<p>Counts of how districts voted in the last three presidential elections are presented below.</p>
+<pre class="r"><code>house_flips2 &lt;- house_flips1 %&gt;%
+  left_join (pres %&gt;% 
+               group_by(GEOID) %&gt;%
+               summarize(pres_lineage = paste0(candidate, collapse = &#39; | &#39;)) %&gt;%
+               ungroup())</code></pre>
+<pre class="r"><code>house_flips2 %&gt;%
+  group_by(pres_lineage) %&gt;%
+  count() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pres_lineage</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">McCain | Obama | Trump</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">McCain | Romney | Clinton</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">184</td>
+</tr>
+<tr class="even">
+<td align="left">Obama | Obama | Clinton</td>
+<td align="right">190</td>
+</tr>
+<tr class="odd">
+<td align="left">Obama | Obama | Trump</td>
+<td align="right">20</td>
+</tr>
+<tr class="even">
+<td align="left">Obama | Romney | Clinton</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">Obama | Romney | Trump</td>
+<td align="right">25</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="voting-patterns-for-the-31-trump-house-dem-districts" class="section level2">
+<h2>Voting patterns for the 31 Trump-House Dem districts</h2>
+<p><strong>12 out of the 31 Dem-Trump districts</strong> have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.</p>
+<pre class="r"><code>house_flips2 %&gt;%
+  filter(Pres16_House18 == &#39;Trump | Democratic Party&#39;) %&gt;%
+  group_by(pres_lineage) %&gt;%
+  count() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pres_lineage</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">McCain | Obama | Trump</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">12</td>
+</tr>
+<tr class="odd">
+<td align="left">Obama | Obama | Trump</td>
+<td align="right">14</td>
+</tr>
+<tr class="even">
+<td align="left">Obama | Romney | Trump</td>
+<td align="right">4</td>
+</tr>
+</tbody>
+</table>
+<p>Representatives for these twelve districts are presented below.</p>
+<pre class="r"><code>house_flips2 %&gt;%
+  filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; 
+           pres_lineage == &#39;McCain | Romney | Trump&#39;) %&gt;%
+  select(state, district_code, house_rep) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">state</th>
+<th align="right">district_code</th>
+<th align="left">house_rep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Arizona</td>
+<td align="right">1</td>
+<td align="left">O’HALLERAN, Thomas C.</td>
+</tr>
+<tr class="even">
+<td align="left">Georgia</td>
+<td align="right">6</td>
+<td align="left">McBATH, Lucy</td>
+</tr>
+<tr class="odd">
+<td align="left">Minnesota</td>
+<td align="right">7</td>
+<td align="left">PETERSON, Collin Clark</td>
+</tr>
+<tr class="even">
+<td align="left">New Jersey</td>
+<td align="right">5</td>
+<td align="left">GOTTHEIMER, Josh S.</td>
+</tr>
+<tr class="odd">
+<td align="left">New Jersey</td>
+<td align="right">11</td>
+<td align="left">SHERRILL, Mikie</td>
+</tr>
+<tr class="even">
+<td align="left">New Mexico</td>
+<td align="right">2</td>
+<td align="left">TORRES SMALL, Xochitl</td>
+</tr>
+<tr class="odd">
+<td align="left">New York</td>
+<td align="right">22</td>
+<td align="left">BRINDISI, Anthony</td>
+</tr>
+<tr class="even">
+<td align="left">Oklahoma</td>
+<td align="right">5</td>
+<td align="left">HORN, Kendra</td>
+</tr>
+<tr class="odd">
+<td align="left">South Carolina</td>
+<td align="right">1</td>
+<td align="left">CUNNINGHAM, Joe</td>
+</tr>
+<tr class="even">
+<td align="left">Utah</td>
+<td align="right">4</td>
+<td align="left">McADAMS, Ben</td>
+</tr>
+<tr class="odd">
+<td align="left">Virginia</td>
+<td align="right">2</td>
+<td align="left">LURIA, Elaine</td>
+</tr>
+<tr class="even">
+<td align="left">Virginia</td>
+<td align="right">7</td>
+<td align="left">SPANBERGER, Abigail</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-5-house-democrats-that-should-probably-vote-against-impeachment" class="section level2">
+<h2>The 5 House Democrats that should probably vote against impeachment</h2>
+<p>The table below lists the five House Reps representing districts that have supported Republican presidential candidates in the last three elections, with 2016 Trump margins greater than ten points.</p>
+<pre class="r"><code>house_flips2 %&gt;%
+  filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; 
+           trump_margin &gt; 10 &amp;
+           pres_lineage == &#39;McCain | Romney | Trump&#39;) %&gt;%
+  select(state, district_code, house_rep, pres_lineage, trump_margin) %&gt;%
+  arrange(desc(trump_margin)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">state</th>
+<th align="right">district_code</th>
+<th align="left">house_rep</th>
+<th align="left">pres_lineage</th>
+<th align="right">trump_margin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Minnesota</td>
+<td align="right">7</td>
+<td align="left">PETERSON, Collin Clark</td>
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">30.8</td>
+</tr>
+<tr class="even">
+<td align="left">New York</td>
+<td align="right">22</td>
+<td align="left">BRINDISI, Anthony</td>
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">15.5</td>
+</tr>
+<tr class="odd">
+<td align="left">Oklahoma</td>
+<td align="right">5</td>
+<td align="left">HORN, Kendra</td>
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">13.4</td>
+</tr>
+<tr class="even">
+<td align="left">South Carolina</td>
+<td align="right">1</td>
+<td align="left">CUNNINGHAM, Joe</td>
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">13.1</td>
+</tr>
+<tr class="odd">
+<td align="left">New Mexico</td>
+<td align="right">2</td>
+<td align="left">TORRES SMALL, Xochitl</td>
+<td align="left">McCain | Romney | Trump</td>
+<td align="right">10.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="front-line-freshmen-house-democrats" class="section level2">
+<h2>Front-line Freshmen House Democrats</h2>
+<p>Via the <code>Rvoteview</code> package, we identify 88 freshman House Representatives, 56 of which are Democrats.</p>
+<pre class="r"><code>house_vv_freshies &lt;- Rvoteview:: member_search(chamber= &#39;House&#39;, congress = 116) %&gt;%
+  filter(congresses == &#39;c(116, 116)&#39; &amp; party_name != &#39;Independent&#39;) %&gt;%
+  select(bioname, party_name) %&gt;%
+  rename(house_rep = bioname) 
+
+house_vv_freshies %&gt;%
+  group_by(party_name) %&gt;%
+  count() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">party_name</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Democratic Party</td>
+<td align="right">56</td>
+</tr>
+<tr class="even">
+<td align="left">Republican Party</td>
+<td align="right">32</td>
+</tr>
+</tbody>
+</table>
+<p>Of the 31, then, <strong>22 are freshman</strong>. So, a pretty vulnerable group.</p>
+<pre class="r"><code>house_flips3 &lt;- house_flips2 %&gt;%
+  left_join(house_vv_freshies %&gt;% 
+              mutate(is_fresh = &#39;Freshman&#39;) %&gt;% 
+              select(house_rep, is_fresh)) %&gt;%
+  mutate(is_fresh = ifelse(is.na(is_fresh), &#39;Not&#39;, is_fresh))
+
+house_flips3 %&gt;%
+  group_by(is_fresh, Pres16_House18) %&gt;%
+  count() %&gt;%
+  #filter(is_fresh == &#39;Y&#39;) %&gt;%
+  spread(is_fresh, n) %&gt;%
+  janitor::adorn_totals(where = c(&#39;row&#39;, &#39;col&#39;)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Pres16_House18</th>
+<th align="right">Freshman</th>
+<th align="right">Not</th>
+<th align="right">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Clinton | Democratic Party</td>
+<td align="right">35</td>
+<td align="right">167</td>
+<td align="right">202</td>
+</tr>
+<tr class="even">
+<td align="left">Clinton | Republican Party</td>
+<td align="right">NA</td>
+<td align="right">3</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Trump | Democratic Party</td>
+<td align="right">22</td>
+<td align="right">9</td>
+<td align="right">31</td>
+</tr>
+<tr class="even">
+<td align="left">Trump | Republican Party</td>
+<td align="right">29</td>
+<td align="right">170</td>
+<td align="right">199</td>
+</tr>
+<tr class="odd">
+<td align="left">Total</td>
+<td align="right">86</td>
+<td align="right">349</td>
+<td align="right">435</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="data-set" class="section level2">
+<h2>Data set</h2>
+<p>The data set compiled in this post/guide is available <a href="https://github.com/jaytimm/uspoliticalextras/tree/master/thirty-one-house-democrats">here</a>.</p>
+</div>

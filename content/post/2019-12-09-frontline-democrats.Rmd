@@ -1,0 +1,353 @@
+---
+title: 'front-line house democrats: a quick guide'
+description: ''
+author: ''
+date: '2019-12-13'
+slug: frontline-democrats
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - open-government
+  - 116th Congress
+banner: banners/cd31.png
+---
+
+
+So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the **31 House Democrats** that represent congressional districts won by the sitting president in 2016.  Here, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives.  We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms. 
+
+Pundits constantly cite these districts and count them in different ways; and I am constantly trying to recreate these counts.  As open source federal election data can be a bit of a mess, this is an attempt to organize & collate some data sources.  
+
+
+## House & presidential election returns
+
+The R data package `uspoliticalextras` includes federal election returns from a couple of sources, namely the [Daily Kos](https://www.dailykos.com/) and the [MIT Election Data and Science Lab](https://electionlab.mit.edu/).  I use the package as a bit of a cache for US political data; it is available via [Git Hub](https://github.com/jaytimm/uspoliticalextras).    The focus here will be on the last Presidential election (2016) & the last two House races (2016 & 2018). 
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+#devtools::install_github("jaytimm/uspoliticalextras")  
+pres <- uspoliticalextras::uspol_dkos_returns_pres_cd 
+house <- uspoliticalextras::uspol_medsl_returns_house_cd %>%
+  filter(year > 2015) %>%
+  mutate(party = ifelse(party == 'Independent', 'Republican Party', party)) # Amash
+```
+
+
+
+
+## Trump margins in 2016
+
+Number of congressional districts carried by DJT & HRC.  
+
+```{r message=FALSE, warning=FALSE}
+pres %>%
+  filter(year == 2016) %>%
+  group_by(candidate) %>%
+  count() %>%
+  knitr::kable()
+```
+
+
+
+**Trump margins** by congressional district in 2016.
+
+```{r fig.height=6, message=FALSE, warning=FALSE}
+library(sf)
+to_map <- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %>%
+  select(GEOID) %>%
+  left_join(pres %>% 
+              filter(year == 2016) %>% 
+              mutate(trump_margin = republican - democrat),
+            by = 'GEOID') 
+to_map %>%
+  ggplot() + 
+  geom_sf(aes(fill = trump_margin),
+          color = 'white') +
+  geom_sf(data=uspoliticalextras::uspol_dkos_equalarea_sf$hex_states, 
+          fill = NA, 
+          show.legend = F, 
+          color="#5a5c5b", 
+          lwd=.5) +
+  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds,
+                          aes(label = district_code), 
+                          size = 2,
+                          color='black') +
+  scale_fill_distiller(palette = "RdBu", direction=-1) +
+  theme_minimal()+
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = 'none') +
+  labs(title = "2016 Trump Margins by Congressional District",
+       caption = 'Source: Daily Kos')
+```
+
+
+
+
+
+## Flipped House Districts from 2016 to 2018
+
+Congressional districts that elected a Republican representative in 2016 and a Democratic representative in 2018.
+
+```{r message=FALSE, warning=FALSE}
+house_flips <- house %>%
+  select(GEOID, congress,party) %>%
+  spread(congress, party) %>%
+  left_join(house %>% 
+              filter(year == 2018) %>% 
+              mutate(house_rep_margin = round(republican - democrat, 1)) %>%
+              select(GEOID, state, district_code, candidate, house_rep_margin) %>% 
+              rename(house_rep = candidate))
+```
+
+
+
+*Some corrections/amendments for Pennsylvania districts per 2019 redistricting.*
+
+```{r}
+pa16_rs <- c('4201', '4205', '4206',
+           '4207', '4209', '4210',
+           '4211', '4212', '4213','4215',
+           '4216', '4217')
+pa16_ds <- c('4202', '4203', '4204',
+           '4208',  '4214',
+           '4218')
+pa18_rs <- c('4203', '4204', '4205', '4218')
+pa18_ds <- c('4213', '4214')
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+house_flips1 <-  house_flips %>%
+  mutate(`115` = ifelse(GEOID %in% pa16_rs, 'Republican Party', `115`),
+         `115` = ifelse(GEOID %in% pa16_ds, 'Democratic Party', `115`)) %>%
+  mutate(house_flip = paste0(`115`, ' | ', `116`)) %>%
+  left_join(to_map %>% 
+              sf::st_drop_geometry() %>% 
+              select(GEOID, candidate, trump_margin)) %>%
+  rename(Pres16 = candidate) %>%
+  mutate(`116` = ifelse(GEOID %in% pa18_rs, 'Republican Party', `116`),
+         `116` = ifelse(GEOID %in% pa18_ds, 'Democratic Party', `116`)) %>%  
+  mutate(Pres16_House18 = paste0(Pres16, ' | ', `116`))
+```
+
+
+
+**Democrats netted a total of 40 seats** in the midterm elections in 2018. The numbers & districts presented below align with those presented on [Bollotpedia](https://ballotpedia.org/United_States_House_of_Representatives_elections,_2020).
+
+```{r}
+house_flips1 %>%
+  group_by(house_flip) %>%
+  count() %>%
+  knitr::kable()
+```
+
+
+**House Representatives** from flipped districts:
+
+```{r}
+house_flips1 %>%
+  filter(house_flip %in% 
+           c('Democratic Party | Republican Party', 
+             'Republican Party | Democratic Party')) %>%
+  mutate(house_flip = ifelse(grepl('^D', house_flip), 'D -> R', 'R -> D')) %>%
+  select(house_flip, state, district_code, house_rep) %>%
+  DT::datatable(rownames = FALSE)
+```
+
+
+
+## The 31 House Democrats in Trump-supportive districts
+
+The table below summarizes how districts voted in the 2016 presidential election and House elections in 2018.  Again, 31 House Democrats represent congressional districts that Trump won in 2016's presidential election. In contrast, only three Republicans represent districts carried by HRC.  Note: Numbers & districts align with those presented in [this article](https://thehill.com/homenews/house/434113-the-31-trump-districts-that-will-determine-the-next-house-majority) from *The Hill*.
+
+```{r}
+house_flips1 %>%
+  group_by(Pres16_House18) %>%
+  count() %>%
+  #mutate(n = formattable::color_tile('white', 'steelblue')(n)) %>%
+  knitr::kable()
+```
+
+
+
+The 31 Democratic lawmakers representing Trump won districts include:
+
+```{r}
+house_flips1 %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party') %>%
+  select(state, district_code, house_rep) %>%
+  DT::datatable(rownames = FALSE)
+```
+
+
+
+
+## A quick geographical perspective
+
+```{r fig.height=6, message=FALSE, warning=FALSE}
+to_map2 <- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %>%
+  select(GEOID) %>%
+  left_join(house_flips1, by = 'GEOID') 
+
+to_map2 %>%
+  ggplot() + 
+  geom_sf(aes(fill = Pres16_House18),
+          alpha = .75,
+          color = 'white') +
+  geom_sf(data=uspoliticalextras::uspol_dkos_equalarea_sf$hex_states, 
+          fill = NA, 
+          show.legend = F, 
+          color="black", 
+          lwd=.5) +
+  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds,
+                          aes(label = district_code), 
+                          size = 2,
+                          color='black') +
+  ggthemes::scale_fill_stata() +
+  theme_minimal()+
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = 'bottom') +
+  labs(title = "2016 Presidential Support & 2018 House Representative",
+       subtitle = 'By Congressional District')
+```
+
+
+
+
+
+
+## The 13 House Democrats in solid Trump districts
+
+Of the 31, 13 Democrats represent districts Trump carried by more than 6 points.
+
+```{r}
+house_flips1 %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party' & trump_margin > 6) %>%
+  select(state, district_code, house_rep, trump_margin, house_rep_margin) %>%
+  arrange(desc(trump_margin)) %>%
+  knitr::kable()
+```
+
+
+
+## Voting patterns in presidential elections
+
+Counts of how districts voted in the last three presidential elections are presented below.
+
+```{r message=FALSE, warning=FALSE}
+house_flips2 <- house_flips1 %>%
+  left_join (pres %>% 
+               group_by(GEOID) %>%
+               summarize(pres_lineage = paste0(candidate, collapse = ' | ')) %>%
+               ungroup())
+```
+
+
+
+```{r}
+house_flips2 %>%
+  group_by(pres_lineage) %>%
+  count() %>%
+  knitr::kable()
+```
+
+
+
+## Voting patterns for the 31 Trump-House Dem districts
+
+**12 out of the 31 Dem-Trump districts** have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.
+
+```{r}
+house_flips2 %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party') %>%
+  group_by(pres_lineage) %>%
+  count() %>%
+  knitr::kable()
+```
+
+
+Representatives for these twelve districts are presented below.
+
+```{r}
+house_flips2 %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party' & 
+           pres_lineage == 'McCain | Romney | Trump') %>%
+  select(state, district_code, house_rep) %>%
+  knitr::kable()
+```
+
+
+## The 5 House Democrats that should probably vote against impeachment
+
+The table below lists the five House Reps representing districts that have supported Republican presidential candidates in the last three elections, with 2016 Trump margins greater than ten points.
+
+```{r}
+house_flips2 %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party' & 
+           trump_margin > 10 &
+           pres_lineage == 'McCain | Romney | Trump') %>%
+  select(state, district_code, house_rep, pres_lineage, trump_margin) %>%
+  arrange(desc(trump_margin)) %>%
+  knitr::kable()
+```
+
+
+
+## Front-line Freshmen House Democrats
+
+Via the `Rvoteview` package, we identify 88 freshman House Representatives, 56 of which are Democrats.
+
+```{r}
+house_vv_freshies <- Rvoteview:: member_search(chamber= 'House', congress = 116) %>%
+  filter(congresses == 'c(116, 116)' & party_name != 'Independent') %>%
+  select(bioname, party_name) %>%
+  rename(house_rep = bioname) 
+
+house_vv_freshies %>%
+  group_by(party_name) %>%
+  count() %>%
+  knitr::kable()
+```
+
+
+Of the 31, then, **22 are freshman**.  So, a pretty vulnerable group.
+
+```{r message=FALSE, warning=FALSE}
+house_flips3 <- house_flips2 %>%
+  left_join(house_vv_freshies %>% 
+              mutate(is_fresh = 'Freshman') %>% 
+              select(house_rep, is_fresh)) %>%
+  mutate(is_fresh = ifelse(is.na(is_fresh), 'Not', is_fresh))
+
+house_flips3 %>%
+  group_by(is_fresh, Pres16_House18) %>%
+  count() %>%
+  #filter(is_fresh == 'Y') %>%
+  spread(is_fresh, n) %>%
+  janitor::adorn_totals(where = c('row', 'col')) %>%
+  knitr::kable()
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/thirty-one-house-democrats')
+write_csv(house_flips3, 'thirty-one-house-democrats.csv')
+```
+
+
+
+## Data set
+
+The data set compiled in this post/guide is available [here](https://github.com/jaytimm/uspoliticalextras/tree/master/thirty-one-house-democrats).
+
+
