@@ -1,6 +1,6 @@
 ---
 title: 'front-line house democrats: a quick guide'
-description: ''
+description: 'A look at the 31 House Democrats that represent congressional districts won by Trump 2016.'
 author: ''
 date: '2019-12-13'
 slug: frontline-democrats
