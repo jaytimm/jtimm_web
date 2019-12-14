@@ -1,6 +1,6 @@
 ---
 title: 'front-line house democrats: a quick guide'
-description: 'A look at the 31 House Democrats that represent congressional districts won by Trump 2016.'
+description: 'A look at the 31 House Democrats that represent congressional districts won by Trump in 2016.'
 author: ''
 date: '2019-12-13'
 slug: frontline-democrats
@@ -28,20 +28,20 @@ banner: banners/cd31.png
 <div id="TOC">
 <ul>
 <li><a href="#house-presidential-election-returns">House &amp; presidential election returns</a></li>
-<li><a href="#trump-margins-in-2016">Trump margins in 2016</a></li>
-<li><a href="#flipped-house-districts-from-2016-to-2018">Flipped House Districts from 2016 to 2018</a></li>
-<li><a href="#the-31-house-democrats-in-trump-supportive-districts">The 31 House Democrats in Trump-supportive districts</a></li>
-<li><a href="#a-quick-geographical-perspective">A quick geographical perspective</a></li>
+<li><a href="#presidential-vote-margins">2016 Presidential vote margins</a></li>
+<li><a href="#flipped-house-districts-2016-to-2018">Flipped House Districts: 2016 to 2018</a></li>
+<li><a href="#the-31-front-line-house-democrats">The 31 front-line House Democrats</a></li>
+<li><a href="#a-quick-geographical-perspective-of-the-front-line">A quick geographical perspective of the front-line</a></li>
 <li><a href="#the-13-house-democrats-in-solid-trump-districts">The 13 House Democrats in solid Trump districts</a></li>
-<li><a href="#voting-patterns-in-presidential-elections">Voting patterns in presidential elections</a></li>
-<li><a href="#voting-patterns-for-the-31-trump-house-dem-districts">Voting patterns for the 31 Trump-House Dem districts</a></li>
+<li><a href="#voting-patterns-in-presidential-elections-by-district">Voting patterns in presidential elections by district</a></li>
+<li><a href="#voting-patterns-in-presidential-elections-represented-by-front-line-house-dems">Voting patterns in presidential elections represented by front-line House Dems</a></li>
 <li><a href="#the-5-house-democrats-that-should-probably-vote-against-impeachment">The 5 House Democrats that should probably vote against impeachment</a></li>
-<li><a href="#front-line-freshmen-house-democrats">Front-line Freshmen House Democrats</a></li>
+<li><a href="#freshmen-house-representatives">Freshmen House Representatives</a></li>
 <li><a href="#data-set">Data set</a></li>
 </ul>
 </div>
 
-<p>So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the <strong>31 House Democrats</strong> that represent congressional districts won by the sitting president in 2016. Here, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives. We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms.</p>
+<p>So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the <strong>31 House Democrats</strong> that represent congressional districts won by the sitting president in 2016 (here, <strong>front-line House Democrats</strong>). In this post, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives. We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms.</p>
 <p>Pundits constantly cite these districts and count them in different ways; and I am constantly trying to recreate these counts. As open source federal election data can be a bit of a mess, this is an attempt to organize &amp; collate some data sources.</p>
 <div id="house-presidential-election-returns" class="section level2">
 <h2>House &amp; presidential election returns</h2>
@@ -53,8 +53,8 @@ house &lt;- uspoliticalextras::uspol_medsl_returns_house_cd %&gt;%
   filter(year &gt; 2015) %&gt;%
   mutate(party = ifelse(party == &#39;Independent&#39;, &#39;Republican Party&#39;, party)) # Amash</code></pre>
 </div>
-<div id="trump-margins-in-2016" class="section level2">
-<h2>Trump margins in 2016</h2>
+<div id="presidential-vote-margins" class="section level2">
+<h2>2016 Presidential vote margins</h2>
 <p>Number of congressional districts carried by DJT &amp; HRC.</p>
 <pre class="r"><code>pres %&gt;%
   filter(year == 2016) %&gt;%
@@ -111,8 +111,8 @@ to_map %&gt;%
        caption = &#39;Source: Daily Kos&#39;)</code></pre>
 <p><img src="/post/2019-12-09-frontline-democrats_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
-<div id="flipped-house-districts-from-2016-to-2018" class="section level2">
-<h2>Flipped House Districts from 2016 to 2018</h2>
+<div id="flipped-house-districts-2016-to-2018" class="section level2">
+<h2>Flipped House Districts: 2016 to 2018</h2>
 <p>Congressional districts that elected a Republican representative in 2016 and a Democratic representative in 2018.</p>
 <pre class="r"><code>house_flips &lt;- house %&gt;%
   select(GEOID, congress,party) %&gt;%
@@ -185,8 +185,8 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D"],["Arizona","California","California","California","California","California","California","California","Colorado","Florida","Florida","Georgia","Illinois","Illinois","Iowa","Iowa","Kansas","Maine","Michigan","Michigan","Minnesota","Minnesota","Minnesota","Minnesota","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","South Carolina","Texas","Texas","Utah","Virginia","Virginia","Virginia","Washington"],[2,10,21,25,39,45,48,49,6,26,27,6,6,14,1,3,3,2,8,11,1,2,3,8,2,3,7,11,2,11,19,22,5,5,6,7,14,17,1,7,32,4,2,7,10,8],["KIRKPATRICK, Ann","HARDER, Josh","COX, TJ","HILL, Katie","CISNEROS, Gil","PORTER, Katie","ROUDA, Harley","LEVIN, Mike","CROW, Jason","MUCARSEL-POWELL, Debbie","SHALALA, Donna","McBATH, Lucy","CASTEN, Sean","UNDERWOOD, Lauren","FINKENAUER, Abby","AXNE, Cynthia","DAVIDS, Sharice","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","HAGEDORN, Jim","CRAIG, Angela","PHILLIPS, Dean","STAUBER, Peter","VAN DREW, Jefferson","KIM, Andy","MALINOWSKI, Tomaz","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","SCANLON, Mary Gay","HOULAHAN, Christina","WILD, Susan","RESCHENTHALER, Guy","LAMB, Conor","CUNNINGHAM, Joe","FLETCHER, Elizabeth","ALLRED, Colin","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","WEXTON, Jennifer","SCHRIER, Kim"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>house_flip<\/th>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="the-31-house-democrats-in-trump-supportive-districts" class="section level2">
-<h2>The 31 House Democrats in Trump-supportive districts</h2>
+<div id="the-31-front-line-house-democrats" class="section level2">
+<h2>The 31 front-line House Democrats</h2>
 <p>The table below summarizes how districts voted in the 2016 presidential election and House elections in 2018. Again, 31 House Democrats represent congressional districts that Trump won in 2016’s presidential election. In contrast, only three Republicans represent districts carried by HRC. Note: Numbers &amp; districts align with those presented in <a href="https://thehill.com/homenews/house/434113-the-31-trump-districts-that-will-determine-the-next-house-majority">this article</a> from <em>The Hill</em>.</p>
 <pre class="r"><code>house_flips1 %&gt;%
   group_by(Pres16_House18) %&gt;%
@@ -219,7 +219,7 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>The 31 Democratic lawmakers representing Trump won districts include:</p>
+<p>The 31 Democratic lawmakers representing Trump-won districts include:</p>
 <pre class="r"><code>house_flips1 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39;) %&gt;%
   select(state, district_code, house_rep) %&gt;%
@@ -227,8 +227,8 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Arizona","Georgia","Illinois","Illinois","Iowa","Iowa","Iowa","Maine","Michigan","Michigan","Minnesota","Minnesota","Nevada","New Hampshire","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","South Carolina","Utah","Virginia","Virginia","Wisconsin"],[1,6,14,17,1,2,3,2,8,11,2,7,3,1,2,3,5,11,2,11,18,19,22,5,8,17,1,4,2,7,3],["O'HALLERAN, Thomas C.","McBATH, Lucy","UNDERWOOD, Lauren","BUSTOS, Cheri","FINKENAUER, Abby","LOEBSACK, Dave","AXNE, Cynthia","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","CRAIG, Angela","PETERSON, Collin Clark","LEE, Susie","PAPPAS, Chris","VAN DREW, Jefferson","KIM, Andy","GOTTHEIMER, Josh S.","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","MALONEY, Sean Patrick","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","CARTWRIGHT, Matt","LAMB, Conor","CUNNINGHAM, Joe","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","KIND, Ron"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="a-quick-geographical-perspective" class="section level2">
-<h2>A quick geographical perspective</h2>
+<div id="a-quick-geographical-perspective-of-the-front-line" class="section level2">
+<h2>A quick geographical perspective of the front-line</h2>
 <pre class="r"><code>to_map2 &lt;- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %&gt;%
   select(GEOID) %&gt;%
   left_join(house_flips1, by = &#39;GEOID&#39;) 
@@ -260,7 +260,7 @@ to_map2 %&gt;%
 </div>
 <div id="the-13-house-democrats-in-solid-trump-districts" class="section level2">
 <h2>The 13 House Democrats in solid Trump districts</h2>
-<p>Of the 31, 13 Democrats represent districts Trump carried by more than 6 points.</p>
+<p>Of the 31 front-liners, thirteen represent districts Trump carried by more than 6 points.</p>
 <pre class="r"><code>house_flips1 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; trump_margin &gt; 6) %&gt;%
   select(state, district_code, house_rep, trump_margin, house_rep_margin) %&gt;%
@@ -371,8 +371,8 @@ to_map2 %&gt;%
 </tbody>
 </table>
 </div>
-<div id="voting-patterns-in-presidential-elections" class="section level2">
-<h2>Voting patterns in presidential elections</h2>
+<div id="voting-patterns-in-presidential-elections-by-district" class="section level2">
+<h2>Voting patterns in presidential elections by district</h2>
 <p>Counts of how districts voted in the last three presidential elections are presented below.</p>
 <pre class="r"><code>house_flips2 &lt;- house_flips1 %&gt;%
   left_join (pres %&gt;% 
@@ -422,9 +422,9 @@ to_map2 %&gt;%
 </tbody>
 </table>
 </div>
-<div id="voting-patterns-for-the-31-trump-house-dem-districts" class="section level2">
-<h2>Voting patterns for the 31 Trump-House Dem districts</h2>
-<p><strong>12 out of the 31 Dem-Trump districts</strong> have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.</p>
+<div id="voting-patterns-in-presidential-elections-represented-by-front-line-house-dems" class="section level2">
+<h2>Voting patterns in presidential elections represented by front-line House Dems</h2>
+<p><strong>12 out of the 31 front-line districts</strong> have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.</p>
 <pre class="r"><code>house_flips2 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39;) %&gt;%
   group_by(pres_lineage) %&gt;%
@@ -593,8 +593,8 @@ to_map2 %&gt;%
 </tbody>
 </table>
 </div>
-<div id="front-line-freshmen-house-democrats" class="section level2">
-<h2>Front-line Freshmen House Democrats</h2>
+<div id="freshmen-house-representatives" class="section level2">
+<h2>Freshmen House Representatives</h2>
 <p>Via the <code>Rvoteview</code> package, we identify 88 freshman House Representatives, 56 of which are Democrats.</p>
 <pre class="r"><code>house_vv_freshies &lt;- Rvoteview:: member_search(chamber= &#39;House&#39;, congress = 116) %&gt;%
   filter(congresses == &#39;c(116, 116)&#39; &amp; party_name != &#39;Independent&#39;) %&gt;%
@@ -623,7 +623,7 @@ house_vv_freshies %&gt;%
 </tr>
 </tbody>
 </table>
-<p>Of the 31, then, <strong>22 are freshman</strong>. So, a pretty vulnerable group.</p>
+<p>Of the 31 front-liners, then, <strong>22 are freshman</strong>. So, a pretty vulnerable group.</p>
 <pre class="r"><code>house_flips3 &lt;- house_flips2 %&gt;%
   left_join(house_vv_freshies %&gt;% 
               mutate(is_fresh = &#39;Freshman&#39;) %&gt;% 

@@ -1,6 +1,6 @@
 ---
 title: 'front-line house democrats: a quick guide'
-description: 'A look at the 31 House Democrats that represent congressional districts won by Trump 2016.'
+description: 'A look at the 31 House Democrats that represent congressional districts won by Trump in 2016.'
 author: ''
 date: '2019-12-13'
 slug: frontline-democrats
@@ -16,7 +16,7 @@ banner: banners/cd31.png
 ---
 
 
-So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the **31 House Democrats** that represent congressional districts won by the sitting president in 2016.  Here, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives.  We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms. 
+So, with an impeachment vote nigh and the 2020 general elections slowly approaching, lots of talk about the **31 House Democrats** that represent congressional districts won by the sitting president in 2016 (here, **front-line House Democrats**).  In this post, we present a quick/simple/R-based investigation into the composition of this group of Democrats from several different perspectives.  We also consider the 43 congressional districts that flipped Democratic in the 2018 midterms. 
 
 Pundits constantly cite these districts and count them in different ways; and I am constantly trying to recreate these counts.  As open source federal election data can be a bit of a mess, this is an attempt to organize & collate some data sources.  
 
@@ -37,7 +37,7 @@ house <- uspoliticalextras::uspol_medsl_returns_house_cd %>%
 
 
 
-## Trump margins in 2016
+## 2016 Presidential vote margins
 
 Number of congressional districts carried by DJT & HRC.  
 
@@ -89,7 +89,7 @@ to_map %>%
 
 
 
-## Flipped House Districts from 2016 to 2018
+## Flipped House Districts: 2016 to 2018
 
 Congressional districts that elected a Republican representative in 2016 and a Democratic representative in 2018.
 
@@ -162,7 +162,7 @@ house_flips1 %>%
 
 
 
-## The 31 House Democrats in Trump-supportive districts
+## The 31 front-line House Democrats
 
 The table below summarizes how districts voted in the 2016 presidential election and House elections in 2018.  Again, 31 House Democrats represent congressional districts that Trump won in 2016's presidential election. In contrast, only three Republicans represent districts carried by HRC.  Note: Numbers & districts align with those presented in [this article](https://thehill.com/homenews/house/434113-the-31-trump-districts-that-will-determine-the-next-house-majority) from *The Hill*.
 
@@ -176,7 +176,7 @@ house_flips1 %>%
 
 
 
-The 31 Democratic lawmakers representing Trump won districts include:
+The 31 Democratic lawmakers representing Trump-won districts include:
 
 ```{r}
 house_flips1 %>%
@@ -188,7 +188,7 @@ house_flips1 %>%
 
 
 
-## A quick geographical perspective
+## A quick geographical perspective of the front-line
 
 ```{r fig.height=6, message=FALSE, warning=FALSE}
 to_map2 <- uspoliticalextras::uspol_dkos_equalarea_sf$hex_cds %>%
@@ -227,7 +227,7 @@ to_map2 %>%
 
 ## The 13 House Democrats in solid Trump districts
 
-Of the 31, 13 Democrats represent districts Trump carried by more than 6 points.
+Of the 31 front-liners, thirteen represent districts Trump carried by more than 6 points.
 
 ```{r}
 house_flips1 %>%
@@ -239,7 +239,7 @@ house_flips1 %>%
 
 
 
-## Voting patterns in presidential elections
+## Voting patterns in presidential elections by district
 
 Counts of how districts voted in the last three presidential elections are presented below.
 
@@ -262,9 +262,9 @@ house_flips2 %>%
 
 
 
-## Voting patterns for the 31 Trump-House Dem districts
+## Voting patterns in presidential elections represented by front-line House Dems 
 
-**12 out of the 31 Dem-Trump districts** have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.
+**12 out of the 31 front-line districts** have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.
 
 ```{r}
 house_flips2 %>%
@@ -302,7 +302,7 @@ house_flips2 %>%
 
 
 
-## Front-line Freshmen House Democrats
+## Freshmen House Representatives
 
 Via the `Rvoteview` package, we identify 88 freshman House Representatives, 56 of which are Democrats.
 
@@ -319,7 +319,7 @@ house_vv_freshies %>%
 ```
 
 
-Of the 31, then, **22 are freshman**.  So, a pretty vulnerable group.
+Of the 31 front-liners, then, **22 are freshman**.  So, a pretty vulnerable group.
 
 ```{r message=FALSE, warning=FALSE}
 house_flips3 <- house_flips2 %>%
