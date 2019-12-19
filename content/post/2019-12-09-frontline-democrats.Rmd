@@ -262,7 +262,7 @@ house_flips2 %>%
 
 
 
-## Voting patterns in presidential elections represented by front-line House Dems 
+## Voting patterns in presidential elections for front-line districts 
 
 **12 out of the 31 front-line districts** have voted for Republican presidential candidates in the last three elections, ie, McCain-Romney-Trump districts.
 
@@ -340,8 +340,14 @@ house_flips3 %>%
 
 
 ```{r eval=FALSE, include=FALSE}
+house_flips4 <- house_flips3 %>%
+  mutate(trump_margin = round(trump_margin, 1)) %>%
+  rename(house_rep_party = `116`) %>%
+  select(GEOID, state:house_rep, house_rep_party, house_flip:is_fresh)
+  
+  
 setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/thirty-one-house-democrats')
-write_csv(house_flips3, 'thirty-one-house-democrats.csv')
+write_csv(house_flips4, 'thirty-one-house-democrats.csv')
 ```
 
 
