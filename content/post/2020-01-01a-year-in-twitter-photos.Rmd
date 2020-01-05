@@ -1,0 +1,226 @@
+---
+title: 'Twitter in collage: a year in the life of a freshman Congresswoman'
+author: ''
+date: '2020-01-01'
+slug: 2020-01-01a-year-in-twitter-photos
+tags:
+  - rstats
+  - 116th Congress
+  - open-government
+  - Twitter
+banner: banners/collage.png
+description: 'Some methods for a year in collage.'
+---
+
+## Introduction
+
+A super simple post that summarizes R-based methods for visual summary & collage-building using image attachments on Twitter.   In the process, a bit of a photo homage to Congresswoman Xochitl Torres Small in her first year representing New Mexico's 2nd district.  
+
+```{r message=FALSE, warning=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, rtweet, tigris) 
+options(tigris_use_cache = TRUE, tigris_class = "sf")
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+rtweet::create_token(
+  app = "jtimm_twitter",
+  consumer_key = "CpTkgrdkRWQTrYSR4EEW4YSo6",
+  consumer_secret = "39F4DCY2WtMMqo1lDQMXXCEWrgqvXgRZYE99m4OW8oUuuevzD7",
+  access_token = "965072442954690560-H04g14OTNfZMzC7nUvvpvSGB1Cr2ERm",
+  access_secret = "Gn2hNKmcLIaXSZxKrh5AfeyttbrXKEeAAnrw8koGHRP3p")
+```
+
+
+
+## New Mexico's 2nd District
+
+The 2nd congressional district of New Mexico is a super fun district.  It is not my district, but I have a few stomping grounds that way.  Faywood is home to natural hot springs and a STAR-GAZING CHAIR!!!.  Weed has an absolutely lovely frisbee golf course.  Ruidoso has all things: including two disc golf courses and a horse track.
+
+Folks in the district supported Trump in 2016 by a fair margin (+10.2%) and subsequently sent a freshman Democrat to the House in 2018.  Only the second time the district has sent a Democrat to the House in the last 30 years.  Also, it is one of only [five districts](https://www.jtimm.net/2019/12/13/frontline-democrats/#the-5-house-democrats-that-should-probably-vote-against-impeachment) that supported Trump by more than ten points, supported McCain in 2008 & Romney in 2012, and sent a Democrat to Congress in 2018. I have written some previously about [Torres Small's win in 2018](https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/) and the demographics of the district.   
+
+So, a complicated & ideologically diverse district.  And Congresswoman Torres Small does an amazing job representing this diversity. She is one of the few House Dems that engages with Fox News, eg, writing [op-eds](https://www.foxnews.com/opinion/rep-xochitl-torres-small-a-one-size-fits-all-approach-to-border-security-wont-work-heres-what-will) and doing [interviews](https://video.foxnews.com/v/6002988864001/#sp=show-clips).  And she is a [super positive Twitter follow](https://twitter.com/RepTorresSmall) if you are interested in feeling good about the folks that represent us in Congress.
+
+The district is also geographically vast -- and super-rural. Per the table below, NM-02 is the fifth largest district in the country -- only the big rural states with at-large representation are bigger.  So, lots of ground to cover.
+
+
+```{r message=FALSE, warning=FALSE}
+cds <- tigris::congressional_districts(cb = TRUE)
+
+cds %>%
+  data.frame() %>%
+  arrange(desc(ALAND)) %>%
+  slice(1:5) %>%
+  mutate(ALAND = round(ALAND/ 2.59e+6,0), # SQUARE MILES
+         ALAND = format(ALAND,
+                        big.mark=",",
+                        scientific=FALSE),
+         geo = c('Alaska', 'Montana',
+                 'Wyoming', 'South Dakota',
+                 'New Mexico - 02')) %>%
+  select(geo, GEOID, ALAND)%>%
+  knitr::kable()
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+xochitl_tweets <- rtweet::get_timeline( 
+  "RepTorresSmall", 
+  n = 1500,
+  check=FALSE) %>%
+  mutate(created_at = as.Date(gsub(' .*$', '', created_at))) %>%
+  filter(is_quote == 'FALSE' & 
+           is_retweet == 'FALSE' & 
+           created_at > '2019-01-02' &
+           display_text_width > 0)
+```
+
+
+**One hundred days** into her term in the 116th Congress, Congresswoman Torres Small tweeted: 
+
+---
+
+`r xochitl_tweets$text[xochitl_tweets$status_id == '1116748060359524352']` 
+
+---
+
+**So, she is on the move**.  The map below highlights the district in geographical context.  Lots of big districts in the Southwest.  NM-02 is roughly bounded by Mexico, West Texas, ABQ/Santa Fe metros, and the Navajo Nation.  A bit of cultural crossroads, as it were.
+
+```{r fig.height=5}
+world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf") %>%
+  filter(gu_a3 %in% c('USA', 'MEX'))
+states <- tigris::states(cb = TRUE)
+
+cds %>%
+  mutate(color = ifelse(GEOID == '3502', 'blue', 'gray')) %>%
+  ggplot() + 
+  geom_sf(data = world,  color = 'darkgray', alpha = .75,  
+          fill = '#dae2ba', size = 1.1) + 
+  geom_sf(aes(fill = color), color = 'darkgray') + 
+  scale_fill_manual(values = c('lightblue', 'gray')) +
+  ggsflabel::lims_bbox(cds %>%
+                         filter(STATEFP %in% c('04', '48', '35', '32'))) +
+  geom_sf(data = states,  color = 'darkgray', alpha = 0,  size = 1.1) + 
+  theme(legend.position = 'none') +
+  ggtitle('NM-02 in context')
+```
+
+
+
+
+
+## Collaging the year's happenings
+
+So, the goal here is to provide a visual summary (ie, collage) of Congresswoman Torres Small's year representing the nation's fifth largest congressional district using photo attachments on Twitter.  Via the `rtweet` package,  we collect all of `@RepTorresSmall` tweets since she took office at the beginning of 2019.    
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+xochitl_tweets <- rtweet::get_timeline( 
+  "RepTorresSmall", 
+  n = 1500,
+  check=FALSE) %>%
+  mutate(created_at = as.Date(gsub(' .*$', '', created_at))) %>%
+  filter(is_quote == 'FALSE' & 
+           is_retweet == 'FALSE' & 
+           created_at > '2019-01-02' &
+           display_text_width > 0)
+```
+
+
+Next, we identify tweets containing photo attachments.  And then download these photos locally.  The code presented here has been modified directly from [this post](https://masalmon.eu/2017/03/19/facesofr/).  For a more detailed walk through of methods, I would recommend having a look.  
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+local_pics <- '/home/jtimm/Desktop/pics' 
+home <- '/home/jtimm/jt_work/GitHub/presently'
+```
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+pics <- xochitl_tweets %>%
+  filter(!is.na(media_url)) %>%
+  select(media_url, created_at)
+
+setwd(local_pics)
+lapply(pics$media_url, function (y) {
+  magick::image_read(y) %>%
+    magick::image_scale("1000") %>%
+    magick::image_border('white', '10x10') %>%
+    magick::image_write(gsub('^.*/', '', y)) #%>%
+    #magick::image_annotate(pics$created_at[y], font = 'Times', size = 50)
+  })
+```
+
+
+Next, we shuffle the photos some, and then stack photos as a collection of single column collages.  Again, these intermediary files are stored locally.   
+
+```{r}
+files <- dir(local_pics, full.names = TRUE)
+set.seed(11)
+files <- sample(files, length(files))
+```
+
+
+```{r include=FALSE}
+local_cols <- '/home/jtimm/Desktop/cols/cols1/'
+```
+
+```{r fig.height=9, message=FALSE, warning=FALSE}
+files1 <- files[1:49]
+no_rows <- 7
+no_cols <- 7
+
+make_column <- function(i, files, no_rows){
+  magick::image_read(files[(i*no_rows+1):((i+1)*no_rows)]) %>%
+    magick::image_append(stack = TRUE) %>%
+    magick::image_write(paste0("cols", i, ".jpg"))}
+
+setwd(local_cols)
+walk(0:(no_cols-1), 
+     make_column, 
+     files = files1,
+     no_rows = no_rows)
+```
+
+
+Lastly, we piece together the column collages as a single collage.  For good measure, I created three collages comprised of 7 x 7 = 49 photos.  **A busy year for the Congrtesswoman**.  Tirelessly representing the folks in NM-02 it would seem.  
+
+```{r}
+magick::image_read(dir(local_cols, full.names = TRUE)) %>% 
+  magick::image_scale("500x2000") %>%
+  magick::image_append(stack = FALSE) 
+```
+
+```{r echo=FALSE, fig.height=8, message=FALSE, warning=FALSE}
+files2 <- files[50:98]
+
+setwd('/home/jtimm/Desktop/cols/cols2')
+walk(0:(no_cols-1), 
+     make_column, 
+     files = files2,
+     no_rows = no_rows)
+```
+
+```{r echo=FALSE, fig.height=9, message=FALSE, warning=FALSE}
+magick::image_read(dir("/home/jtimm/Desktop/cols/cols2", full.names = TRUE)) %>% 
+  magick::image_scale("500x2000") %>%
+  magick::image_append(stack = FALSE) 
+```
+
+```{r echo=FALSE, fig.height=8, message=FALSE, warning=FALSE}
+files3 <- files[99:147]
+
+setwd('/home/jtimm/Desktop/cols/cols3')
+walk(0:(no_cols-1), 
+     make_column, 
+     files = files3,
+     no_rows = no_rows)
+```
+
+```{r echo=FALSE, fig.height=9, message=FALSE, warning=FALSE}
+magick::image_read(dir("/home/jtimm/Desktop/cols/cols3", full.names = TRUE)) %>% 
+  magick::image_scale("500x2000") %>%
+  magick::image_append(stack = FALSE) #%>%
+  #magick::image_annotate('@TorresSmall', font = 'Times', size = 100)
+```
+

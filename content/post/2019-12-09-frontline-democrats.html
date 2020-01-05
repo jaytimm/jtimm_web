@@ -626,9 +626,9 @@ house_vv_freshies %&gt;%
 <p>Of the 31 front-liners, then, <strong>22 are freshman</strong>. So, a pretty vulnerable group.</p>
 <pre class="r"><code>house_flips3 &lt;- house_flips2 %&gt;%
   left_join(house_vv_freshies %&gt;% 
-              mutate(is_fresh = &#39;Freshman&#39;) %&gt;% 
+              mutate(is_fresh = &#39;Y&#39;) %&gt;% 
               select(house_rep, is_fresh)) %&gt;%
-  mutate(is_fresh = ifelse(is.na(is_fresh), &#39;Not&#39;, is_fresh))
+  mutate(is_fresh = ifelse(is.na(is_fresh), &#39;N&#39;, is_fresh))
 
 house_flips3 %&gt;%
   group_by(is_fresh, Pres16_House18) %&gt;%
@@ -641,40 +641,40 @@ house_flips3 %&gt;%
 <thead>
 <tr class="header">
 <th align="left">Pres16_House18</th>
-<th align="right">Freshman</th>
-<th align="right">Not</th>
+<th align="right">N</th>
+<th align="right">Y</th>
 <th align="right">Total</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">Clinton | Democratic Party</td>
-<td align="right">35</td>
 <td align="right">167</td>
+<td align="right">35</td>
 <td align="right">202</td>
 </tr>
 <tr class="even">
 <td align="left">Clinton | Republican Party</td>
-<td align="right">NA</td>
 <td align="right">3</td>
+<td align="right">NA</td>
 <td align="right">3</td>
 </tr>
 <tr class="odd">
 <td align="left">Trump | Democratic Party</td>
-<td align="right">22</td>
 <td align="right">9</td>
+<td align="right">22</td>
 <td align="right">31</td>
 </tr>
 <tr class="even">
 <td align="left">Trump | Republican Party</td>
-<td align="right">29</td>
 <td align="right">170</td>
+<td align="right">29</td>
 <td align="right">199</td>
 </tr>
 <tr class="odd">
 <td align="left">Total</td>
-<td align="right">86</td>
 <td align="right">349</td>
+<td align="right">86</td>
 <td align="right">435</td>
 </tr>
 </tbody>

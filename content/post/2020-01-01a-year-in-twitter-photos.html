@@ -1,0 +1,174 @@
+---
+title: 'Twitter in collage: a year in the life of a freshman Congresswoman'
+author: ''
+date: '2020-01-01'
+slug: 2020-01-01a-year-in-twitter-photos
+tags:
+  - rstats
+  - 116th Congress
+  - open-government
+  - Twitter
+banner: banners/collage.png
+description: 'Some methods for a year in collage.'
+---
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>A super simple post that summarizes R-based methods for visual summary &amp; collage-building using image attachments on Twitter. In the process, a bit of a photo homage to Congresswoman Xochitl Torres Small in her first year representing New Mexico’s 2nd district.</p>
+<pre class="r"><code>if (!require(&quot;pacman&quot;)) install.packages(&quot;pacman&quot;)
+pacman::p_load(tidyverse, rtweet, tigris) 
+options(tigris_use_cache = TRUE, tigris_class = &quot;sf&quot;)</code></pre>
+</div>
+<div id="new-mexicos-2nd-district" class="section level2">
+<h2>New Mexico’s 2nd District</h2>
+<p>The 2nd congressional district of New Mexico is a super fun district. It is not my district, but I have a few stomping grounds that way. Faywood is home to natural hot springs and a STAR-GAZING CHAIR!!!. Weed has an absolutely lovely frisbee golf course. Ruidoso has all things: including two disc golf courses and a horse track.</p>
+<p>Folks in the district supported Trump in 2016 by a fair margin (+10.2%) and subsequently sent a freshman Democrat to the House in 2018. Only the second time the district has sent a Democrat to the House in the last 30 years. Also, it is one of only <a href="https://www.jtimm.net/2019/12/13/frontline-democrats/#the-5-house-democrats-that-should-probably-vote-against-impeachment">five districts</a> that supported Trump by more than ten points, supported McCain in 2008 &amp; Romney in 2012, and sent a Democrat to Congress in 2018. I have written some previously about <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">Torres Small’s win in 2018</a> and the demographics of the district.</p>
+<p>So, a complicated &amp; ideologically diverse district. And Congresswoman Torres Small does an amazing job representing this diversity. She is one of the few House Dems that engages with Fox News, eg, writing <a href="https://www.foxnews.com/opinion/rep-xochitl-torres-small-a-one-size-fits-all-approach-to-border-security-wont-work-heres-what-will">op-eds</a> and doing <a href="https://video.foxnews.com/v/6002988864001/#sp=show-clips">interviews</a>. And she is a <a href="https://twitter.com/RepTorresSmall">super positive Twitter follow</a> if you are interested in feeling good about the folks that represent us in Congress.</p>
+<p>The district is also geographically vast – and super-rural. Per the table below, NM-02 is the fifth largest district in the country – only the big rural states with at-large representation are bigger. So, lots of ground to cover.</p>
+<pre class="r"><code>cds &lt;- tigris::congressional_districts(cb = TRUE)
+
+cds %&gt;%
+  data.frame() %&gt;%
+  arrange(desc(ALAND)) %&gt;%
+  slice(1:5) %&gt;%
+  mutate(ALAND = round(ALAND/ 2.59e+6,0), # SQUARE MILES
+         ALAND = format(ALAND,
+                        big.mark=&quot;,&quot;,
+                        scientific=FALSE),
+         geo = c(&#39;Alaska&#39;, &#39;Montana&#39;,
+                 &#39;Wyoming&#39;, &#39;South Dakota&#39;,
+                 &#39;New Mexico - 02&#39;)) %&gt;%
+  select(geo, GEOID, ALAND)%&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">geo</th>
+<th align="left">GEOID</th>
+<th align="left">ALAND</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Alaska</td>
+<td align="left">0200</td>
+<td align="left">570,883</td>
+</tr>
+<tr class="even">
+<td align="left">Montana</td>
+<td align="left">3000</td>
+<td align="left">145,545</td>
+</tr>
+<tr class="odd">
+<td align="left">Wyoming</td>
+<td align="left">5600</td>
+<td align="left">97,091</td>
+</tr>
+<tr class="even">
+<td align="left">South Dakota</td>
+<td align="left">4600</td>
+<td align="left">75,809</td>
+</tr>
+<tr class="odd">
+<td align="left">New Mexico - 02</td>
+<td align="left">3502</td>
+<td align="left">71,745</td>
+</tr>
+</tbody>
+</table>
+<p><strong>One hundred days</strong> into her term in the 116th Congress, Congresswoman Torres Small tweeted:</p>
+<hr />
+<p>In #100Days, I’ve ✈️🚙 over 43,000 miles &amp; met w/ constituents in</p>
+<p>✅Bernalillo
+✅Catron
+✅Chaves
+✅Cibola
+✅De Baca
+✅Dona Ana
+✅Eddy
+✅Grant
+✅Guadalupe
+✅Hidalgo
+✅Lea
+✅Lincoln
+✅Luna
+✅McKinley
+✅Otero
+✅Roosevelt
+✅Sierra
+✅Socorro
+✅Valencia</p>
+<p>And I’m just getting started</p>
+<hr />
+<p><strong>So, she is on the move</strong>. The map below highlights the district in geographical context. Lots of big districts in the Southwest. NM-02 is roughly bounded by Mexico, West Texas, ABQ/Santa Fe metros, and the Navajo Nation. A bit of cultural crossroads, as it were.</p>
+<pre class="r"><code>world &lt;- rnaturalearth::ne_countries(scale = &quot;medium&quot;, returnclass = &quot;sf&quot;) %&gt;%
+  filter(gu_a3 %in% c(&#39;USA&#39;, &#39;MEX&#39;))
+states &lt;- tigris::states(cb = TRUE)
+
+cds %&gt;%
+  mutate(color = ifelse(GEOID == &#39;3502&#39;, &#39;blue&#39;, &#39;gray&#39;)) %&gt;%
+  ggplot() + 
+  geom_sf(data = world,  color = &#39;darkgray&#39;, alpha = .75,  
+          fill = &#39;#dae2ba&#39;, size = 1.1) + 
+  geom_sf(aes(fill = color), color = &#39;darkgray&#39;) + 
+  scale_fill_manual(values = c(&#39;lightblue&#39;, &#39;gray&#39;)) +
+  ggsflabel::lims_bbox(cds %&gt;%
+                         filter(STATEFP %in% c(&#39;04&#39;, &#39;48&#39;, &#39;35&#39;, &#39;32&#39;))) +
+  geom_sf(data = states,  color = &#39;darkgray&#39;, alpha = 0,  size = 1.1) + 
+  theme(legend.position = &#39;none&#39;) +
+  ggtitle(&#39;NM-02 in context&#39;)</code></pre>
+<p><img src="/post/2020-01-01a-year-in-twitter-photos_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="collaging-the-years-happenings" class="section level2">
+<h2>Collaging the year’s happenings</h2>
+<p>So, the goal here is to provide a visual summary (ie, collage) of Congresswoman Torres Small’s year representing the nation’s fifth largest congressional district using photo attachments on Twitter. Via the <code>rtweet</code> package, we collect all of <code>@RepTorresSmall</code> tweets since she took office at the beginning of 2019.</p>
+<pre class="r"><code>xochitl_tweets &lt;- rtweet::get_timeline( 
+  &quot;RepTorresSmall&quot;, 
+  n = 1500,
+  check=FALSE) %&gt;%
+  mutate(created_at = as.Date(gsub(&#39; .*$&#39;, &#39;&#39;, created_at))) %&gt;%
+  filter(is_quote == &#39;FALSE&#39; &amp; 
+           is_retweet == &#39;FALSE&#39; &amp; 
+           created_at &gt; &#39;2019-01-02&#39; &amp;
+           display_text_width &gt; 0)</code></pre>
+<p>Next, we identify tweets containing photo attachments. And then download these photos locally. The code presented here has been modified directly from <a href="https://masalmon.eu/2017/03/19/facesofr/">this post</a>. For a more detailed walk through of methods, I would recommend having a look.</p>
+<pre class="r"><code>pics &lt;- xochitl_tweets %&gt;%
+  filter(!is.na(media_url)) %&gt;%
+  select(media_url, created_at)
+
+setwd(local_pics)
+lapply(pics$media_url, function (y) {
+  magick::image_read(y) %&gt;%
+    magick::image_scale(&quot;1000&quot;) %&gt;%
+    magick::image_border(&#39;white&#39;, &#39;10x10&#39;) %&gt;%
+    magick::image_write(gsub(&#39;^.*/&#39;, &#39;&#39;, y)) #%&gt;%
+    #magick::image_annotate(pics$created_at[y], font = &#39;Times&#39;, size = 50)
+  })</code></pre>
+<p>Next, we shuffle the photos some, and then stack photos as a collection of single column collages. Again, these intermediary files are stored locally.</p>
+<pre class="r"><code>files &lt;- dir(local_pics, full.names = TRUE)
+set.seed(11)
+files &lt;- sample(files, length(files))</code></pre>
+<pre class="r"><code>files1 &lt;- files[1:49]
+no_rows &lt;- 7
+no_cols &lt;- 7
+
+make_column &lt;- function(i, files, no_rows){
+  magick::image_read(files[(i*no_rows+1):((i+1)*no_rows)]) %&gt;%
+    magick::image_append(stack = TRUE) %&gt;%
+    magick::image_write(paste0(&quot;cols&quot;, i, &quot;.jpg&quot;))}
+
+setwd(local_cols)
+walk(0:(no_cols-1), 
+     make_column, 
+     files = files1,
+     no_rows = no_rows)</code></pre>
+<p>Lastly, we piece together the column collages as a single collage. For good measure, I created three collages comprised of 7 x 7 = 49 photos. <strong>A busy year for the Congrtesswoman</strong>. Tirelessly representing the folks in NM-02 it would seem.</p>
+<pre class="r"><code>magick::image_read(dir(local_cols, full.names = TRUE)) %&gt;% 
+  magick::image_scale(&quot;500x2000&quot;) %&gt;%
+  magick::image_append(stack = FALSE) </code></pre>
+<p><img src="/post/2020-01-01a-year-in-twitter-photos_files/figure-html/unnamed-chunk-12-1.png" width="1328" /></p>
+<p><img src="/post/2020-01-01a-year-in-twitter-photos_files/figure-html/unnamed-chunk-14-1.png" width="1430" /></p>
+<p><img src="/post/2020-01-01a-year-in-twitter-photos_files/figure-html/unnamed-chunk-16-1.png" width="1360" /></p>
+</div>

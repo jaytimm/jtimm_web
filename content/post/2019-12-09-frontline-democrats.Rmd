@@ -324,9 +324,9 @@ Of the 31 front-liners, then, **22 are freshman**.  So, a pretty vulnerable grou
 ```{r message=FALSE, warning=FALSE}
 house_flips3 <- house_flips2 %>%
   left_join(house_vv_freshies %>% 
-              mutate(is_fresh = 'Freshman') %>% 
+              mutate(is_fresh = 'Y') %>% 
               select(house_rep, is_fresh)) %>%
-  mutate(is_fresh = ifelse(is.na(is_fresh), 'Not', is_fresh))
+  mutate(is_fresh = ifelse(is.na(is_fresh), 'N', is_fresh))
 
 house_flips3 %>%
   group_by(is_fresh, Pres16_House18) %>%
@@ -343,7 +343,7 @@ house_flips3 %>%
 house_flips4 <- house_flips3 %>%
   mutate(trump_margin = round(trump_margin, 1)) %>%
   rename(house_rep_party = `116`) %>%
-  select(GEOID, state:house_rep, house_rep_party, house_flip:is_fresh)
+  select(GEOID, state:house_rep, house_rep_party, is_fresh, house_flip:pres_lineage)
   
   
 setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/thirty-one-house-democrats')
