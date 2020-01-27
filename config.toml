@@ -53,8 +53,8 @@ theme = "hugo-icarus-theme"
 	
 [[params.menu]]
     before = false
-    label  = "Resources"
-    link   = "resources/"
+    label  = "Technical Notes"
+    link   = "https://github.com/jaytimm/some_technical_notes"
 	
 # Enter a link for the follow button on the left
 [params.profile]
