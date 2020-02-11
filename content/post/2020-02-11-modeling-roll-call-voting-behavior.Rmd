@@ -116,13 +116,13 @@ reps <- uspoliticalextras::uspol_csusa_house_bios %>%
 
 ### +Constituency demographics
 
-Some demographic characteristics for US congressional districts are also included `uspoliticalextras`.  These were accessed via `tidycensus`, and included in the package out of convenience.  **2018 1-year ACS estimates for 12 variables**, which include:
+Some demographic characteristics for US congressional districts are also included `uspoliticalextras`.  These were accessed via `tidycensus`, and included in the package out of convenience.  **2018 1-year ACS estimates for 12 variables**.  These include:
 
 ```{r}
 unique(uspoliticalextras::uspol_dems2018_house$variable)
 ```
 
-For modeling purposes, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor's degree or higher.  Median household income for the district is also considered.  Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma & Kentucky.
+**For modeling purposes**, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor's degree or higher.  Median household income for the district is also considered.  Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma & Kentucky.
 
 ```{r}
 south <- c('SC', 'MS', 'FL', 
@@ -258,13 +258,13 @@ jtools::plot_summs(modC, scale = TRUE)
 
 **In terms of member characteristics**, Black house members, female house members, and older house members all have lower scores as well.  Party affiliation is the strongest predictor -- simply getting elected as a Democrat amounts to a 0.776 *decrease* in NOMINATE scores (on average) relative to a Republican (again, on a scale from -1 to +1).  
 
-For the average present day American, model results are in no way surprising.   However, as @mccarty2016polarized demonstrate (see Chapter 2 appendix), constituency demographics & member party have become increasingly more predictive of roll call voting behavior since the early 70s.  As voting behavior in the house has  become more extreme & ideologically divided.
+For the average present day American, model results are in no way surprising.   However, as @mccarty2016polarized demonstrate (see Chapter 2 appendix), constituency demographics & member party have become increasingly more predictive of roll call voting behavior since the early 70s -- as voting behavior in the house has  become more extreme & ideologically divided.
 
 
 
 ## A final thought
 
-So, this post has focused largely on aggregating pieces of a model puzzle as presented in @mccarty2016polarized. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way.    Read the reference for this -- it tells the story of **increasing polarization in American politics** over the last 40 years or so.  A story that becomes more relevant by the day.   
+So, this post has focused largely on aggregating pieces of a model puzzle as presented in @mccarty2016polarized. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way.    Read the reference for this -- it tells the story of **increasing polarization in American politics** over the last 40 years or so -- one that becomes more relevant by the day.   
 
 
 ## References

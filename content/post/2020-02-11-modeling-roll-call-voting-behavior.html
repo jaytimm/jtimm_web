@@ -128,7 +128,7 @@ description: 'A brief go at modeling roll call voting behavior in the US House o
 </div>
 <div id="constituency-demographics" class="section level3">
 <h3>+Constituency demographics</h3>
-<p>Some demographic characteristics for US congressional districts are also included <code>uspoliticalextras</code>. These were accessed via <code>tidycensus</code>, and included in the package out of convenience. <strong>2018 1-year ACS estimates for 12 variables</strong>, which include:</p>
+<p>Some demographic characteristics for US congressional districts are also included <code>uspoliticalextras</code>. These were accessed via <code>tidycensus</code>, and included in the package out of convenience. <strong>2018 1-year ACS estimates for 12 variables</strong>. These include:</p>
 <pre class="r"><code>unique(uspoliticalextras::uspol_dems2018_house$variable)</code></pre>
 <pre><code>##  [1] &quot;Median_HH_Income&quot;          &quot;Per_BachelorsHigher&quot;      
 ##  [3] &quot;Per_BachelorsHigher_White&quot; &quot;Per_Black&quot;                
@@ -136,7 +136,7 @@ description: 'A brief go at modeling roll call voting behavior in the US House o
 ##  [7] &quot;Per_Hispanic&quot;              &quot;Per_LessHS&quot;               
 ##  [9] &quot;Per_LessHS_White&quot;          &quot;Per_VotingAge&quot;            
 ## [11] &quot;Per_White&quot;                 &quot;CD_AREA&quot;</code></pre>
-<p>For modeling purposes, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor’s degree or higher. Median household income for the district is also considered. Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma &amp; Kentucky.</p>
+<p><strong>For modeling purposes</strong>, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor’s degree or higher. Median household income for the district is also considered. Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma &amp; Kentucky.</p>
 <pre class="r"><code>south &lt;- c(&#39;SC&#39;, &#39;MS&#39;, &#39;FL&#39;, 
            &#39;AL&#39;, &#39;GA&#39;, &#39;LA&#39;, &#39;TX&#39;, 
            &#39;VA&#39;, &#39;AR&#39;, &#39;NC&#39;, &#39;TE&#39;,
@@ -496,12 +496,12 @@ member_AGE
 <h3>+Some interpretations</h3>
 <p><strong>In terms of constituency demographics</strong>, then, house members representing districts with higher percentages of college grads and Hispanics tend to have lower NOMINATE scores, ie, are more liberal in voting behavior. Also, house members representing non-Southern districts have lower scores.</p>
 <p><strong>In terms of member characteristics</strong>, Black house members, female house members, and older house members all have lower scores as well. Party affiliation is the strongest predictor – simply getting elected as a Democrat amounts to a 0.776 <em>decrease</em> in NOMINATE scores (on average) relative to a Republican (again, on a scale from -1 to +1).</p>
-<p>For the average present day American, model results are in no way surprising. However, as <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span> demonstrate (see Chapter 2 appendix), constituency demographics &amp; member party have become increasingly more predictive of roll call voting behavior since the early 70s. As voting behavior in the house has become more extreme &amp; ideologically divided.</p>
+<p>For the average present day American, model results are in no way surprising. However, as <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span> demonstrate (see Chapter 2 appendix), constituency demographics &amp; member party have become increasingly more predictive of roll call voting behavior since the early 70s – as voting behavior in the house has become more extreme &amp; ideologically divided.</p>
 </div>
 </div>
 <div id="a-final-thought" class="section level2">
 <h2>A final thought</h2>
-<p>So, this post has focused largely on aggregating pieces of a model puzzle as presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way. Read the reference for this – it tells the story of <strong>increasing polarization in American politics</strong> over the last 40 years or so. A story that becomes more relevant by the day.</p>
+<p>So, this post has focused largely on aggregating pieces of a model puzzle as presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way. Read the reference for this – it tells the story of <strong>increasing polarization in American politics</strong> over the last 40 years or so – one that becomes more relevant by the day.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
