@@ -1,6 +1,6 @@
 ---
 title: 'Modeling roll call voting behavior in the House of Representatives'
-date: '2020-02-08'
+date: '2020-02-11'
 slug: modeling-roll-call-voting-behavior
 output:
   blogdown::html_page:
@@ -258,7 +258,7 @@ jtools::plot_summs(modC, scale = TRUE)
 
 **In terms of member characteristics**, Black house members, female house members, and older house members all have lower scores as well.  Party affiliation is the strongest predictor -- simply getting elected as a Democrat amounts to a 0.776 *decrease* in NOMINATE scores (on average) relative to a Republican (again, on a scale from -1 to +1).  
 
-For the average present day American, model results are in no way surprising.   However, as @mccarty2016polarized demonstrate (see Chapter 2 appendix), constituency demographics & member party have become increasingly more predictive of roll call voting behavior since the early 70s.  As voting behavior in the house has become more extreme & ideologically divided.
+For the average present day American, model results are in no way surprising.   However, as @mccarty2016polarized demonstrate (see Chapter 2 appendix), constituency demographics & member party have become increasingly more predictive of roll call voting behavior since the early 70s.  As voting behavior in the house has  become more extreme & ideologically divided.
 
 
 

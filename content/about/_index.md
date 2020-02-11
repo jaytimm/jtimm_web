@@ -18,7 +18,7 @@ More broadly, I am interested in:
 * the development of open source tools for text analysis; and 
 * the application of corpus & computational methods in the social sciences and humanities.
 
-This site is built with [r::blogdown](https://bookdown.org/yihui/blogdown/) and Hugo, and deployed with [Netlify](https://www.netlify.com/). All **R code** presented on this site is meant to be **fully reproducible**.  In this vein, all data sources utilized here are freely available.  Check out [R-bloggers](https://www.r-bloggers.com/) for additonal R resources.
+This site is built with [r::blogdown](https://bookdown.org/yihui/blogdown/) and Hugo, and deployed with [Netlify](https://www.netlify.com/). All **R code** presented on this site is meant to be **fully reproducible**.  In this vein, all data sources utilized here are freely available.  Check out [R-bloggers](https://www.r-bloggers.com/) & [rweekly.org](https://rweekly.org/) for additonal R resources.
 
 
 I live in Albuquerque, New Mexico, and mostly just bicycle about.
