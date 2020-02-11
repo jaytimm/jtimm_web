@@ -14,12 +14,12 @@ tags:
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/model.png
-description: 'Some methods for a year in collage.'
+description: 'A brief go at modeling roll call voting behavior in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics.'
 ---
 
 ## Thoughts initial
 
-A brief (and copycat) attempt to **model roll call voting behavior** in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in @mccarty2016polarized, specifically chapter 2 ('Polarized politicians').  Here, we make **transparent & reproducible** some methods using R & open source data sets -- with some fairly comparable results.  
+A brief (and copycat) go at **modeling roll call voting behavior** in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in @mccarty2016polarized, specifically chapter 2 ('Polarized politicians').  Here, we make **transparent & reproducible** some methods using R & open source data sets -- with some fairly comparable results.  
 
 (Also -- just an FYI:  I have started posting super short [snippets of R code on Git Hub](https://github.com/jaytimm/some_technical_notes), mostly related to things text & politics & both. Meant to be quick & useful.)
 

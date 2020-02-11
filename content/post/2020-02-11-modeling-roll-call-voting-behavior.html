@@ -14,7 +14,7 @@ tags:
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/model.png
-description: 'Some methods for a year in collage.'
+description: 'A brief go at modeling roll call voting behavior in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics.'
 ---
 
 <script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
@@ -31,7 +31,7 @@ description: 'Some methods for a year in collage.'
 
 <div id="thoughts-initial" class="section level2">
 <h2>Thoughts initial</h2>
-<p>A brief (and copycat) attempt to <strong>model roll call voting behavior</strong> in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>, specifically chapter 2 (‘Polarized politicians’). Here, we make <strong>transparent &amp; reproducible</strong> some methods using R &amp; open source data sets – with some fairly comparable results.</p>
+<p>A brief (and copycat) go at <strong>modeling roll call voting behavior</strong> in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>, specifically chapter 2 (‘Polarized politicians’). Here, we make <strong>transparent &amp; reproducible</strong> some methods using R &amp; open source data sets – with some fairly comparable results.</p>
 <p>(Also – just an FYI: I have started posting super short <a href="https://github.com/jaytimm/some_technical_notes">snippets of R code on Git Hub</a>, mostly related to things text &amp; politics &amp; both. Meant to be quick &amp; useful.)</p>
 </div>
 <div id="data-sets" class="section level2">
@@ -490,7 +490,7 @@ member_AGE
 <div id="a-visual-summary" class="section level3">
 <h3>+A visual summary</h3>
 <pre class="r"><code>jtools::plot_summs(modC, scale = TRUE)</code></pre>
-<p><img src="/post/2020-02-08-modeling-roll-call-voting-behavior_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><img src="/post/2020-02-11-modeling-roll-call-voting-behavior_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 <div id="some-interpretations" class="section level3">
 <h3>+Some interpretations</h3>
