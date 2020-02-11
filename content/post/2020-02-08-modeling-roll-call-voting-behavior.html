@@ -1,0 +1,513 @@
+---
+title: 'Modeling roll call voting behavior in the House of Representatives'
+date: '2020-02-08'
+slug: modeling-roll-call-voting-behavior
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - 116th Congress
+  - open-government
+  - VoteView
+bibliography: biblio.bib
+link-citations: yes
+banner: banners/model.png
+description: 'Some methods for a year in collage.'
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#thoughts-initial">Thoughts initial</a></li>
+<li><a href="#data-sets">Data sets</a></li>
+<li><a href="#modeling-political-ideology-in-the-116th-house">Modeling political ideology in the 116th House</a></li>
+<li><a href="#a-final-thought">A final thought</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="thoughts-initial" class="section level2">
+<h2>Thoughts initial</h2>
+<p>A brief (and copycat) attempt to <strong>model roll call voting behavior</strong> in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>, specifically chapter 2 (‘Polarized politicians’). Here, we make <strong>transparent &amp; reproducible</strong> some methods using R &amp; open source data sets – with some fairly comparable results.</p>
+<p>(Also – just an FYI: I have started posting super short <a href="https://github.com/jaytimm/some_technical_notes">snippets of R code on Git Hub</a>, mostly related to things text &amp; politics &amp; both. Meant to be quick &amp; useful.)</p>
+</div>
+<div id="data-sets" class="section level2">
+<h2>Data sets</h2>
+<p>The basic model we consider here is ~formalized as follows:</p>
+<ul>
+<li>Political ideology<sub>i</sub> = constituency demographics<sub>i</sub> + member party<sub>i</sub> + member characteristics<sub>i</sub></li>
+</ul>
+<p><strong>Can we predict how house members vote</strong> based solely on the characteristics of their constituents, their party affiliation, and their age/gender/race? Variables comprising these four model components (for district <strong><em>i</em></strong> and the representative of district <strong><em>i</em></strong>) are summarized in the table below. Variables included here mostly align with those presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>. We will describe the details of variables &amp; sources in the following sections.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">group</th>
+<th align="left">var</th>
+<th align="left">source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">political ideology</td>
+<td align="left">dw_NOMINATE_DIM_1</td>
+<td align="left">Rvoteview</td>
+</tr>
+<tr class="even">
+<td align="left">constituency demographics</td>
+<td align="left">cd_BACHELORS</td>
+<td align="left">ACS 2018 1-Year estimates</td>
+</tr>
+<tr class="odd">
+<td align="left">constituency demographics</td>
+<td align="left">cd_HH_INCOME</td>
+<td align="left">ACS 2018 1-Year estimates</td>
+</tr>
+<tr class="even">
+<td align="left">constituency demographics</td>
+<td align="left">cd_BLACK</td>
+<td align="left">ACS 2018 1-Year estimates</td>
+</tr>
+<tr class="odd">
+<td align="left">constituency demographics</td>
+<td align="left">cd_HISPANIC</td>
+<td align="left">ACS 2018 1-Year estimates</td>
+</tr>
+<tr class="even">
+<td align="left">constituency demographics</td>
+<td align="left">cd_IS_SOUTH</td>
+<td align="left">Dixie + KE + OK</td>
+</tr>
+<tr class="odd">
+<td align="left">member party</td>
+<td align="left">member_PARTY</td>
+<td align="left">Rvoteview</td>
+</tr>
+<tr class="even">
+<td align="left">member characteristics</td>
+<td align="left">member_GENDER</td>
+<td align="left">CivilServiceUSA</td>
+</tr>
+<tr class="odd">
+<td align="left">member characteristics</td>
+<td align="left">member_ETHNICITY</td>
+<td align="left">CivilServiceUSA</td>
+</tr>
+<tr class="even">
+<td align="left">member characteristics</td>
+<td align="left">member_AGE</td>
+<td align="left">CivilServiceUSA</td>
+</tr>
+</tbody>
+</table>
+<div id="political-ideology" class="section level3">
+<h3>+Political ideology</h3>
+<p>The <strong>dependent variable</strong> in the model is roll call voting behavior, or political ideology. DW-NOMINATE scores from the <a href="https://voteview.com/">VoteView</a> project are accessed here via the <code>Rvoteview</code> <a href="https://github.com/voteview/Rvoteview">package</a>. Our focus here, then, is first dimension scores from the 116th House. Scores range from -1 (the most liberal) to +1 (the most conservative). A score of 0, then, would represent a more moderate voter.</p>
+<pre class="r"><code>nominates &lt;- Rvoteview:: member_search(chamber= &#39;House&#39;, congress = 116) %&gt;%
+  select(state_abbrev, district_code, nominate.dim1)</code></pre>
+</div>
+<div id="member-party-member-characteristics" class="section level3">
+<h3>+Member party &amp; member characteristics</h3>
+<p>The <a href="https://github.com/CivilServiceUSA">CivilServiceUSA</a> makes available a collection of characteristics about house members, including <strong>age, gender, and race/ethnicity</strong>. I have cached these data in a package dubbed <code>uspoliticalextras</code>, available <a href="https://github.com/jaytimm/uspoliticalextras">here</a>.</p>
+<pre class="r"><code>devtools::install_github(&quot;jaytimm/uspoliticalextras&quot;)</code></pre>
+<pre class="r"><code>reps &lt;- uspoliticalextras::uspol_csusa_house_bios %&gt;%
+  filter(congress == 116) %&gt;%
+  select(state_fips:district_code, party, last_name, gender, ethnicity, date_of_birth) %&gt;%
+  mutate(age = round(lubridate::interval(date_of_birth, 
+                                         Sys.Date())/lubridate::duration(num = 1, 
+                                                                         units = &quot;years&quot;))) %&gt;%
+  select(-date_of_birth)%&gt;%
+  mutate(district_code = ifelse(district_code == 0, 1, district_code),
+         ethnicity = ifelse(grepl(&#39;middle|multi|nativ|pacific&#39;, ethnicity), 
+                            &#39;other-race&#39;, 
+                            ethnicity),
+         ethnicity = gsub(&#39;-american&#39;, &#39;&#39;, ethnicity),
+         ethnicity = gsub(&#39;african&#39;, &#39;black&#39;, ethnicity))</code></pre>
+</div>
+<div id="constituency-demographics" class="section level3">
+<h3>+Constituency demographics</h3>
+<p>Some demographic characteristics for US congressional districts are also included <code>uspoliticalextras</code>. These were accessed via <code>tidycensus</code>, and included in the package out of convenience. <strong>2018 1-year ACS estimates for 12 variables</strong>, which include:</p>
+<pre class="r"><code>unique(uspoliticalextras::uspol_dems2018_house$variable)</code></pre>
+<pre><code>##  [1] &quot;Median_HH_Income&quot;          &quot;Per_BachelorsHigher&quot;      
+##  [3] &quot;Per_BachelorsHigher_White&quot; &quot;Per_Black&quot;                
+##  [5] &quot;Per_clf_unemployed&quot;        &quot;Per_ForeignBorn&quot;          
+##  [7] &quot;Per_Hispanic&quot;              &quot;Per_LessHS&quot;               
+##  [9] &quot;Per_LessHS_White&quot;          &quot;Per_VotingAge&quot;            
+## [11] &quot;Per_White&quot;                 &quot;CD_AREA&quot;</code></pre>
+<p>For modeling purposes, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor’s degree or higher. Median household income for the district is also considered. Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma &amp; Kentucky.</p>
+<pre class="r"><code>south &lt;- c(&#39;SC&#39;, &#39;MS&#39;, &#39;FL&#39;, 
+           &#39;AL&#39;, &#39;GA&#39;, &#39;LA&#39;, &#39;TX&#39;, 
+           &#39;VA&#39;, &#39;AR&#39;, &#39;NC&#39;, &#39;TE&#39;,
+           &#39;OK&#39;, &#39;KE&#39;)
+
+dems &lt;- uspoliticalextras::uspol_dems2018_house %&gt;% 
+  spread(variable, estimate) %&gt;%
+  mutate(district_code = ifelse(district_code == 0, 1, district_code),
+         is_south = ifelse(state_abbrev %in% south, &#39;Yes&#39;, &#39;No&#39;))</code></pre>
+<p>We then join the three data sets, and are good to go. This full data set is available <a href="https://github.com/jaytimm/uspoliticalextras/blob/master/clean-data-sets/modeling-roll-call-voting-behavior.csv">here</a>.</p>
+<pre class="r"><code>full &lt;- reps %&gt;% left_join(dems) %&gt;% left_join(nominates) %&gt;%
+  mutate(ethnicity = as.factor(ethnicity),
+         gender = as.factor(gender),
+         party = as.factor(party),
+         is_south = as.factor(is_south))</code></pre>
+</div>
+</div>
+<div id="modeling-political-ideology-in-the-116th-house" class="section level2">
+<h2>Modeling political ideology in the 116th House</h2>
+<pre class="r"><code>keeps &lt;- c(&#39;nominate.dim1&#39;, &#39;Per_BachelorsHigher&#39;,
+           &#39;Median_HH_Income&#39;, &#39;Per_Black&#39;,
+           &#39;Per_Hispanic&#39;, &#39;is_south&#39;, &#39;party&#39;,
+           &#39;gender&#39;, &#39;ethnicity&#39;, &#39;age&#39;) 
+
+full1 &lt;- full[, c(keeps)]
+colnames(full1) &lt;- meta$var
+
+full1 &lt;- within(full1, member_ETHNICITY &lt;- relevel(member_ETHNICITY, ref = 4))
+full1 &lt;- within(full1, member_GENDER &lt;- relevel(member_GENDER, ref = 2))
+full1 &lt;- within(full1, member_PARTY &lt;- relevel(member_PARTY, ref = 2))
+full1 &lt;- within(full1, cd_IS_SOUTH &lt;- relevel(cd_IS_SOUTH, ref = 2))</code></pre>
+<div id="three-models" class="section level3">
+<h3>+Three models</h3>
+<p>Per <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>, and largely for good measure here, we investigate the utility of three models in accounting for variation in DW-NOMINATE scores: (1) only constituent demographics, (2) constituent demographics and house member party, and (3) constituent demographics, house member party, and house member characteristics.</p>
+<pre class="r"><code>modA &lt;- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH, 
+           data = full1)
+
+####
+modB &lt;- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH + 
+             
+             member_PARTY, 
+           data = full1)
+
+####
+modC &lt;- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH +
+             
+             member_PARTY +
+             
+             member_GENDER +
+             
+             member_ETHNICITY +
+             member_AGE, 
+           data = full1)</code></pre>
+</div>
+<div id="adjusted-r-squared-per-model" class="section level3">
+<h3>+Adjusted r-squared per model</h3>
+<p>Values are similar to those presented <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>.</p>
+<pre class="r"><code>data.frame(modA = round(summary(modA)$adj.r.squared, 3),
+           modB = round(summary(modB)$adj.r.squared, 3),
+           modC = round(summary(modC)$adj.r.squared, 3)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">modA</th>
+<th align="right">modB</th>
+<th align="right">modC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.533</td>
+<td align="right">0.918</td>
+<td align="right">0.926</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="coefficients-full-model" class="section level3">
+<h3>+Coefficients: full model</h3>
+<pre class="r"><code>td &lt;- broom::tidy(modC) %&gt;%
+  mutate_if(is.numeric, round, 3) 
+
+colors &lt;- which(td$`p.value` &lt; .05)
+
+td %&gt;%
+  knitr::kable(booktabs = T, format = &quot;html&quot;) %&gt;%
+  kableExtra::kable_styling() %&gt;%
+  kableExtra::row_spec(colors,  
+                       background = &quot;#e4eef4&quot;) #bold = T, color = &quot;white&quot;,</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+std.error
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+(Intercept)
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.686
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.057
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+11.985
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+cd_BACHELORS
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.003
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.001
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-2.748
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.006
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cd_HH_INCOME
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+1.462
+</td>
+<td style="text-align:right;">
+0.145
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+cd_BLACK
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+<td style="text-align:right;">
+-0.142
+</td>
+<td style="text-align:right;">
+0.887
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+cd_HISPANIC
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.001
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.001
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-2.149
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.032
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+cd_IS_SOUTHNo
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.077
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.016
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-4.825
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+member_PARTYdemocrat
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.776
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.017
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-45.029
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+member_GENDERfemale
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.036
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.016
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-2.303
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+member_ETHNICITYasian
+</td>
+<td style="text-align:right;">
+-0.086
+</td>
+<td style="text-align:right;">
+0.060
+</td>
+<td style="text-align:right;">
+-1.427
+</td>
+<td style="text-align:right;">
+0.154
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+member_ETHNICITYblack
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.166
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.052
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-3.213
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+member_ETHNICITYhispanic
+</td>
+<td style="text-align:right;">
+-0.085
+</td>
+<td style="text-align:right;">
+0.053
+</td>
+<td style="text-align:right;">
+-1.605
+</td>
+<td style="text-align:right;">
+0.109
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+member_ETHNICITYwhite
+</td>
+<td style="text-align:right;">
+-0.012
+</td>
+<td style="text-align:right;">
+0.046
+</td>
+<td style="text-align:right;">
+-0.253
+</td>
+<td style="text-align:right;">
+0.801
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+member_AGE
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-0.001
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.001
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+-2.680
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.008
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="a-visual-summary" class="section level3">
+<h3>+A visual summary</h3>
+<pre class="r"><code>jtools::plot_summs(modC, scale = TRUE)</code></pre>
+<p><img src="/post/2020-02-08-modeling-roll-call-voting-behavior_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="some-interpretations" class="section level3">
+<h3>+Some interpretations</h3>
+<p><strong>In terms of constituency demographics</strong>, then, house members representing districts with higher percentages of college grads and Hispanics tend to have lower NOMINATE scores, ie, are more liberal in voting behavior. Also, house members representing non-Southern districts have lower scores.</p>
+<p><strong>In terms of member characteristics</strong>, Black house members, female house members, and older house members all have lower scores as well. Party affiliation is the strongest predictor – simply getting elected as a Democrat amounts to a 0.776 <em>decrease</em> in NOMINATE scores (on average) relative to a Republican (again, on a scale from -1 to +1).</p>
+<p>For the average present day American, model results are in no way surprising. However, as <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span> demonstrate (see Chapter 2 appendix), constituency demographics &amp; member party have become increasingly more predictive of roll call voting behavior since the early 70s. As voting behavior in the house has become more extreme &amp; ideologically divided.</p>
+</div>
+</div>
+<div id="a-final-thought" class="section level2">
+<h2>A final thought</h2>
+<p>So, this post has focused largely on aggregating pieces of a model puzzle as presented in <span class="citation">McCarty, Poole, and Rosenthal (<a href="#ref-mccarty2016polarized">2016</a>)</span>. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way. Read the reference for this – it tells the story of <strong>increasing polarization in American politics</strong> over the last 40 years or so. A story that becomes more relevant by the day.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-mccarty2016polarized">
+<p>McCarty, Nolan, Keith T Poole, and Howard Rosenthal. 2016. <em>Polarized America: The Dance of Ideology and Unequal Riches</em>. mit Press.</p>
+</div>
+</div>
+</div>

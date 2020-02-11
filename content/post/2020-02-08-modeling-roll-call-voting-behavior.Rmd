@@ -1,0 +1,271 @@
+---
+title: 'Modeling roll call voting behavior in the House of Representatives'
+date: '2020-02-08'
+slug: modeling-roll-call-voting-behavior
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - 116th Congress
+  - open-government
+  - VoteView
+bibliography: biblio.bib
+link-citations: yes
+banner: banners/model.png
+description: 'Some methods for a year in collage.'
+---
+
+## Thoughts initial
+
+A brief (and copycat) attempt to **model roll call voting behavior** in the US House of Representatives using (1) constituency demographics, (2) house member party affiliation, and (3) house member characteristics. This post is based directly on work presented in @mccarty2016polarized, specifically chapter 2 ('Polarized politicians').  Here, we make **transparent & reproducible** some methods using R & open source data sets -- with some fairly comparable results.  
+
+(Also -- just an FYI:  I have started posting super short [snippets of R code on Git Hub](https://github.com/jaytimm/some_technical_notes), mostly related to things text & politics & both. Meant to be quick & useful.)
+
+
+
+## Data sets
+
+The basic model we consider here is ~formalized as follows:
+
+* Political ideology~i~ = constituency demographics~i~ + member party~i~ + member characteristics~i~ 
+
+**Can we predict how house members vote** based solely on the characteristics of their constituents, their party affiliation, and their age/gender/race?  Variables comprising these four model components (for district ***i*** and the representative of district ***i***) are summarized in the table below. Variables included here mostly align with those presented in @mccarty2016polarized.  We will describe the details of variables & sources in the following sections.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+group <- c('political ideology', 
+           'constituency demographics',
+           'constituency demographics',
+           'constituency demographics',
+           'constituency demographics',
+           'constituency demographics',
+           'member party',
+           'member characteristics',
+           'member characteristics',
+           'member characteristics')
+
+var <- c('dw_NOMINATE_DIM_1', 
+         'cd_BACHELORS', 
+         'cd_HH_INCOME', 
+         'cd_BLACK', 
+         'cd_HISPANIC', 
+         'cd_IS_SOUTH', 
+         'member_PARTY', 
+         'member_GENDER', 
+         'member_ETHNICITY', 
+         'member_AGE')
+
+source <- c('Rvoteview', 
+            'ACS 2018 1-Year estimates', 
+            'ACS 2018 1-Year estimates',
+            'ACS 2018 1-Year estimates', 
+            'ACS 2018 1-Year estimates',
+            'Dixie + KE + OK', 
+            'Rvoteview', 
+            'CivilServiceUSA', 
+            'CivilServiceUSA',
+            'CivilServiceUSA')
+
+meta <- data.frame(group, var, source,
+                   stringsAsFactors = FALSE) 
+meta %>% knitr::kable()
+```
+
+
+
+### +Political ideology
+
+The **dependent variable** in the model is roll call voting behavior, or political ideology.  DW-NOMINATE scores from the [VoteView](https://voteview.com/) project are accessed here via the `Rvoteview` [package](https://github.com/voteview/Rvoteview).  Our focus here, then, is first dimension scores from the 116th House.  Scores range from -1 (the most liberal) to +1 (the most conservative).  A score of 0, then, would represent a more moderate voter.
+
+```{r}
+nominates <- Rvoteview:: member_search(chamber= 'House', congress = 116) %>%
+  select(state_abbrev, district_code, nominate.dim1)
+```
+
+
+
+
+### +Member party & member characteristics
+
+The [CivilServiceUSA](https://github.com/CivilServiceUSA) makes available a collection of characteristics about house members, including **age, gender, and race/ethnicity**.  I have cached these data in a package dubbed `uspoliticalextras`, available [here](https://github.com/jaytimm/uspoliticalextras).
+
+```{r eval=FALSE}
+devtools::install_github("jaytimm/uspoliticalextras")
+```
+
+
+```{r}
+reps <- uspoliticalextras::uspol_csusa_house_bios %>%
+  filter(congress == 116) %>%
+  select(state_fips:district_code, party, last_name, gender, ethnicity, date_of_birth) %>%
+  mutate(age = round(lubridate::interval(date_of_birth, 
+                                         Sys.Date())/lubridate::duration(num = 1, 
+                                                                         units = "years"))) %>%
+  select(-date_of_birth)%>%
+  mutate(district_code = ifelse(district_code == 0, 1, district_code),
+         ethnicity = ifelse(grepl('middle|multi|nativ|pacific', ethnicity), 
+                            'other-race', 
+                            ethnicity),
+         ethnicity = gsub('-american', '', ethnicity),
+         ethnicity = gsub('african', 'black', ethnicity))
+```
+
+
+
+### +Constituency demographics
+
+Some demographic characteristics for US congressional districts are also included `uspoliticalextras`.  These were accessed via `tidycensus`, and included in the package out of convenience.  **2018 1-year ACS estimates for 12 variables**, which include:
+
+```{r}
+unique(uspoliticalextras::uspol_dems2018_house$variable)
+```
+
+For modeling purposes, constituency demographics are characterized in terms of % population that is Black, % population that is Hispanic, and % population that has obtained a bachelor's degree or higher.  Median household income for the district is also considered.  Lastly, each district is identified as being a part of the south or not, where southern states are defined as the eleven states of the Confederacy, plus Oklahoma & Kentucky.
+
+```{r}
+south <- c('SC', 'MS', 'FL', 
+           'AL', 'GA', 'LA', 'TX', 
+           'VA', 'AR', 'NC', 'TE',
+           'OK', 'KE')
+
+dems <- uspoliticalextras::uspol_dems2018_house %>% 
+  spread(variable, estimate) %>%
+  mutate(district_code = ifelse(district_code == 0, 1, district_code),
+         is_south = ifelse(state_abbrev %in% south, 'Yes', 'No'))
+```
+
+
+We then join the three data sets, and are good to go.  This full data set is available [here](https://github.com/jaytimm/uspoliticalextras/blob/master/clean-data-sets/modeling-roll-call-voting-behavior.csv).  
+
+```{r message=FALSE, warning=FALSE}
+full <- reps %>% left_join(dems) %>% left_join(nominates) %>%
+  mutate(ethnicity = as.factor(ethnicity),
+         gender = as.factor(gender),
+         party = as.factor(party),
+         is_south = as.factor(is_south))
+```
+
+
+
+## Modeling political ideology in the 116th House
+
+```{r}
+keeps <- c('nominate.dim1', 'Per_BachelorsHigher',
+           'Median_HH_Income', 'Per_Black',
+           'Per_Hispanic', 'is_south', 'party',
+           'gender', 'ethnicity', 'age') 
+
+full1 <- full[, c(keeps)]
+colnames(full1) <- meta$var
+
+full1 <- within(full1, member_ETHNICITY <- relevel(member_ETHNICITY, ref = 4))
+full1 <- within(full1, member_GENDER <- relevel(member_GENDER, ref = 2))
+full1 <- within(full1, member_PARTY <- relevel(member_PARTY, ref = 2))
+full1 <- within(full1, cd_IS_SOUTH <- relevel(cd_IS_SOUTH, ref = 2))
+```
+
+```{r eval=FALSE, include=FALSE}
+setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/clean-data-sets')
+write_csv(cbind(full[,c(1:4,6)], full1), 'modeling-roll-call-voting-behavior.csv')
+```
+
+
+
+### +Three models
+
+Per @mccarty2016polarized, and largely for good measure here, we investigate the utility of three models in accounting for variation in DW-NOMINATE scores: (1) only constituent demographics, (2) constituent demographics and house member party, and (3) constituent demographics, house member party, and house member characteristics.
+
+```{r}
+modA <- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH, 
+           data = full1)
+
+####
+modB <- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH + 
+             
+             member_PARTY, 
+           data = full1)
+
+####
+modC <- lm(dw_NOMINATE_DIM_1 ~ 
+             cd_BACHELORS + 
+             cd_HH_INCOME + 
+             cd_BLACK +
+             cd_HISPANIC + 
+             cd_IS_SOUTH +
+             
+             member_PARTY +
+             
+             member_GENDER +
+             
+             member_ETHNICITY +
+             member_AGE, 
+           data = full1)
+```
+
+
+
+### +Adjusted r-squared per model
+
+Values are similar to those presented @mccarty2016polarized.   
+
+```{r}
+data.frame(modA = round(summary(modA)$adj.r.squared, 3),
+           modB = round(summary(modB)$adj.r.squared, 3),
+           modC = round(summary(modC)$adj.r.squared, 3)) %>%
+  knitr::kable()
+```
+
+
+
+### +Coefficients: full model
+
+```{r render = 'normal_print'}
+td <- broom::tidy(modC) %>%
+  mutate_if(is.numeric, round, 3) 
+
+colors <- which(td$`p.value` < .05)
+
+td %>%
+  knitr::kable(booktabs = T, format = "html") %>%
+  kableExtra::kable_styling() %>%
+  kableExtra::row_spec(colors,  
+                       background = "#e4eef4") #bold = T, color = "white",
+```
+
+
+### +A visual summary 
+
+```{r fig.height=5.5}
+jtools::plot_summs(modC, scale = TRUE)
+```
+
+
+### +Some interpretations
+
+**In terms of constituency demographics**, then, house members representing districts with higher percentages of college grads and Hispanics tend to have lower NOMINATE scores, ie, are more liberal in voting behavior.  Also, house members representing non-Southern districts have lower scores.  
+
+**In terms of member characteristics**, Black house members, female house members, and older house members all have lower scores as well.  Party affiliation is the strongest predictor -- simply getting elected as a Democrat amounts to a 0.776 *decrease* in NOMINATE scores (on average) relative to a Republican (again, on a scale from -1 to +1).  
+
+For the average present day American, model results are in no way surprising.   However, as @mccarty2016polarized demonstrate (see Chapter 2 appendix), constituency demographics & member party have become increasingly more predictive of roll call voting behavior since the early 70s.  As voting behavior in the house has become more extreme & ideologically divided.
+
+
+
+## A final thought
+
+So, this post has focused largely on aggregating pieces of a model puzzle as presented in @mccarty2016polarized. We have assumed quite a bit of knowledge wrt the NOMINATE research paradigm, without contextualizing or motivating model composition or results in any real way.    Read the reference for this -- it tells the story of **increasing polarization in American politics** over the last 40 years or so.  A story that becomes more relevant by the day.   
+
+
+## References
+
