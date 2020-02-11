@@ -208,7 +208,6 @@ modC <- lm(dw_NOMINATE_DIM_1 ~
              member_PARTY +
              
              member_GENDER +
-             
              member_ETHNICITY +
              member_AGE, 
            data = full1)
