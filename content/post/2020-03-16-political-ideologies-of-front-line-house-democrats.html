@@ -1,0 +1,280 @@
+---
+title: political ideologies of front-line House Democrats
+date: '2020-03-16'
+slug: political-ideologies-of-front-line-house-democrats
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - 116th Congress
+  - open-government
+  - VoteView
+bibliography: biblio.bib
+link-citations: yes
+banner: banners/front_ideo.png
+description: 'A super quick investigation into the voting behavior of front-line House Democrats.'
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#briefly">Briefly</a></li>
+<li><a href="#front-line-house-democrats">Front-line House Democrats</a></li>
+<li><a href="#ideologies-in-the-116th">Ideologies in the 116th</a></li>
+<li><a href="#focusing-on-democrats">Focusing on Democrats</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<div id="briefly" class="section level2">
+<h2>Briefly</h2>
+<p>A quick look at the voting behavior of the 30 House Democrats that represent congressional districts carried by Trump in 2016 – relative to other House members. Using <code>Rvoteview</code>. For a more in-depth account of the characteristics of front-line House Democrats in the 116th Congress, see <a href="https://www.jtimm.net/2019/12/13/frontline-democrats/">this post</a>.</p>
+</div>
+<div id="front-line-house-democrats" class="section level2">
+<h2>Front-line House Democrats</h2>
+<p>I have been going on about the House of Representatives lately, especially Democrats representing Trump districts. These guys are so important for any number of reasons. They define the Democratic majority in the House. They are the few remaining moderate voices in the House, from either party. But they are super-vulnerable. Over 2/3s of them are freshman members. Again, their constituents supported Trump in 2016. And they could be trying to defend their seats in 2020 with a Democratic Socialist atop the ticket.</p>
+<p>I have posted a list of the 30 front-liners as a simple csv, cached as a part of the <code>uspoliticalextras</code> data package. It is available at the link below.</p>
+<pre class="r"><code>library(tidyverse)
+url1 &lt;- &#39;https://raw.githubusercontent.com/jaytimm/uspoliticalextras/master/clean-data-sets/thirty-one-house-democrats.csv&#39;
+fl &lt;- read.csv(url(url1)) </code></pre>
+</div>
+<div id="ideologies-in-the-116th" class="section level2">
+<h2>Ideologies in the 116th</h2>
+<p>So, using the <code>Rvoteview</code> (!) package, we obtain DW-Nominate scores for all members in the 116th House. This session is still in progress, so these numbers will change depending on when they are accessed.</p>
+<pre class="r"><code>x116 &lt;- Rvoteview::member_search (chamber = &#39;House&#39;, congress = 116) %&gt;%
+  mutate(label = gsub(&#39;, .*$&#39;, &#39;&#39;, bioname),
+         party_code = ifelse(bioname %in% fl$house_rep, &#39;xx&#39;, party_code),
+         party_name = ifelse(bioname %in% fl$house_rep, &#39;Frontline Dems&#39;, &#39;Other Dems&#39;))</code></pre>
+<p><strong>The plot below</strong> summarizes voting behaviors as approximated by DW-Nominate scores in two dimensions. Here, our focus is on the first dimension (ie, the x-axis). The 30 front-liners are marked in orange. In the aggregate, then, they vote more moderately than their non-front-line Democrat peers.</p>
+<pre class="r"><code>p &lt;- x116 %&gt;%
+  ggplot(aes(x=nominate.dim1, 
+             y=nominate.dim2,
+             label = label
+             )) +
+          annotate(&quot;path&quot;,
+               x=cos(seq(0,2*pi,length.out=300)),
+               y=sin(seq(0,2*pi,length.out=300)),
+               color=&#39;gray&#39;,
+               size = .25) +
+  geom_point(aes(color = as.factor(party_code)), 
+             size= 2.5, 
+             shape= 17) +
+  theme_bw() +
+  ggthemes::scale_color_stata() +
+  theme(legend.position = &#39;none&#39;) +
+  labs(title=&quot;DW-Nominate ideology scores for the 116th US House&quot;,
+       subtitle = &#39;30 front-line House Democrats in orange&#39;)
+
+p</code></pre>
+<p><img src="/post/2020-03-16-political-ideologies-of-front-line-house-democrats_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="focusing-on-democrats" class="section level2">
+<h2>Focusing on Democrats</h2>
+<p>Next, we home in a bit on House Democrats. To add some context to the above plot, we calculate quartiles for DW-Nominate scores among Democrats. These are summarized in table below, ranging from progressive to moderate.</p>
+<pre class="r"><code>dems &lt;- x116 %&gt;%
+  filter(party_code %in% c(&#39;xx&#39;, &#39;100&#39;)) 
+
+
+qq &lt;- data.frame(x = quantile(dems$nominate.dim1, probs = seq(0, 1, 0.25)),
+                 stringsAsFactors = FALSE)
+
+qq %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0%</td>
+<td align="right">-0.7620</td>
+</tr>
+<tr class="even">
+<td>25%</td>
+<td align="right">-0.4405</td>
+</tr>
+<tr class="odd">
+<td>50%</td>
+<td align="right">-0.3780</td>
+</tr>
+<tr class="even">
+<td>75%</td>
+<td align="right">-0.2860</td>
+</tr>
+<tr class="odd">
+<td>100%</td>
+<td align="right">-0.0670</td>
+</tr>
+</tbody>
+</table>
+<p>We add these quartiles to the plot below, and label front-line House Democrats. Again, front-liners cluster as a group in terms of roll call voting behavior. The most notable exception to this pattern is Lauren Underhood (IL-14). She won her district by five points in 2018, and Trump won the district by 4 points in 2016. It would appear, then, that her voting behavior and the political ideology of her constituents do not especially rhyme. In other words, <strong>she represents a Trump district and votes like a progressive</strong>.</p>
+<pre class="r"><code>p1 &lt;- p +
+  xlim(-1, 0) +
+  geom_vline(xintercept = qq$x, linetype = 2, color = &#39;gray&#39;) +
+  ggrepel::geom_text_repel(
+   data  = filter(x116, 
+                  bioname %in% fl$house_rep),
+   nudge_y =  -0.005,
+   direction = &quot;y&quot;,
+   hjust = 0, 
+   size = 2.5)
+
+p1</code></pre>
+<p><img src="/post/2020-03-16-political-ideologies-of-front-line-house-democrats_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><strong>The table below</strong> summarizes counts of Democrats by front-line status &amp; ideology quartile. So, roughly 3/4 of front-liners vote in the most moderate Democratic quartile in the House. And all but Underwood are in top 50%.</p>
+<pre class="r"><code>dems1 &lt;- dems %&gt;%
+  mutate(qt = ntile(nominate.dim1, 4))
+
+dems1 %&gt;% 
+  group_by(party_name, qt) %&gt;%
+  count() %&gt;%
+  group_by(party_name) %&gt;%
+  mutate(per = round(n/sum(n)*100, 1)) %&gt;%
+  knitr::kable(booktabs = T, format = &quot;html&quot;) %&gt;%
+  kableExtra::kable_styling() %&gt;%
+  kableExtra::row_spec(3,  
+                       background = &quot;#e4eef4&quot;)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+party_name
+</th>
+<th style="text-align:right;">
+qt
+</th>
+<th style="text-align:right;">
+n
+</th>
+<th style="text-align:right;">
+per
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Frontline Dems
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Frontline Dems
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+20.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+Frontline Dems
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+4
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+23
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+76.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other Dems
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+58
+</td>
+<td style="text-align:right;">
+28.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other Dems
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+59
+</td>
+<td style="text-align:right;">
+28.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other Dems
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+53
+</td>
+<td style="text-align:right;">
+25.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Other Dems
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+17.1
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>Support this group of House members!! Follow them on Twitter!</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+twitter1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://twitter.com/RepRonKind">RepRonKind</a> | <a href="https://twitter.com/DaveLoebsack">DaveLoebsack</a> | <a href="https://twitter.com/RepCheri">RepCheri</a> | <a href="https://twitter.com/RepSeanMaloney">RepSeanMaloney</a> | <a href="https://twitter.com/RepCartwright">RepCartwright</a> | <a href="https://twitter.com/repohalleran">repohalleran</a> | <a href="https://twitter.com/RepJoshG">RepJoshG</a> | <a href="https://twitter.com/RepConorLamb">RepConorLamb</a> | <a href="https://twitter.com/replucymcbath">replucymcbath</a> | <a href="https://twitter.com/RepFinkenauer">RepFinkenauer</a> | <a href="https://twitter.com/RepCindyAxne">RepCindyAxne</a> | <a href="https://twitter.com/RepUnderwood">RepUnderwood</a> | <a href="https://twitter.com/RepSlotkin">RepSlotkin</a> | <a href="https://twitter.com/RepHaleyStevens">RepHaleyStevens</a> | <a href="https://twitter.com/RepAngieCraig">RepAngieCraig</a> | <a href="https://twitter.com/RepChrisPappas">RepChrisPappas</a> | <a href="https://twitter.com/RepAndyKimNJ">RepAndyKimNJ</a> | <a href="https://twitter.com/RepSherrill">RepSherrill</a> | <a href="https://twitter.com/RepTorresSmall">RepTorresSmall</a> | <a href="https://twitter.com/RepSusieLee">RepSusieLee</a> | <a href="https://twitter.com/RepMaxRose">RepMaxRose</a> | <a href="https://twitter.com/repdelgado">repdelgado</a> | <a href="https://twitter.com/RepBrindisi">RepBrindisi</a> | <a href="https://twitter.com/RepKendraHorn">RepKendraHorn</a> | <a href="https://twitter.com/RepCunningham">RepCunningham</a> | <a href="https://twitter.com/RepBenMcAdams">RepBenMcAdams</a> | <a href="https://twitter.com/RepElaineLuria">RepElaineLuria</a> | <a href="https://twitter.com/RepSpanberger">RepSpanberger</a> | <a href="https://twitter.com/repgolden">repgolden</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
