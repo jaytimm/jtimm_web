@@ -1,5 +1,5 @@
 ---
-title: Political Ideology  & Front-line House Democrats
+title: Political Ideology & Front-line House Democrats
 date: '2020-03-16'
 slug: political-ideologies-of-front-line-house-democrats
 output:
@@ -7,7 +7,7 @@ output:
     toc: true
     toc_depth: 2
 tags:
-  - rstats
+  - rstats  
   - 116th Congress
   - open-government
   - VoteView
