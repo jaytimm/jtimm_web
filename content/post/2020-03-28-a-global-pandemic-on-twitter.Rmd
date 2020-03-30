@@ -19,7 +19,7 @@ description: 'A look at how members of the US Congress have referred to Coronavi
 
 ## Brief introduction
 
-So, lots of linguistic variation happening in real time.  `coronavirus`, `covid19`, `pandemic`, and more recently (`the`?) `coronavirus pandemic`.  For sure, these expressions are not proper synonyms -- each refers to different aspects of the virus and its effects.  `coronavirus` ~ virus.  `covid19` ~ disease.  `pandemic` ~ social/epi. Here, we take a super quick look at how this variation in reference is materializing on Twitter among the 535 voting members of the United States Congress since January 2020.  
+So, lots of linguistic variation happening in real time.  `coronavirus`, `covid19`, `pandemic`, and more recently (`the`?) `coronavirus pandemic`.  For sure, these expressions are not proper synonyms -- each refer to different "aspects" of the virus.  `coronavirus` ~ virus.  `covid19` ~ disease.  `pandemic` ~ social/epi. Here, we take a super quick look at how this variation in reference is materializing on Twitter among the 535 voting members of the United States Congress since January 2020.  
 
 
 
