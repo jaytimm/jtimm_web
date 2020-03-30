@@ -147,64 +147,64 @@ covid_tweets %&gt;% sample_n(10) %&gt;% select(-doc_id) %&gt;%knitr::kable()</co
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">2020-03-04</td>
-<td align="left">REPMALONEY</td>
+<td align="left">2020-03-20</td>
+<td align="left">REPBONAMICI</td>
 <td align="left">Democrat</td>
-<td align="left">coronavirus</td>
+<td align="left">coronavirus pandemic</td>
 </tr>
 <tr class="even">
-<td align="left">2020-03-23</td>
-<td align="left">DONALDNORCROSS</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-17</td>
-<td align="left">REPJOEMORELLE</td>
-<td align="left">Democrat</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-18</td>
-<td align="left">NYDIAVELAZQUEZ</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-04</td>
-<td align="left">REPDEBDINGELL</td>
-<td align="left">Democrat</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-03</td>
-<td align="left">SENATORROMNEY</td>
-<td align="left">Republican</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-21</td>
-<td align="left">REPSTEPHMURPHY</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-13</td>
+<td align="left">2020-03-20</td>
 <td align="left">REPCARBAJAL</td>
 <td align="left">Democrat</td>
 <td align="left">covid19</td>
 </tr>
 <tr class="odd">
-<td align="left">2020-03-18</td>
-<td align="left">SENBOBCASEY</td>
+<td align="left">2020-03-24</td>
+<td align="left">REPLINDASANCHEZ</td>
 <td align="left">Democrat</td>
 <td align="left">coronavirus</td>
 </tr>
 <tr class="even">
-<td align="left">2020-03-21</td>
-<td align="left">SENATORBENNET</td>
+<td align="left">2020-03-06</td>
+<td align="left">REPLLOYDDOGGETT</td>
 <td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-03-27</td>
+<td align="left">REPPETEKING</td>
+<td align="left">Republican</td>
 <td align="left">pandemic</td>
+</tr>
+<tr class="even">
+<td align="left">2020-03-16</td>
+<td align="left">LEADERHOYER</td>
+<td align="left">Democrat</td>
+<td align="left">coronavirus</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-03-11</td>
+<td align="left">SENBRIANSCHATZ</td>
+<td align="left">Democrat</td>
+<td align="left">coronavirus</td>
+</tr>
+<tr class="even">
+<td align="left">2020-03-20</td>
+<td align="left">CHELLIEPINGREE</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-03-20</td>
+<td align="left">NORMAJTORRES</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="even">
+<td align="left">2020-03-17</td>
+<td align="left">REPJEFFDUNCAN</td>
+<td align="left">Republican</td>
+<td align="left">covid19</td>
 </tr>
 </tbody>
 </table>
@@ -336,7 +336,7 @@ x2 &lt;- x1 %&gt;%
   ggthemes::scale_fill_economist() +
   scale_x_date(date_breaks = &#39;1 day&#39;, date_labels = &quot;%b %d&quot;) +
   labs(title = &#39;Referring to 2019 NOVEL CORONAVIRUS&#39;,
-       subtitle = &#39;Among US Senators &amp; House Representatives since Jan 2020&#39;)
+       subtitle = &#39;Among US Senators &amp; House Representatives&#39;)
 
 x2 +
     annotate(geom=&quot;text&quot;, 

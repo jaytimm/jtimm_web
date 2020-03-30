@@ -265,7 +265,7 @@ x2 <- x1 %>%
   ggthemes::scale_fill_economist() +
   scale_x_date(date_breaks = '1 day', date_labels = "%b %d") +
   labs(title = 'Referring to 2019 NOVEL CORONAVIRUS',
-       subtitle = 'Among US Senators & House Representatives since Jan 2020')
+       subtitle = 'Among US Senators & House Representatives')
 
 x2 +
     annotate(geom="text", 
