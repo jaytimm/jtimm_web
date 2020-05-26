@@ -241,7 +241,7 @@ covid_tweets %>%
   scale_x_date(date_breaks = '1 week', date_labels = "%b %d") +
   facet_wrap(~party) + ylab('Daily reference rate') +
   labs(title = 'Rates of reference to 2019 NOVEL CORONAVIRUS by party affiliation',
-       subtitle = 'Among US Senators & House Representatives')
+       subtitle = 'Among US Senators & House Representatives') 
 ```
 
 
