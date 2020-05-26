@@ -1,5 +1,7 @@
 ---
-title: a global pandemic on Twitter
+title: 'a global pandemic on Twitter'
+description: 'A look at how members of the US Congress have referred to Coronavirus on Twitter since Jan 2020.'
+author: ''
 date: '2020-03-28'
 slug: a-global-pandemic-on-twitter
 output:
@@ -10,10 +12,11 @@ tags:
   - rstats
   - Twitter
   - 116th Congress
+  - COVID-19
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/covid.png
-description: 'A look at how members of the US Congress have referred to Coronavirus on Twitter since Jan 2020.'
+
 ---
 
 
@@ -30,6 +33,7 @@ description: 'A look at how members of the US Congress have referred to Coronavi
 <div id="brief-introduction" class="section level2">
 <h2>Brief introduction</h2>
 <p>So, lots of linguistic variation happening in real time. <code>coronavirus</code>, <code>covid19</code>, <code>pandemic</code>, and more recently (<code>the</code>?) <code>coronavirus pandemic</code>. For sure, these expressions are not proper synonyms – each refer to different “aspects” of the virus. <code>coronavirus</code> ~ virus. <code>covid19</code> ~ disease. <code>pandemic</code> ~ social/epi. Here, we take a super quick look at how this variation in reference is materializing on Twitter among the 535 voting members of the United States Congress since January 2020.</p>
+<p><em>Accidentially updated on 5.26.20.</em></p>
 </div>
 <div id="twitter-details" class="section level2">
 <h2>Twitter details</h2>
@@ -112,23 +116,23 @@ covid_tweets &lt;- lapply(1:nrow(congress_tweets1), function(x) {
 <pre class="r"><code>table(covid_tweets$covid_gram)</code></pre>
 <pre><code>## 
 ##         corona virus         Corona virus         Corona Virus 
-##                    4                    3                    3 
+##                    5                    3                    3 
 ##         CORONA VIRUS          coronavirus          Coronavirus 
-##                    1                 6757                 2493 
+##                    1                11753                 4179 
 ##          CoronaVirus          CORONAVIRUS coronavirus pandemic 
-##                   94                   14                  340 
+##                  104                   33                 1337 
 ## Coronavirus pandemic Coronavirus Pandemic CoronaVirus Pandemic 
-##                   45                    7                    1 
+##                  141                   54                    1 
 ##                covid                Covid                COVID 
-##                    7                  126                  674 
-##             COVID 19             covid-19             Covid-19 
-##                    6                    5                   11 
-##             COVID-19              covid19              Covid19 
-##                 1962                   48                   55 
-##              COVID19             pandemic             Pandemic 
-##                 3676                 1139                  111 
-##             PANDEMIC 
-##                    1</code></pre>
+##                   70                  237                 1726 
+##             Covid 19             COVID 19             covid-19 
+##                    7                   20                   23 
+##             Covid-19             COVID-19              covid19 
+##                   70                 7358                  137 
+##              Covid19              COVID19             pandemic 
+##                  106                13086                 6883 
+##             Pandemic             PANDEMIC 
+##                  483                   16</code></pre>
 <p>After normalizing spelling variation, a portion of the resulting table (less the tweet id) is presented below:</p>
 <pre class="r"><code>covid_tweets &lt;- covid_tweets %&gt;%
   mutate(covid_gram = tolower(covid_gram),
@@ -147,63 +151,63 @@ covid_tweets %&gt;% sample_n(10) %&gt;% select(-doc_id) %&gt;%knitr::kable()</co
 </thead>
 <tbody>
 <tr class="odd">
+<td align="left">2020-03-17</td>
+<td align="left">REPJOEMORELLE</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="even">
+<td align="left">2020-03-04</td>
+<td align="left">REPDEBHAALAND</td>
+<td align="left">Democrat</td>
+<td align="left">coronavirus</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-04-10</td>
+<td align="left">SENSANDERS</td>
+<td align="left">Independent</td>
+<td align="left">pandemic</td>
+</tr>
+<tr class="even">
+<td align="left">2020-04-02</td>
+<td align="left">SENBLUMENTHAL</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="odd">
 <td align="left">2020-03-20</td>
-<td align="left">REPBONAMICI</td>
+<td align="left">REPGUSBILIRAKIS</td>
+<td align="left">Republican</td>
+<td align="left">coronavirus</td>
+</tr>
+<tr class="even">
+<td align="left">2020-04-03</td>
+<td align="left">SENATORTOMUDALL</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-03-31</td>
+<td align="left">REPESCOBAR</td>
+<td align="left">Democrat</td>
+<td align="left">pandemic</td>
+</tr>
+<tr class="even">
+<td align="left">2020-04-15</td>
+<td align="left">REPBERA</td>
+<td align="left">Democrat</td>
+<td align="left">covid19</td>
+</tr>
+<tr class="odd">
+<td align="left">2020-04-21</td>
+<td align="left">SENATORSINEMA</td>
 <td align="left">Democrat</td>
 <td align="left">coronavirus pandemic</td>
 </tr>
 <tr class="even">
-<td align="left">2020-03-20</td>
-<td align="left">REPCARBAJAL</td>
+<td align="left">2020-03-25</td>
+<td align="left">SENATORHASSAN</td>
 <td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-24</td>
-<td align="left">REPLINDASANCHEZ</td>
-<td align="left">Democrat</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-06</td>
-<td align="left">REPLLOYDDOGGETT</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-27</td>
-<td align="left">REPPETEKING</td>
-<td align="left">Republican</td>
-<td align="left">pandemic</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-16</td>
-<td align="left">LEADERHOYER</td>
-<td align="left">Democrat</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-11</td>
-<td align="left">SENBRIANSCHATZ</td>
-<td align="left">Democrat</td>
-<td align="left">coronavirus</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-20</td>
-<td align="left">CHELLIEPINGREE</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="odd">
-<td align="left">2020-03-20</td>
-<td align="left">NORMAJTORRES</td>
-<td align="left">Democrat</td>
-<td align="left">covid19</td>
-</tr>
-<tr class="even">
-<td align="left">2020-03-17</td>
-<td align="left">REPJEFFDUNCAN</td>
-<td align="left">Republican</td>
 <td align="left">covid19</td>
 </tr>
 </tbody>
@@ -283,15 +287,15 @@ covid_tweets %&gt;%
   theme_minimal() +
   ggthemes::scale_color_stata() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  scale_x_date(date_breaks = &#39;2 days&#39;, date_labels = &quot;%b %d&quot;) +
+  scale_x_date(date_breaks = &#39;7 days&#39;, date_labels = &quot;%b %d&quot;) +
   theme(legend.position = &#39;top&#39;,
         legend.title = element_blank())  + 
   ylab(&#39;Daily reference rate&#39;) +
   labs(title = &#39;Rates of reference to 2019 NOVEL CORONAVIRUS&#39;,
        subtitle = &#39;Among US Senators &amp; House Representatives&#39;)</code></pre>
 <p><img src="/post/2020-03-28-a-global-pandemic-on-twitter_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p>So, lots going on. Some <code>2019 NOVEL CORONAVIRUS</code> chatter through January and most of February. At Feb 24, we see a substantial jump. Reference to <code>2019 NOVEL CORONAVIRUS</code> as <code>coronvirus</code> has been most frequent since the onset; however, <code>covid19</code> has more recently taken the lead among members of Congress.</p>
-<p>The plot below presents the same data disaggregated by party affiliation. Roughly the same profiles, which is interesting. With the exception of <code>covid19</code>, which shows an uptick with Dems not mirrored by Republicans. Likely just an anomaly.</p>
+<p>So, lots going on. Some <code>2019 NOVEL CORONAVIRUS</code> chatter through January and most of February. At Feb 24, we see a substantial jump. Reference to <code>2019 NOVEL CORONAVIRUS</code> as <code>coronvirus</code> has been most frequent since the onset; however, <code>covid19</code> has taken the lead among members of Congress since mid-March.</p>
+<p>The plot below presents the same data disaggregated by party affiliation. Fairly similar profiles – with the (~) exceptions of <code>pandemic</code> &amp; <code>coronavirus</code> since mid-April.</p>
 <pre class="r"><code>covid_tweets %&gt;%
   group_by(date, party, covid_gram) %&gt;% #,party,   
   summarize(n = n()) %&gt;%
@@ -334,7 +338,7 @@ x2 &lt;- x1 %&gt;%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   theme(legend.position = &quot;none&quot;)+
   ggthemes::scale_fill_economist() +
-  scale_x_date(date_breaks = &#39;1 day&#39;, date_labels = &quot;%b %d&quot;) +
+  scale_x_date(date_breaks = &#39;7 days&#39;, date_labels = &quot;%b %d&quot;) +
   labs(title = &#39;Referring to 2019 NOVEL CORONAVIRUS&#39;,
        subtitle = &#39;Among US Senators &amp; House Representatives&#39;)
 
@@ -350,5 +354,4 @@ x2 +
 <div id="summary" class="section level2">
 <h2>Summary</h2>
 <p>So, a weekend &amp; social distancing. Caveats galore, but for folks interested in language change &amp; innovation &amp; the establishment of convention in a community of speakers, something to keep an eye on.</p>
-<p>Perhaps more interesting is how regular folks are referencing <code>2019 NOVEL CORONAVIRUS</code> on Twitter. Everyone stay home &amp; healthy.</p>
 </div>

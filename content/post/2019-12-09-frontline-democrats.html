@@ -120,7 +120,7 @@ to_map %&gt;%
   left_join(house %&gt;% 
               filter(year == 2018) %&gt;% 
               mutate(house_rep_margin = round(republican - democrat, 1)) %&gt;%
-              select(GEOID, state, district_code, candidate, house_rep_margin) %&gt;% 
+              select(GEOID, state_abbrev, district_code, candidate, house_rep_margin) %&gt;% 
               rename(house_rep = candidate))</code></pre>
 <p><em>Some corrections/amendments for Pennsylvania districts per 2019 redistricting.</em></p>
 <pre class="r"><code>pa16_rs &lt;- c(&#39;4201&#39;, &#39;4205&#39;, &#39;4206&#39;,
@@ -166,11 +166,11 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">Republican Party | Democratic Party</td>
-<td align="right">43</td>
+<td align="right">42</td>
 </tr>
 <tr class="even">
 <td align="left">Republican Party | Republican Party</td>
-<td align="right">197</td>
+<td align="right">198</td>
 </tr>
 </tbody>
 </table>
@@ -180,10 +180,10 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
            c(&#39;Democratic Party | Republican Party&#39;, 
              &#39;Republican Party | Democratic Party&#39;)) %&gt;%
   mutate(house_flip = ifelse(grepl(&#39;^D&#39;, house_flip), &#39;D -&gt; R&#39;, &#39;R -&gt; D&#39;)) %&gt;%
-  select(house_flip, state, district_code, house_rep) %&gt;%
+  select(house_flip, state_abbrev, district_code, house_rep) %&gt;%
   DT::datatable(rownames = FALSE)</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D"],["Arizona","California","California","California","California","California","California","California","Colorado","Florida","Florida","Georgia","Illinois","Illinois","Iowa","Iowa","Kansas","Maine","Michigan","Michigan","Minnesota","Minnesota","Minnesota","Minnesota","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","Pennsylvania","South Carolina","Texas","Texas","Utah","Virginia","Virginia","Virginia","Washington"],[2,10,21,25,39,45,48,49,6,26,27,6,6,14,1,3,3,2,8,11,1,2,3,8,2,3,7,11,2,11,19,22,5,5,6,7,14,17,1,7,32,4,2,7,10,8],["KIRKPATRICK, Ann","HARDER, Josh","COX, TJ","HILL, Katie","CISNEROS, Gil","PORTER, Katie","ROUDA, Harley","LEVIN, Mike","CROW, Jason","MUCARSEL-POWELL, Debbie","SHALALA, Donna","McBATH, Lucy","CASTEN, Sean","UNDERWOOD, Lauren","FINKENAUER, Abby","AXNE, Cynthia","DAVIDS, Sharice","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","HAGEDORN, Jim","CRAIG, Angela","PHILLIPS, Dean","STAUBER, Peter","VAN DREW, Jefferson","KIM, Andy","MALINOWSKI, Tomaz","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","SCANLON, Mary Gay","HOULAHAN, Christina","WILD, Susan","RESCHENTHALER, Guy","LAMB, Conor","CUNNINGHAM, Joe","FLETCHER, Elizabeth","ALLRED, Colin","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","WEXTON, Jennifer","SCHRIER, Kim"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>house_flip<\/th>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","D -&gt; R","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D","R -&gt; D"],["AZ","CA","CA","CA","CA","CA","CA","CA","CO","FL","FL","GA","IL","IL","IA","IA","KS","ME","MI","MI","MN","MN","MN","MN","NJ","NJ","NJ","NM","NY","NY","NY","OK","PA","PA","PA","PA","PA","SC","TX","TX","UT","VA","VA","VA","WA"],[2,10,21,25,39,45,48,49,6,26,27,6,6,14,1,3,3,2,8,11,1,2,3,8,3,7,11,2,11,19,22,5,5,6,7,14,17,1,7,32,4,2,7,10,8],["KIRKPATRICK, Ann","HARDER, Josh","COX, TJ","HILL, Katie","CISNEROS, Gil","PORTER, Katie","ROUDA, Harley","LEVIN, Mike","CROW, Jason","MUCARSEL-POWELL, Debbie","SHALALA, Donna","McBATH, Lucy","CASTEN, Sean","UNDERWOOD, Lauren","FINKENAUER, Abby","AXNE, Cynthia","DAVIDS, Sharice","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","HAGEDORN, Jim","CRAIG, Angela","PHILLIPS, Dean","STAUBER, Peter","KIM, Andy","MALINOWSKI, Tomaz","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","SCANLON, Mary Gay","HOULAHAN, Christina","WILD, Susan","RESCHENTHALER, Guy","LAMB, Conor","CUNNINGHAM, Joe","FLETCHER, Elizabeth","ALLRED, Colin","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","WEXTON, Jennifer","SCHRIER, Kim"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>house_flip<\/th>\n      <th>state_abbrev<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="the-31-front-line-house-democrats" class="section level2">
 <h2>The 31 front-line House Democrats</h2>
@@ -211,21 +211,21 @@ pa18_ds &lt;- c(&#39;4213&#39;, &#39;4214&#39;)</code></pre>
 </tr>
 <tr class="odd">
 <td align="left">Trump | Democratic Party</td>
-<td align="right">31</td>
+<td align="right">30</td>
 </tr>
 <tr class="even">
 <td align="left">Trump | Republican Party</td>
-<td align="right">199</td>
+<td align="right">200</td>
 </tr>
 </tbody>
 </table>
 <p>The 31 Democratic lawmakers representing Trump-won districts include:</p>
 <pre class="r"><code>house_flips1 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39;) %&gt;%
-  select(state, district_code, house_rep) %&gt;%
+  select(state_abbrev, district_code, house_rep) %&gt;%
   DT::datatable(rownames = FALSE)</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Arizona","Georgia","Illinois","Illinois","Iowa","Iowa","Iowa","Maine","Michigan","Michigan","Minnesota","Minnesota","Nevada","New Hampshire","New Jersey","New Jersey","New Jersey","New Jersey","New Mexico","New York","New York","New York","New York","Oklahoma","Pennsylvania","Pennsylvania","South Carolina","Utah","Virginia","Virginia","Wisconsin"],[1,6,14,17,1,2,3,2,8,11,2,7,3,1,2,3,5,11,2,11,18,19,22,5,8,17,1,4,2,7,3],["O'HALLERAN, Thomas C.","McBATH, Lucy","UNDERWOOD, Lauren","BUSTOS, Cheri","FINKENAUER, Abby","LOEBSACK, Dave","AXNE, Cynthia","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","CRAIG, Angela","PETERSON, Collin Clark","LEE, Susie","PAPPAS, Chris","VAN DREW, Jefferson","KIM, Andy","GOTTHEIMER, Josh S.","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","MALONEY, Sean Patrick","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","CARTWRIGHT, Matt","LAMB, Conor","CUNNINGHAM, Joe","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","KIND, Ron"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>state<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["AZ","GA","IL","IL","IA","IA","IA","ME","MI","MI","MN","MN","NV","NH","NJ","NJ","NJ","NM","NY","NY","NY","NY","OK","PA","PA","SC","UT","VA","VA","WI"],[1,6,14,17,1,2,3,2,8,11,2,7,3,1,3,5,11,2,11,18,19,22,5,8,17,1,4,2,7,3],["O'HALLERAN, Thomas C.","McBATH, Lucy","UNDERWOOD, Lauren","BUSTOS, Cheri","FINKENAUER, Abby","LOEBSACK, Dave","AXNE, Cynthia","GOLDEN, Jared","SLOTKIN, Elissa","STEVENS, Haley","CRAIG, Angela","PETERSON, Collin Clark","LEE, Susie","PAPPAS, Chris","KIM, Andy","GOTTHEIMER, Josh S.","SHERRILL, Mikie","TORRES SMALL, Xochitl","ROSE, Max","MALONEY, Sean Patrick","DELGADO, Antonio","BRINDISI, Anthony","HORN, Kendra","CARTWRIGHT, Matt","LAMB, Conor","CUNNINGHAM, Joe","McADAMS, Ben","LURIA, Elaine","SPANBERGER, Abigail","KIND, Ron"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>state_abbrev<\/th>\n      <th>district_code<\/th>\n      <th>house_rep<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="a-quick-geographical-perspective-of-the-front-line" class="section level2">
 <h2>A quick geographical perspective of the front-line</h2>
@@ -256,117 +256,103 @@ to_map2 %&gt;%
         legend.position = &#39;bottom&#39;) +
   labs(title = &quot;2016 Presidential Support &amp; 2018 House Representative&quot;,
        subtitle = &#39;By Congressional District&#39;)</code></pre>
-<p><img src="/post/2019-12-09-frontline-democrats_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/post/2019-12-09-frontline-democrats_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 <div id="the-13-house-democrats-in-solid-trump-districts" class="section level2">
 <h2>The 13 House Democrats in solid Trump districts</h2>
 <p>Of the 31 front-liners, thirteen represent districts Trump carried by more than 6 points.</p>
 <pre class="r"><code>house_flips1 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; trump_margin &gt; 6) %&gt;%
-  select(state, district_code, house_rep, trump_margin, house_rep_margin) %&gt;%
+  select(state_abbrev, district_code, house_rep, trump_margin) %&gt;%
   arrange(desc(trump_margin)) %&gt;%
   knitr::kable()</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">state</th>
+<th align="left">state_abbrev</th>
 <th align="right">district_code</th>
 <th align="left">house_rep</th>
 <th align="right">trump_margin</th>
-<th align="right">house_rep_margin</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Minnesota</td>
+<td align="left">MN</td>
 <td align="right">7</td>
 <td align="left">PETERSON, Collin Clark</td>
 <td align="right">30.8</td>
-<td align="right">-4.3</td>
 </tr>
 <tr class="even">
-<td align="left">New York</td>
+<td align="left">NY</td>
 <td align="right">22</td>
 <td align="left">BRINDISI, Anthony</td>
 <td align="right">15.5</td>
-<td align="right">-1.8</td>
 </tr>
 <tr class="odd">
-<td align="left">Oklahoma</td>
+<td align="left">OK</td>
 <td align="right">5</td>
 <td align="left">HORN, Kendra</td>
 <td align="right">13.4</td>
-<td align="right">-1.4</td>
 </tr>
 <tr class="even">
-<td align="left">South Carolina</td>
+<td align="left">SC</td>
 <td align="right">1</td>
 <td align="left">CUNNINGHAM, Joe</td>
 <td align="right">13.1</td>
-<td align="right">-1.4</td>
 </tr>
 <tr class="odd">
-<td align="left">Maine</td>
+<td align="left">ME</td>
 <td align="right">2</td>
 <td align="left">GOLDEN, Jared</td>
 <td align="right">10.3</td>
-<td align="right">-1.2</td>
 </tr>
 <tr class="even">
-<td align="left">New Mexico</td>
+<td align="left">NM</td>
 <td align="right">2</td>
 <td align="left">TORRES SMALL, Xochitl</td>
 <td align="right">10.2</td>
-<td align="right">-1.9</td>
 </tr>
 <tr class="odd">
-<td align="left">Pennsylvania</td>
+<td align="left">PA</td>
 <td align="right">17</td>
 <td align="left">LAMB, Conor</td>
 <td align="right">10.1</td>
-<td align="right">-12.5</td>
 </tr>
 <tr class="even">
-<td align="left">New York</td>
+<td align="left">NY</td>
 <td align="right">11</td>
 <td align="left">ROSE, Max</td>
 <td align="right">9.8</td>
-<td align="right">-6.5</td>
 </tr>
 <tr class="odd">
-<td align="left">New York</td>
+<td align="left">NY</td>
 <td align="right">19</td>
 <td align="left">DELGADO, Antonio</td>
 <td align="right">6.8</td>
-<td align="right">-5.2</td>
 </tr>
 <tr class="even">
-<td align="left">Michigan</td>
+<td align="left">MI</td>
 <td align="right">8</td>
 <td align="left">SLOTKIN, Elissa</td>
 <td align="right">6.7</td>
-<td align="right">-3.8</td>
 </tr>
 <tr class="odd">
-<td align="left">Utah</td>
+<td align="left">UT</td>
 <td align="right">4</td>
 <td align="left">McADAMS, Ben</td>
 <td align="right">6.7</td>
-<td align="right">-0.3</td>
 </tr>
 <tr class="even">
-<td align="left">Virginia</td>
+<td align="left">VA</td>
 <td align="right">7</td>
 <td align="left">SPANBERGER, Abigail</td>
 <td align="right">6.5</td>
-<td align="right">-1.9</td>
 </tr>
 <tr class="odd">
-<td align="left">New Jersey</td>
+<td align="left">NJ</td>
 <td align="right">3</td>
 <td align="left">KIM, Andy</td>
 <td align="right">6.2</td>
-<td align="right">-1.3</td>
 </tr>
 </tbody>
 </table>
@@ -448,7 +434,7 @@ to_map2 %&gt;%
 </tr>
 <tr class="odd">
 <td align="left">Obama | Obama | Trump</td>
-<td align="right">14</td>
+<td align="right">13</td>
 </tr>
 <tr class="even">
 <td align="left">Obama | Romney | Trump</td>
@@ -460,74 +446,74 @@ to_map2 %&gt;%
 <pre class="r"><code>house_flips2 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; 
            pres_lineage == &#39;McCain | Romney | Trump&#39;) %&gt;%
-  select(state, district_code, house_rep) %&gt;%
+  select(state_abbrev, district_code, house_rep) %&gt;%
   knitr::kable()</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">state</th>
+<th align="left">state_abbrev</th>
 <th align="right">district_code</th>
 <th align="left">house_rep</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Arizona</td>
+<td align="left">AZ</td>
 <td align="right">1</td>
 <td align="left">O’HALLERAN, Thomas C.</td>
 </tr>
 <tr class="even">
-<td align="left">Georgia</td>
+<td align="left">GA</td>
 <td align="right">6</td>
 <td align="left">McBATH, Lucy</td>
 </tr>
 <tr class="odd">
-<td align="left">Minnesota</td>
+<td align="left">MN</td>
 <td align="right">7</td>
 <td align="left">PETERSON, Collin Clark</td>
 </tr>
 <tr class="even">
-<td align="left">New Jersey</td>
+<td align="left">NJ</td>
 <td align="right">5</td>
 <td align="left">GOTTHEIMER, Josh S.</td>
 </tr>
 <tr class="odd">
-<td align="left">New Jersey</td>
+<td align="left">NJ</td>
 <td align="right">11</td>
 <td align="left">SHERRILL, Mikie</td>
 </tr>
 <tr class="even">
-<td align="left">New Mexico</td>
+<td align="left">NM</td>
 <td align="right">2</td>
 <td align="left">TORRES SMALL, Xochitl</td>
 </tr>
 <tr class="odd">
-<td align="left">New York</td>
+<td align="left">NY</td>
 <td align="right">22</td>
 <td align="left">BRINDISI, Anthony</td>
 </tr>
 <tr class="even">
-<td align="left">Oklahoma</td>
+<td align="left">OK</td>
 <td align="right">5</td>
 <td align="left">HORN, Kendra</td>
 </tr>
 <tr class="odd">
-<td align="left">South Carolina</td>
+<td align="left">SC</td>
 <td align="right">1</td>
 <td align="left">CUNNINGHAM, Joe</td>
 </tr>
 <tr class="even">
-<td align="left">Utah</td>
+<td align="left">UT</td>
 <td align="right">4</td>
 <td align="left">McADAMS, Ben</td>
 </tr>
 <tr class="odd">
-<td align="left">Virginia</td>
+<td align="left">VA</td>
 <td align="right">2</td>
 <td align="left">LURIA, Elaine</td>
 </tr>
 <tr class="even">
-<td align="left">Virginia</td>
+<td align="left">VA</td>
 <td align="right">7</td>
 <td align="left">SPANBERGER, Abigail</td>
 </tr>
@@ -541,13 +527,13 @@ to_map2 %&gt;%
   filter(Pres16_House18 == &#39;Trump | Democratic Party&#39; &amp; 
            trump_margin &gt; 10 &amp;
            pres_lineage == &#39;McCain | Romney | Trump&#39;) %&gt;%
-  select(state, district_code, house_rep, pres_lineage, trump_margin) %&gt;%
+  select(state_abbrev, district_code, house_rep, pres_lineage, trump_margin) %&gt;%
   arrange(desc(trump_margin)) %&gt;%
   knitr::kable()</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">state</th>
+<th align="left">state_abbrev</th>
 <th align="right">district_code</th>
 <th align="left">house_rep</th>
 <th align="left">pres_lineage</th>
@@ -556,35 +542,35 @@ to_map2 %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Minnesota</td>
+<td align="left">MN</td>
 <td align="right">7</td>
 <td align="left">PETERSON, Collin Clark</td>
 <td align="left">McCain | Romney | Trump</td>
 <td align="right">30.8</td>
 </tr>
 <tr class="even">
-<td align="left">New York</td>
+<td align="left">NY</td>
 <td align="right">22</td>
 <td align="left">BRINDISI, Anthony</td>
 <td align="left">McCain | Romney | Trump</td>
 <td align="right">15.5</td>
 </tr>
 <tr class="odd">
-<td align="left">Oklahoma</td>
+<td align="left">OK</td>
 <td align="right">5</td>
 <td align="left">HORN, Kendra</td>
 <td align="left">McCain | Romney | Trump</td>
 <td align="right">13.4</td>
 </tr>
 <tr class="even">
-<td align="left">South Carolina</td>
+<td align="left">SC</td>
 <td align="right">1</td>
 <td align="left">CUNNINGHAM, Joe</td>
 <td align="left">McCain | Romney | Trump</td>
 <td align="right">13.1</td>
 </tr>
 <tr class="odd">
-<td align="left">New Mexico</td>
+<td align="left">NM</td>
 <td align="right">2</td>
 <td align="left">TORRES SMALL, Xochitl</td>
 <td align="left">McCain | Romney | Trump</td>
@@ -619,7 +605,7 @@ house_vv_freshies %&gt;%
 </tr>
 <tr class="even">
 <td align="left">Republican Party</td>
-<td align="right">32</td>
+<td align="right">33</td>
 </tr>
 </tbody>
 </table>
@@ -662,20 +648,20 @@ house_flips3 %&gt;%
 <tr class="odd">
 <td align="left">Trump | Democratic Party</td>
 <td align="right">9</td>
-<td align="right">22</td>
-<td align="right">31</td>
+<td align="right">21</td>
+<td align="right">30</td>
 </tr>
 <tr class="even">
 <td align="left">Trump | Republican Party</td>
 <td align="right">170</td>
-<td align="right">29</td>
-<td align="right">199</td>
+<td align="right">31</td>
+<td align="right">201</td>
 </tr>
 <tr class="odd">
 <td align="left">Total</td>
 <td align="right">349</td>
-<td align="right">86</td>
-<td align="right">435</td>
+<td align="right">87</td>
+<td align="right">436</td>
 </tr>
 </tbody>
 </table>

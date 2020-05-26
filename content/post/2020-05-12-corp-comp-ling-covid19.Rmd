@@ -10,6 +10,7 @@ tags:
   - rstats
   - Twitter
   - 116th Congress
+  - COVID-19
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/covid_semantics.png

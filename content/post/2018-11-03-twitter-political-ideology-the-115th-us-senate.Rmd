@@ -1,0 +1,554 @@
+---
+title: 'Twitter, political ideology & the 115th US Senate'
+description: 'Estimating political ideologies of US Senators via the news media they share on Twitter.'
+author: ''
+date: '2018-11-03'
+slug: 'twitter-political-ideology-and-the-115-US-Senate'
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+bibliography: biblio.bib
+link-citations: yes
+categories: []
+tags: ['rstats', 'open-government', 'twitter']
+banner: banners/uscongress.png
+---
+
+
+
+In this post, we consider some fairly recent studies conducted by folks at the *Washington Post* and the *Pew Research Center* that investigate the relationship between political ideology --- as estimated by voting behavior/DW-Nominate scores [@poole1985spatial] --- and social media usage among **lawmakers in the US Congress**.  
+
+Some findings:
+
+* More conservative and more liberal lawmakers tend to have more Facebook followers than moderate lawmakers [@hughes_lam_2017].
+* Political ideology scores derived from the news sources lawmakers share via Twitter (eg, articles from the nytimes.com, foxnews.com, etc.) strongly correlate with DW-Nominate scores based in voting behavior [@eady_zilinsky_nagler_tucker_2018].
+* Moderate members of Congress are more likely to share local (as opposed to national) news sources (via Facebook) than more conservative/liberal members of Congress [@vankessel_hughes_2018].
+
+So, here we demonstrate an R-based/Twitter-based framework for replicating/approximating some of these findings (albeit with less methodological rigor), with a focus on the **115th US Senate**. Results presented here nicely align with previous findings.
+
+
+```{r message=FALSE, warning=FALSE}
+library(Rvoteview)#devtools::install_github("voteview/Rvoteview")
+library(tidyverse)
+library(ggthemes)
+library(ggrepel)#devtools::install_github("slowkow/ggrepel")
+library(DT)
+library(ggridges)
+```
+
+
+##Congressional data sources
+
+DW-Nominate scores^[We have discussed some of the details of this scoring procedure in a [previous post](https://www.jtimm.net/2018/10/10/nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress/).] for every lawmaker in the history of the US Congress, as well as the details of every Congressional roll call, are made available by the folks at [VoteView](https://voteview.com/) in a variety of formats, including via the R package `RVoteview` [@poole1985spatial; @boche2018new].  The package ships with a host of search functionality; here, we use the `member_search` function to acquire Senator details & DW-Nominate scores for the 115th US Senate.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+sen115 <- Rvoteview:: member_search(chamber= 'Senate', congress = 115)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+sen115 <- read.csv(url("https://voteview.com/static/data/out/members/HSall_members.csv"),
+  stringsAsFactors = FALSE) %>%
+  mutate(bioname = gsub(',.*$', '', bioname)) %>%
+  filter(chamber == 'Senate' & congress == 115)
+```
+
+
+The plot below summarizes political ideologies in the 115th Senate as estimated by DW-Nominate D1 & D2 scores; labeled are some of the more ideologically extreme/well-known/moderate Senators. Focusing on D1, then, Elizabeth Warren votes most progressively and Rand Paul the most conservatively.  
+
+```{r fig.height=6, message=FALSE, warning=FALSE}
+sens <- c('Flake', 'Warren', 'Collins', 'Paul', 'Manchin',
+          'Merkley', 'Harris', 'Murkowski', 'Udall',
+          'Jones', 'Shelby', 'Sanders', 'Cruz', 'Rubio' )
+
+sen115 %>%
+  ggplot(aes(x=nominate_dim1, 
+             y=nominate_dim2, 
+             label = bioname)) +
+          annotate("path",
+               x=cos(seq(0,2*pi,length.out=300)),
+               y=sin(seq(0,2*pi,length.out=300)),
+               color='gray',
+               size = .25) +
+  geom_point(aes(color = as.factor(party_code)), 
+             size= 2, 
+             shape= 17) +
+    geom_text_repel(
+    data  = subset(sen115, bioname %in% toupper(sens)),
+    nudge_y =  0.025,
+    segment.color = "grey50",
+    direction = "y",
+    hjust = 0, 
+    size = 2 ) +
+  scale_color_stata() + 
+  theme_fivethirtyeight() +
+  theme(legend.position = 'none', 
+        plot.title = element_text(size=12),
+        axis.title = element_text())+
+  xlab('DW-Nominate D1') + ylab('DW-Nominate D2') +
+  labs(title="DW-Nominate Plot for the 115th US Senate") 
+```
+
+
+
+For additional details about the 115th Congress, we access a collection of resources made available at [CivilServiceUSA](https://github.com/CivilServiceUSA), which includes information regarding age, race, and religion, as well as Twitter & Facebook handles (and a host of other variables).  
+
+```{r message=FALSE, warning=FALSE}
+library(jsonlite)
+sen_url <- 'https://raw.githubusercontent.com/CivilServiceUSA/us-senate/master/us-senate/data/us-senate.json'
+
+senate_dets <-  jsonlite::fromJSON(url(sen_url)) %>%
+  mutate(twitter_handle = ifelse(twitter_handle == 'SenJeffFlake', 'JeffFlake', twitter_handle)) %>%
+  mutate (twitter_handle = tolower(twitter_handle)) %>%
+  rename (bioguide_id = bioguide) %>%
+  left_join(sen115 %>% 
+              filter(congress == 115) %>%
+              select(bioguide_id, party_code, nominate_dim1)) %>%
+  mutate(party = ifelse(party == 'independent', 'democrat', party))
+```
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+#We don't run this.
+house_dets <- jsonlite::fromJSON(url('https://raw.githubusercontent.com/CivilServiceUSA/us-house/master/us-house/data/us-house.json')) 
+```
+
+
+The table below summarizes some of the details/info from this data set for a sample of Senators in the 115th Congress. 
+
+```{r}
+set.seed(199)
+senate_dets %>% select(last_name, twitter_handle, date_of_birth, class, religion) %>%
+  sample_n(5) %>%
+    DT::datatable(options = list(pageLength = 5,dom = 't', scrollX = TRUE),
+                  rownames = FALSE, width="100%", escape=FALSE) 
+```
+
+
+```{r eval=FALSE, fig.height=4, message=FALSE, warning=FALSE, include=FALSE}
+library(lubridate)
+senate_dets %>%
+  mutate (years = 
+            lubridate::year(as.Date(Sys.Date())) -
+            lubridate::year(as.Date(date_of_birth))) %>%
+  ggplot (aes(years)) +
+  geom_histogram(bins=20, fill = 'cornflowerblue')+
+  ggthemes::theme_fivethirtyeight()
+```
+
+
+
+##Scraping tweets via rtweet
+
+With Twitter handles in tow, we can now gather some tweets.  There are different paradigms for working with/scraping tweets using R; here, we provide a simple walk-through using the `rtweet` package, which has a lovely online vignette available [here](https://rtweet.info/).
+
+
+```{r message=FALSE, warning=FALSE}
+library(rtweet)
+```
+
+
+The `rtweet::get_timeline` function is a super simple function for gathering the *n*-most recent tweets for a given user (or set of users) based on Twitter handles; below we gather the 2,000 most recent tweets for each Senator. 
+
+```{r eval=FALSE}
+senate_tweets <- rtweet::get_timeline(
+  senate_dets$twitter_handle, n = 2000)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+setwd("C:\\Users\\jason\\Google Drive\\GitHub\\packages\\wnomadds\\data-raw")
+senate_tweets <- readRDS('senate_tweets.rds')
+```
+
+
+I am not exactly sure about query limits; the above query returns ~200K tweets quickly and problem-free.  Example output from the twitter scrape:
+
+```{r}
+set.seed(999)
+senate_tweets %>%
+  select(created_at, screen_name, text) %>% #followers_count, 
+  sample_n(5) %>%
+    DT::datatable(options = list(pageLength = 5, dom = 't', scrollX = TRUE), 
+                  rownames = FALSE, width="100%", escape=FALSE) 
+```
+
+
+
+The plot below summarizes the number of tweets returned from our Twitter query by date of creation. So, most tweets have been generated in the last couple of years; older tweets are presumably tweets from less prolific Senate tweeters.   
+
+```{r fig.height=4, message=FALSE, warning=FALSE}
+library(scales)
+senate_tweets %>%
+  mutate(created_at = as.Date(gsub(' .*$', '', created_at))) %>%
+  group_by(created_at) %>%
+  summarize(n=n()) %>%
+  ggplot(aes(x=created_at, group = 1)) +
+  geom_line(aes(y=n),
+            size=.5, 
+            color = 'steelblue') +
+  theme_fivethirtyeight()+
+  theme(plot.title = element_text(size=12)) + 
+  labs(title="Senator tweets by date") +
+  scale_x_date(labels = scales::date_format("%m-%Y"))
+```
+
+
+
+##Twitter followers & political ideology
+
+First, then, we take a quick look at the relationship between political ideology scores and number of Twitter followers.  The results from our call to Twitter include the number of followers for each US Senator; so, we simply need to join the Twitter data with the DW-Nominate D1 scores obtained via VoteView.
+
+
+```{r message=FALSE, warning=FALSE}
+senate_summary <- senate_tweets %>%
+  group_by(screen_name) %>%
+  summarize(followers = mean(followers_count)) %>%
+  rename(twitter_handle = screen_name) %>%
+  mutate (twitter_handle = tolower(twitter_handle)) %>%
+  left_join(senate_dets %>%
+              select(bioguide_id, twitter_handle, party, party_code, nominate_dim1)) %>%
+  filter(complete.cases(.))
+```
+
+
+
+A portion of our summary table is presented below:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+senate_summary %>% 
+  select(twitter_handle, party, followers, nominate_dim1) %>% 
+  head() %>%
+  DT::datatable(options = list(pageLength = 6,dom = 't', scrollX = TRUE),
+                  rownames = FALSE, width="100%", escape=FALSE) 
+```
+
+
+
+For illustrative purposes, we treat the New England Independents who caucus with Democrats (ie, King-ME and Sanders-VT) as Democrats in the figure below.    
+
+```{r fig.height=5.5, message=TRUE, warning=TRUE}
+senate_summary %>%
+  ggplot(aes(nominate_dim1, log(followers), color = as.factor(party)))+ 
+  geom_point()+ #
+  geom_smooth(method="lm", se=T) +
+  ggthemes::scale_color_stata()+
+  ggthemes::theme_fivethirtyeight()+
+  theme(legend.position = "none", 
+        plot.title = element_text(size=12),
+        axis.title = element_text())+
+  xlab('DW-Nominate D1') + ylab('log (Twitter Followers)') +
+  labs(title="DW-Nominate scores & log (Twitter followers)") 
+```
+
+
+So, as @hughes_lam_2017 have previously demonstrated in the case of Facebook followers, more conservative and more liberal lawmakers in the Senate tend to have stronger Twitter followings in comparison to their more moderate colleagues. (Note that we do not control for constituency size, ie, state populations.)
+
+
+
+##Shared tweets as ideology
+
+Next, we investigate the relationship between political ideologies based on Senate roll calls (ie, DW-Nominate scores) and political ideologies as estimated using news media that Senators share on their Twitter feed. 
+
+**General overview** for estimating political ideology via social media feeds:
+
+* Extract URLs of news media shared by each US Senator via Twitter,
+* Build a vector space model (VSM) to represent each Senator in terms of the domain/frequency of shared news media, and
+* Apply classical scaling to a cosine-based similarity matrix to view Twitter-based political ideologies in two-dimensional space.
+
+The first two steps are based on the the *Washington Post* methodology described [here](https://gregoryeady.com/Misc/Monkey_Cage_Flake_Methods_Supplement.pdf); the third, an alternative (non-Bayesian) approach to measuring similarity among constituent vectors of a VSM.  We walk through each of these steps next.
+
+
+
+
+###Retrieving shared URLs
+
+Results from our call to `rtweet::get_timeline()` include a column containing shared URLs  --- below we filter our tweet data set to only tweets containing shared (& non-quoted) URLs.   
+
+```{r}
+x <- senate_tweets%>%
+  filter (!media_type %in% 'photo' & !is.na(urls_url) & is_quote %in% 'FALSE') %>%
+  select(screen_name, urls_url, urls_t.co) %>%
+  unnest(urls_url, urls_t.co) %>%
+  mutate(urls = gsub('/.*$','',urls_url)) 
+
+x1 <- x %>% filter(grepl('com$|org$|gov$|net$|gop$|edu$|us$|uk$', urls)) 
+#Proper URLs
+```
+
+
+
+Many of these URLs have been shortened, and (in many cases) require manual unshortening. This issue can be addressed via the `get_url` function from the `SocialMediaMineR` package.  Note that the manual unshortening process can be a time consuming one. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(SocialMediaMineR)
+y <- x %>% filter(!grepl('com$|org$|gov$|net$|gop$|edu$|us$|uk$', urls)) %>%
+  #Shortened URLs
+  mutate(urls = SocialMediaMineR::get_url(urls_t.co)) %>%
+  mutate(urls = gsub ('(http)(s)?(://)(www\\.)?','', urls)) %>%
+  mutate(urls = gsub('/.*$','', urls))
+```
+
+
+Then we manually exclude some of the more frequent non-news sources (eg, personal & government websites). Presumably less frequent non-news sources remain, which we do not worry about too much here.
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+senate_domains <- bind_rows(x1, y) %>%
+  filter(!grepl('facebook|twitter|youtube|instagram|twimg|error|gov$|tumblr|google|Error|maggiehassan|tammybaldwin|catherinecortez|actblue|pscp|tinyurl|joniforiowa|heart|medium', urls)) %>%
+  mutate(urls = tolower(urls))
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+setwd("C:\\Users\\jason\\Google Drive\\GitHub\\packages\\wnomadds\\data-raw")
+#saveRDS(senate_domains, 'senate_domains.rds')
+senate_domains <- readRDS('senate_domains.rds')
+```
+ 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+senate_domains <- senate_domains %>%
+  filter(!grepl('joniforiowa|heart|medium', urls))
+```
+
+
+Of the ~200K tweets, then, ~30K include shared links.  The figure below illustrates the top 50 shared domain names among Senators in the 115th Congress.  
+
+```{r fig.height=7}
+senate_domains %>%
+  data.frame()%>%
+  group_by(urls)%>%
+  summarise(freq = n())%>%
+  top_n(50,freq) %>%
+  ggplot(aes(x=reorder(urls, freq), y = freq)) + 
+  geom_point(size=2, color = 'steelblue') +
+  geom_text(aes(label=urls), #
+            size=3, 
+            hjust = 0, nudge_y = 20) +
+  coord_flip()+
+  ylim(0, 2500) +
+  theme_fivethirtyeight() +
+  theme(axis.text.y=element_blank(),
+        plot.title = element_text(size=11)) +
+  labs(title="50 most tweeted web domains by US Senators") 
+```
+
+
+
+###Vector-space representation of shared URLs
+
+Next, we build a VSM to represent each Senator in terms of the domain/frequency of news media shared via Twitter.  Based on the data structure from above, this transformation is fairly straightforward --- amounting to some aggregation and casting. 
+
+```{r}
+sen_url_mat <- 
+  senate_domains %>%
+  group_by(screen_name, urls) %>%
+  summarize (freq = n()) %>%
+  filter(freq > 1) %>%
+  spread(screen_name, freq)%>%
+  replace(is.na(.), 0)  %>%
+  ungroup() 
+```
+
+
+A portion of the matrix is presented below --- clearly some intuitive variation in vector composition as a function of political affiliation (and whether or not your name is Jeff Flake). 
+
+```{r}
+x <- c('urls', 'JeffFlake', 'SenTedCruz', 
+       'SenSchumer', 'SenWhitehouse')
+y <- c('nytimes.com', 'thehill.com', 
+       'wsj.com', 'usatoday.com', 'foxnews.com', 
+       'bloomberg.com', 'politico.com')
+
+sen_url_mat[sen_url_mat$urls %in% y, x]%>%
+    DT::datatable(options = list(pageLength = 7, dom = 't', scrollX = TRUE), 
+                  rownames = FALSE, width="100%", escape=FALSE) 
+```
+
+
+
+###A multi-dimensional model 
+
+Based on this matrix, we can measure the similarity of the news media sharing habits (and presumably political ideologies) of US Senators by building a cosine-based similarity matrix with the `lsa::cosine` function.  
+
+```{r message=FALSE, warning=FALSE}
+library(lsa)
+sim_mat <- 
+  sen_url_mat %>%
+  select(2:ncol(sen_url_mat)) %>%
+  data.matrix()%>%
+  lsa::cosine(.)
+```
+
+
+We then transform this similarity matrix into two-dimensional Euclidean space via classical scaling and the `cmdscale` function.  
+
+```{r fig.height=7, message=FALSE, warning=FALSE}
+sm_ids <-
+  cmdscale(1-sim_mat, eig = TRUE, k = 2)$points %>% 
+  data.frame() %>%
+  mutate (twitter_handle = tolower(rownames(sim_mat))) %>%
+  left_join(senate_dets)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(spdep)
+sm_ids[,1:2] <- spdep::Rotation(sm_ids[,1:2], 45)
+```
+
+
+**Results** are summarized in the plot below.  Per the spatial model, Senators with similar Tweet sharing habits are positioned proximally in 2D space.  As can be noted, the x-axis (Tweet D1) does a nice job distinguishing party affiliation among US Senators.
+
+
+```{r fig.height=7, message=FALSE, warning=FALSE}
+sm_ids %>%
+  ggplot(aes(X1,X2)) +
+  geom_text(aes(label=paste0(last_name, '-', state_code),col=party), #
+            size=2.5, 
+            check_overlap = TRUE)+
+  scale_colour_stata() + theme_fivethirtyeight() +
+  theme(legend.position = "none",
+        plot.title = element_text(size=12),
+        axis.title = element_text())+
+  xlab('Tweet D1') + ylab('Tweet D2')+ 
+  xlim(-.4,.4)+ ylim(-.4,.4)+
+  labs(title="US Senators from 115th Congress in tweet domain space")
+```
+
+
+
+What underlies variation along the y-axis (Tweet D2) is less intuitive.  Senators occupying higher D2 space tend to be more moderate; they also include several of the vulnerable red state Democrats up for re-election in November.  
+
+It could be that this dimension reflects a "national versus local" news sharing preference among Senators (per findings presented in @vankessel_hughes_2018). See [postscript]() for additional support for this particular interpretation.
+
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+#A BuzzFeedNews git resource.  Class I Senators up for re-election in November '18 with more conservative social media-based political ideologies.  Perhaps add some Senator details. 
+
+read.csv(url("https://raw.githubusercontent.com/BuzzFeedNews/2016-11-grading-the-election-forecasts/master/data/reference/winners.csv"), 
+  stringsAsFactors = FALSE) %>%
+  filter(office == 'P') %>%
+  select(state, winner, dem_share, dem_diff)%>%
+  filter(state %in% c('WV','ND','MT','MO','IN'))
+```
+
+
+
+###Comparing ideology scores
+
+For a bit of validation, we compare VoteView's DW-Nominate D1 scores and our Twitter-based D1 scores; below we join the two data sets.  
+ 
+```{r message=FALSE, warning=FALSE}
+senate_summary_twids <- 
+  senate_summary %>%
+  left_join(sm_ids %>% 
+              select(bioguide_id, 
+                     last_name, 
+                     state_code, 
+                     X1, X2)) %>%
+  drop_na(X1) 
+```
+
+
+
+In the figure below, Twitter-based (D1) ideology scores are plotted as a function of DW-Nominate (D1) ideology scores.  As the plot attests, the Twitter-based scores align quite nicely with the roll call-based scores.  Senators for whom Twitter scores and DW-Nominate scores are most disparate have been labeled.  
+
+
+```{r fig.height=6, message=FALSE, warning=FALSE}
+set.seed(799)
+senate_summary_twids %>%
+  ggplot(aes(nominate_dim1, X1, label = paste0(last_name,'-', state_code)))+
+  geom_point(aes(color = party))+
+  geom_smooth(method="loess", se=T, color = 'darkgrey') +
+  geom_text_repel(
+    data = subset(senate_summary_twids, party == 'republican' & X1 < 0),
+    nudge_y = -0.025,
+    segment.color = "grey50",
+    direction = "y",
+    hjust = 0, 
+    size = 2.5 ) +
+  geom_text_repel(
+    data  = subset(senate_summary_twids, party == 'democrat' & X1 > 0),
+    nudge_y =  0.025,
+    segment.color = "grey50",
+    direction = "y",
+    hjust = 0, 
+    size = 2.5 ) +
+  scale_colour_stata() + theme_fivethirtyeight() +
+  theme(legend.position = "none",
+        plot.title = element_text(size=12),
+        axis.title = element_text())+
+  ylab('Tweeter Ideology D1') + xlab('DW-Nominate D1')+
+  labs(title = "DW-Nominate scores vs. Twitter ideology scores")
+```
+
+
+So, Democrats vote and share tweets largely in lockstep. John Tester and Maggie Hassan have been labeled because they have positive Twitter 1D scores, but both are more moderate Democrats with news media sharing habits that are not especially anomalous.  Republicans, on the other hand, have several Senators in their ranks that share news media quite differently than they vote. 
+
+Perhaps most notable is Jeff Flake; the Senator from Arizona is the third most conservative voter in the Senate but shares news media via Twitter like a moderate Democrat. [See @eady_zilinsky_nagler_tucker_2018 for a similar observation.]   Bob Corker, a more moderate Republican, shares Tweets like a card-carrying Democrat.  Both Republican Senators are not seeking re-election in 2018, and both have been willing to be publically critical of 45.
+
+
+```{r}
+cor((senate_summary_twids$X1),senate_summary_twids$nominate_dim1)
+```
+
+
+
+##Summary
+
+So, a bit of a copycat post (for R users) demonstrating some super neat methods developed by folks at Pew Research and the Washington Post.  The `rtweet` package is quite lovely, and facilitates a very clean interaction with Twitter's APIs.  Lots of fun to be had applying social media methodologies/analyses to the investigation of political ideology.  Per usual, results presented here should be taken with a grain of salt, as our data set is relatively small.  See references for more methodologically thorough approaches.
+
+
+
+##Postscript: News media ideologies
+
+Quickly. If we flip the VSM we used to estimate the tweet-based ideology of US Senators on its head, such that each news source is represented as a vector of shared tweets by Senator, we can get an estimate of the political ideology of the news sources included in our Tweet data set. (Using more/less the same code from above.)  
+
+The plot below summarizes a two-dimensional solution.  D1 seems to intuitively capture the liberal-conservative leanings of news sources.  A national-local distinction seems to underly variation along D2.  See this [Pew Research viz](http://www.people-press.org/2017/12/18/sharing-the-news-in-a-polarized-congress/pdl_12-18-17-mediasharing-02/) for a slightly different approach with ~comparable results (at least along D1).
+
+
+```{r echo=FALSE, fig.height=6, message=FALSE, warning=FALSE}
+tops <- senate_domains %>%
+  data.frame()%>%
+  group_by(urls)%>%
+  summarise(freq = n())%>%
+  top_n(50,freq) 
+
+sen_url_mat <- 
+  senate_domains %>%
+  filter(urls %in% tops$urls) %>%
+  group_by(urls, screen_name) %>%
+  summarize (freq = n()) %>%
+  spread(urls, freq)%>%
+  replace(is.na(.), 0)  %>%
+  ungroup() 
+
+sim_mat <- 
+  sen_url_mat %>%
+  select(2:ncol(sen_url_mat)) %>%
+  data.matrix()%>%
+  lsa::cosine(.)
+
+sm_ids <- cmdscale(1-sim_mat, eig = TRUE, k = 2)$points %>% 
+  data.frame() 
+
+sm_ids[,1:2] <- spdep::Rotation(sm_ids[,1:2], 60)
+
+sm_ids %>% 
+ggplot(aes(X1,X2)) +
+  geom_text(aes(label=rownames(sim_mat)), #
+            size=2.5, 
+            check_overlap = TRUE)+
+  scale_colour_stata() + theme_fivethirtyeight() +
+  theme(legend.position = "none",
+        plot.title = element_text(size=12),
+        axis.title = element_text())+
+  xlab('D1: Liberal-Conservative') + ylab('D2: National-Local')+ 
+  xlim(-.5,.5)+ 
+  #ylim(-.5,.5)+
+  labs(title="News media sources in US Senator shared URL space")
+```
+
+
+##Resources

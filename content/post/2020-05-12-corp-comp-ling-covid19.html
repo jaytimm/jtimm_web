@@ -10,6 +10,7 @@ tags:
   - rstats
   - Twitter
   - 116th Congress
+  - COVID-19
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/covid_semantics.png
@@ -522,37 +523,37 @@ names(x) &lt;- eg_terms</code></pre>
 <p><strong>Top 10 nearest neighbors</strong> for <code>stay-at-home</code>, <code>outbreak</code>, <code>front-line-workers</code>, <code>vaccine</code> &amp; <code>relief</code>. So, despite a relatively small corpus, some fairly nice results.</p>
 <pre><code>## $`stay-at-home`
 ##      stay-at-home          practice social-distancing flatten-the-curve 
-##         1.0000000         0.5637352         0.5542650         0.4814702 
+##         1.0000000         0.5634366         0.5500531         0.4852880 
 ##              sick              stay             avoid           staying 
-##         0.4716053         0.4435253         0.4349177         0.4053323 
+##         0.4788068         0.4424411         0.4312511         0.4096375 
 ##            unless               you 
-##         0.4005399         0.3673528 
+##         0.3959533         0.3679505 
 ## 
 ## $outbreak
 ##    outbreak coronavirus    pandemic       covid   covidー19      crisis 
-##   1.0000000   0.6611925   0.5687831   0.5390472   0.5276944   0.5028250 
+##   1.0000000   0.6616114   0.5697251   0.5494554   0.5296838   0.4987309 
 ##    response      spread       virus     impacts 
-##   0.4745900   0.4736908   0.4640145   0.4564372 
+##   0.4826594   0.4798837   0.4642697   0.4621730 
 ## 
 ## $`front-line-workers`
 ## front-line-workers  essential-workers   first-responders                ppe 
-##          1.0000000          0.5821249          0.5349483          0.4825465 
-##             heroes      professionals             nurses          equipment 
-##          0.4803686          0.4634342          0.4519011          0.4511836 
-##          frontline            doctors 
-##          0.4500216          0.4462015 
+##          1.0000000          0.5883052          0.5341892          0.4832370 
+##             heroes      professionals             nurses          frontline 
+##          0.4822017          0.4641108          0.4569190          0.4568646 
+##            doctors          equipment 
+##          0.4491088          0.4448107 
 ## 
 ## $vaccine
-##     vaccine  treatments     develop   therapies   treatment        easy 
-##   1.0000000   0.5781745   0.4561838   0.4138484   0.4091546   0.3850137 
-## development       tests     genesis    research 
-##   0.3815649   0.3503803   0.3267255   0.3236028 
+##     vaccine  treatments     develop   therapies   treatment development 
+##   1.0000000   0.5817043   0.4566783   0.4113966   0.4112393   0.3854895 
+##        easy       tests     genesis    research 
+##   0.3832985   0.3499214   0.3297194   0.3265058 
 ## 
 ## $relief
 ##     relief    funding        aid additional    provide       bill    support 
-##  1.0000000  0.6041941  0.5801970  0.5774999  0.5725500  0.5668181  0.5658399 
+##  1.0000000  0.6063464  0.5879983  0.5798526  0.5768965  0.5732163  0.5670530 
 ##    package assistance  cares-act 
-##  0.5610126  0.5565843  0.5432229</code></pre>
+##  0.5640401  0.5563580  0.5379026</code></pre>
 <p>For a smarter approach to visualizing nearest neighbors, as well as visualizing lexical semantic change historically, see <a href="https://www.jtimm.net/2019/04/14/lexical-change-procrustes/">this post</a>. Or, a similar analysis <a href="https://github.com/jaytimm/google_ngrams_and_R">utilizing Google n-gram data</a>.</p>
 <p>In the second application, we consider a <strong>two-dimensional perspective on the semantic relatedness</strong> of concepts included in our COVID19 lexicon. While we have built vectors for all forms attested in the Congressional Twitter Corpus, here we subset this matrix to just COVID concepts. Via classical multidimensional scaling, we project 128 features (per GloVe) into two-dimensional Euclidean space.</p>
 <pre class="r"><code>set.seed(99)

@@ -100,7 +100,7 @@ house_flips <- house %>%
   left_join(house %>% 
               filter(year == 2018) %>% 
               mutate(house_rep_margin = round(republican - democrat, 1)) %>%
-              select(GEOID, state, district_code, candidate, house_rep_margin) %>% 
+              select(GEOID, state_abbrev, district_code, candidate, house_rep_margin) %>% 
               rename(house_rep = candidate))
 ```
 
@@ -150,14 +150,24 @@ house_flips1 %>%
 
 **House Representatives** from flipped districts:
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 house_flips1 %>%
   filter(house_flip %in% 
            c('Democratic Party | Republican Party', 
              'Republican Party | Democratic Party')) %>%
   mutate(house_flip = ifelse(grepl('^D', house_flip), 'D -> R', 'R -> D')) %>%
-  select(house_flip, state, district_code, house_rep) %>%
+  select(house_flip, state_abbrev, district_code, house_rep) %>%
   DT::datatable(rownames = FALSE)
+```
+
+
+```{r include=FALSE}
+xflip <- house_flips1 %>%
+  filter(house_flip %in% 
+           c(#'Democratic Party | Republican Party', 
+             'Republican Party | Democratic Party')) %>%
+  mutate(house_flip = ifelse(grepl('^D', house_flip), 'D -> R', 'R -> D')) %>%
+  select(house_flip, state_abbrev, district_code, house_rep) 
 ```
 
 
@@ -181,7 +191,7 @@ The 31 Democratic lawmakers representing Trump-won districts include:
 ```{r}
 house_flips1 %>%
   filter(Pres16_House18 == 'Trump | Democratic Party') %>%
-  select(state, district_code, house_rep) %>%
+  select(state_abbrev, district_code, house_rep) %>%
   DT::datatable(rownames = FALSE)
 ```
 
@@ -232,7 +242,7 @@ Of the 31 front-liners, thirteen represent districts Trump carried by more than 
 ```{r}
 house_flips1 %>%
   filter(Pres16_House18 == 'Trump | Democratic Party' & trump_margin > 6) %>%
-  select(state, district_code, house_rep, trump_margin, house_rep_margin) %>%
+  select(state_abbrev, district_code, house_rep, trump_margin) %>%
   arrange(desc(trump_margin)) %>%
   knitr::kable()
 ```
@@ -281,7 +291,7 @@ Representatives for these twelve districts are presented below.
 house_flips2 %>%
   filter(Pres16_House18 == 'Trump | Democratic Party' & 
            pres_lineage == 'McCain | Romney | Trump') %>%
-  select(state, district_code, house_rep) %>%
+  select(state_abbrev, district_code, house_rep) %>%
   knitr::kable()
 ```
 
@@ -295,7 +305,7 @@ house_flips2 %>%
   filter(Pres16_House18 == 'Trump | Democratic Party' & 
            trump_margin > 10 &
            pres_lineage == 'McCain | Romney | Trump') %>%
-  select(state, district_code, house_rep, pres_lineage, trump_margin) %>%
+  select(state_abbrev, district_code, house_rep, pres_lineage, trump_margin) %>%
   arrange(desc(trump_margin)) %>%
   knitr::kable()
 ```
@@ -343,11 +353,18 @@ house_flips3 %>%
 house_flips4 <- house_flips3 %>%
   mutate(trump_margin = round(trump_margin, 1)) %>%
   rename(house_rep_party = `116`) %>%
-  select(GEOID, state:house_rep, house_rep_party, is_fresh, house_flip:pres_lineage)
+  select(GEOID, state_abbrev:house_rep, house_rep_party, 
+         is_fresh, house_rep_margin, house_flip:pres_lineage) %>%
+  filter(Pres16_House18 == 'Trump | Democratic Party') %>%
+  select(-house_rep_party, -Pres16, -GEOID, -Pres16_House18)
   
-  
-setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/thirty-one-house-democrats')
-write_csv(house_flips4, 'thirty-one-house-democrats.csv')
+ house_flips5 <- house_flips4 %>%
+   left_join(uspoliticalextras::uspol_csusa_house_bios %>% filter(congress == 116) %>%
+               select(state_abbrev, district_code, bioguide_id)) %>%
+   select(bioguide_id, state_abbrev:pres_lineage)
+
+setwd('/home/jtimm/jt_work/GitHub/packages/uspoliticalextras/clean-data-sets')
+write_csv(house_flips5, 'thirty-one-house-democrats.csv')
 ```
 
 

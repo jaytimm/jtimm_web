@@ -1,0 +1,411 @@
+---
+title: building historical socio-demographic profiles
+author: ''
+description: 'A simple workflow for building census-based, historical socio-demographic profiles'
+date: '2018-03-29'
+slug: historical-socio-demographic-profiles
+tags: ['rstats','census', 'new mexico']
+output:
+  blogdown::html_page:
+    toc: yes
+    toc_depth: 2 
+bibliography: biblio.bib
+link-citations: yes
+banner: banners/sociodem.jpg
+---
+
+ This post demonstrates a simple workflow for building census-based, historical socio-demographic profiles using the R package `tidycensus`.  The goal is to outline a reproducible method for quick visual exploration of trend data made available via the American Community Survey (ACS).
+
+We focus mostly on socio-economic summary data included in ACS *data profile* tables; however, we also consider age/sex demographic data included in detailed tables.  
+
+The post is a bit of a walk-about through some odds/ends socio-demographic, including different approaches to visualizing trend data for multiple variables across multiple geographies.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidycensus)
+library(DT)
+library(ggalt)
+library(ggthemes)
+```
+
+
+```{r, include=FALSE}
+census_api_key("b508704c99f3ae9bc5b5e7c41e3dd77e59d52722")
+```
+
+
+##Some preliminaries
+
+First things first, we set some parameters for our ACS data query. Here we are interested in 1-year estimates from 2012 to 2016; geographies of interest include the United States, all states in the US, and all metropolitan statistical areas (MSAs) (both micro and metro) in the US.    
+
+```{r}
+year_range <- c(2012:2016)
+geos_inc <- c("us", 
+              "metropolitan statistical area/micropolitan statistical area", 
+              "state")
+```
+
+
+For demonstration purposes, our focus in this post will be on profiling MSAs in the state of New Mexico.  
+
+```{r}
+nm_us_metros <- c(1,35,10740,22140,29740,42140)
+nm_us_w_micros <- "NM|New Mexico|United States"
+```
+
+
+The `tidycensus` function for accessing the ACS API, `get_acs()`, enables users to obtain data for a single geography type, a single year, and multiple census variables.  Here, however, we want to be able to fetch ACS data for *multiple* geography types, *multiple* years, and multiple census variables.  
+
+To accomplish this particular task, we build a simple wrapper function that adds some functionality to `get_acs()`:
+
+```{r message=FALSE, warning=FALSE}
+get_historic_acs <- function (variables, 
+                              geography, 
+                              year, 
+                              summary_var = NULL) {
+y <- list()
+for (i in 1:length(year)) {
+  y[[i]] <- lapply(geography, function (x) {
+      tidycensus::get_acs (geography = x, 
+                           variables = variables, 
+                           summary_var = summary_var, 
+                           output = "tidy", 
+                           year = year[i])}) %>%
+      bind_rows() %>% 
+      mutate(year = year[i]) } 
+  y %>% bind_rows() }
+```
+
+
+
+##Socio-economic profiles
+
+Data profile tables in the ACS include tables `DP02`, `DP03`, `DP04`, and `DP05`: 
+
+* DP02: SELECTED SOCIAL CHARACTERISTICS IN THE UNITED STATES
+* DP03: SELECTED ECONOMIC CHARACTERISTICS
+* DP04: SELECTED HOUSING CHARACTERISTICS
+* DP05: ACS DEMOGRAPHIC AND HOUSING ESTIMATES
+
+
+These tables include basic summary data that have been aggregated/collated from the over 1,400 detailed tables included in the ACS.  Data are conveniently available as both counts and percentages, and provide easy access to some of the more popular census variables.  For quickly profiling/characterizing a set of geographies historically, the tables are ideal. And no maths required.   
+
+
+###Socio-economic profiles
+
+Here we assemble a list of twelve variables from tables `DP02` and `DP03`; while largely arbitrary, the set of variables is meant to provide a broad socio-economic profile for a given set of geographies.  Variable IDs are available via [American FactFinder](https://factfinder.census.gov/faces/nav/jsf/pages/index.xhtml), or via the `tidycensus` function `load_variables()`.
+
+```{r}
+variable <-c("DP02_0011P", 
+             "DP02_0067P",
+             "DP02_0069P",
+             "DP02_0090P", 
+             "DP02_0092P", 
+             "DP02_0111P", 
+             "DP03_0005P", 
+             "DP03_0021P", 
+             "DP03_0028P",
+             "DP03_0088",
+             "DP03_0096P",
+             "DP03_0128P")
+```
+
+
+Variable descriptions:
+```{r}
+label <- c("%Householders living alone", 
+           "%Bachelor's degree or higher", 
+           "%Civilian veterans",
+           "%Born different state", 
+           "%Foreign born",
+           "%Speak English only @ home", 
+           "%Civilian LF - Unemployed",  
+           "%Public trans to work", 
+           "%Service occupations", 
+           "$Per capita income", 
+           "%Health insurance", 
+           "%Below FPL - All people")
+```
+
+```{r}
+dp_table <- as.data.frame(cbind(variable, label))
+```
+
+
+We apply the simple wrapper function to fetch data for our variable set by year and geography type:
+```{r message=FALSE}
+dp_data <- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range)
+```
+
+
+Output from the API query is summarized below:
+```{r echo=FALSE}
+dp_data
+```
+
+
+So, with but a few lines of code, we have gathered five years of ACS estimates for twelve variables across roughly one thousand geographies, uniformly output in a single table.  Courtesy of `tidycensus`.  
+
+Having pulled data, then, we plot historical profiles for metro areas in New Mexico, the state of New Mexico, and the US:
+
+```{r fig.height=9, message=FALSE, warning=FALSE}
+#Filter data set
+dp_data %>%
+  filter(GEOID %in% c(nm_us_metros)) %>%
+  left_join(dp_table)%>%
+
+#Build viz:
+  ggplot(aes(x = year, y =  estimate, color=NAME, 
+             ymin=estimate - moe, ymax=estimate + moe)) +
+    geom_line(size=.95) +
+    geom_errorbar(width=0.1) +
+    scale_colour_stata() + 
+    theme_fivethirtyeight()+
+    theme(legend.position="bottom", 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
+    ylab ("") + xlab("") +
+    facet_wrap(~label, scales = "free_y", ncol=3)+ 
+    labs(title="Socio-economic profiles",
+         subtitle="NM & USA, 2012-2016")
+```
+
+
+###Comparing health insurance rates
+
+As the figure above attests, healthcare coverage in New Mexico has increased substantially over the last five years.  Here, we take a closer look at these changes for both metro & micro statistical areas in New Mexico, comparing coverage rates in 2012 to coverage rates in 2016.  
+
+
+```{r fig.height=5.5}
+#Filter and transform data  
+dp_data %>%
+  filter(year %in% c(2012,2016), 
+         grepl (nm_us_w_micros, NAME), 
+         variable == "DP03_0096P") %>%
+  mutate (NAME = ifelse(GEOID == 21580, "Espanola, NM Micro Area", NAME), 
+          year = paste0("p",year), 
+          NAME = gsub (", NM.*$","", NAME)) %>%
+  select(-moe) %>%
+  spread (year, estimate) %>%
+
+#Build viz:
+  ggplot(aes(reorder(NAME, -p2012), x=p2012, xend=p2016)) + 
+    geom_dumbbell(size=3, 
+                  color="#e3e2e1", 
+                  colour_x = "#5b8124", 
+                  colour_xend = "#bad744",
+                  dot_guide=TRUE, dot_guide_size=0.05) +
+    labs(x=NULL, y=NULL, 
+         title="Healthcare coverage",
+         subtitle="NM & USA: comparing 2012 and 2016") +
+    theme_fivethirtyeight()+
+    theme(panel.grid.major.x=element_line(size=0.05)) +
+    theme(panel.grid.major.y=element_blank(), plot.title = element_text(size=14))
+```
+
+
+This particular plot does a really nice job showing how municipalities within the state of New Mexico have benefited from the Affordable Care Act relative to the United States as a whole, and, again, demonstrates the utility of using `tidycensus`/data profiles in tandem for quickly visualizing and evaluating socio-economic change historically. 
+
+
+###Educational attainment profiles
+
+Next, we consider educational attainment distributions by geography over time. Again, these data are most easily accessed via the census data profiles, specifically table `DP02`. 
+
+```{r}
+variable <- c('DP02_0059P', 
+              'DP02_0060P', 
+              'DP02_0061P', 
+              'DP02_0062P', 
+              'DP02_0063P', 
+              'DP02_0064P', 
+              'DP02_0065P')
+
+ed_labels <- c('Less than 9th Grade', 
+               '9th to 12th grade, no diploma', 
+               'High school graduate', 
+               'Some college, no degree', 
+               "Associate's degree", 
+               "Bachelor's degree", 
+               'Grad/pro degree')
+
+ed_level <- c(1:7)
+
+ed_table <- as.data.frame(cbind(variable, ed_level, ed_labels), stringsAsFactors =FALSE)
+```
+
+
+
+Again, we collect data via the ACS API with our `get_acs()` wrapper function:
+```{r message=FALSE, warning=FALSE}
+ed_data <- get_historic_acs(variables=variable, 
+                            geography = geos_inc, 
+                            year = year_range) 
+```
+
+
+Then we add variable details, filter to our set of geographies, and plot:
+```{r fig.height=10, message=FALSE, warning=FALSE}
+#Filter and transform data:
+ed_data %>%
+  left_join(ed_table) %>% 
+  mutate(ed_level = as.numeric(ed_level))%>%
+  filter(grepl (nm_us_w_micros, NAME))%>%
+  mutate (NAME = ifelse(GEOID == 21580, "Espanola, NM Micro Area", NAME)) %>%
+
+#Build viz:  
+  ggplot(aes(x = year, 
+             y = estimate, 
+             fill = reorder(ed_labels, -ed_level))) + 
+    geom_col(color= 'gray', width = .8) +
+    scale_fill_brewer(palette = 'BrBG') +
+    theme_fivethirtyeight()+
+    coord_flip()+
+    facet_wrap(~NAME, ncol = 3)+
+    theme(legend.position="bottom", 
+          legend.title = element_blank(), 
+          plot.title = element_text(size=14))+
+    labs(title="Educational attainment profiles",
+         subtitle="NM & USA, 2012-2016")
+```
+
+
+So, we get a sense of variation in distributions of educational attainment across different geographies in New Mexico; we can also get a sense of changes in these distributions over time.  Similar profiles can be built for race/ethnicity, language spoken at home, income levels, etc. simply by amending the variable parameter above.
+
+
+##Age distribution profiles
+
+Lastly, we consider age distributions historically by comparing population pyramids at 2012 and 2016.  Here, we branch out from the convenience of ACS data profile tables to obtain age-by-sex data from table `B01001`. That said, we use the same query methods and functions to obtain our data. 
+
+```{r}
+variable <- sprintf("%03d", c(3:25, 27:49)) %>%
+  paste0("B01001_",.)
+```
+
+
+Age and sex variables in the census include:
+
+```{r echo=FALSE}
+variable
+```
+
+
+Here we build out variable details manually; there are other (presumably smarter) ways to do this.  This approach is streamlined for building population pyramids.
+
+```{r}
+age <- c(rep ( c("0-4", "5-9", "10-14", 
+                 "15-19", "15-19", "20-24", 
+                 "20-24", "20-24", "25-29", 
+                 "30-34", "35-39", "40-44", 
+                 "45-49", "50-54", "55-59", 
+                 "60-64", "60-64", "65-69", 
+                 "65-69", "70-74", "75-79", 
+                 "80-84", "85-over"),
+               2))
+
+order <- rep(c(1:3,4,4,5,5,5,6:12, 13,13,14,14,15:18),2)
+
+gender <- c(rep("Male",23), 
+            rep("Female",23))
+
+age_table <- as.data.frame(
+  cbind(variable, gender, order, age), 
+  stringsAsFactors =FALSE)
+```
+
+
+Again, we call our wrapper function to `tidycensus::get_acs()`, using the same year and geography parameters as initialized for our previous data profile queries.
+
+```{r message=FALSE}
+age_data <- get_historic_acs(variables = variable, 
+                             geography = geos_inc, 
+                             year = year_range, 
+                             summary_var = "B01001_001")
+```
+
+
+Next, we perform some data transformation processes: namely,
+
+* join variable details, 
+* aggregate over more detailed census age categories,
+* convert from counts to percentages, and
+* transform male percentages to negative for pyramid.
+
+```{r message=FALSE, warning=FALSE}
+age_data_trans <- age_data %>%
+  inner_join(age_table) %>%
+  group_by(GEOID, NAME, year, age, gender, order) %>%
+  summarize(estimate = sum(estimate), 
+            summary_est = mean (summary_est))%>%
+  ungroup()%>%
+  mutate(percent = round(estimate/summary_est*100,1)) %>%
+  mutate(percent = ifelse(gender == "Male",percent*-1,percent))%>%
+  mutate (NAME = ifelse(GEOID == 21580, "Espanola, NM Micro Area", NAME),
+          order=as.numeric(order)) 
+```
+
+
+
+```{r include=FALSE}
+xlabs = c("0-4" = "0-4", "5-9" = "", "10-14" = "", "15-19" = "", "20-24" = "", 
+          "25-29" = "", "30-34" = "", "35-39" = "", "40-44" = "", "45-49" = "45-49", 
+          "50-54" = "", "55-59" = "", "60-64" = "", "65-69" = "", "70-74" = "", 
+          "75-79" = "", "80-84" = "", "85+" = "85 & over")
+```
+
+
+A bit of a hack for the `geom_step` portion of our plot below:
+```{r}
+age_data_overlay <- age_data_trans %>%
+  bind_rows(age_data_trans %>% 
+              filter(year==2012, age=="85-over") %>% 
+              group_by(GEOID) %>% 
+              mutate(order = order + 1)) 
+```
+
+
+Lastly, we plot age distributions in 2016 as traditional population pyramid and age distributions in 2012 as a `geom_step` overlay:
+```{r fig.height=10}
+#Plot pyramids
+ggplot(data = age_data_trans %>% 
+         filter(year == 2016, grepl (nm_us_w_micros, NAME)), 
+       aes(x = reorder(age,order) , y = percent, fill =gender)) +
+  geom_col() +
+  
+#ADD overlay
+  geom_step(data = age_data_overlay %>% 
+              filter(gender == "Male", 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)),
+            aes(x=order -.5), size = .7) + 
+  
+  geom_step(data = age_data_overlay %>% 
+              filter(gender == "Female", 
+                     year == 2012, 
+                     grepl (nm_us_w_micros, NAME)), 
+            aes(x=order -.5), size = .7) + 
+  
+#Add some format
+  scale_y_continuous(breaks=c(-5, 0, 5),
+                     labels=c("5%", "0%", "5%")) +
+  scale_x_discrete(labels = xlabs) + 
+  coord_flip() +
+  facet_wrap(~NAME, ncol=3)+
+  scale_fill_stata() +
+  theme_fivethirtyeight()+
+  theme(legend.position="bottom", 
+        legend.title = element_blank(), 
+        plot.title = element_text(size=14))+
+  labs(title="Population pyramids",
+       subtitle="NM & USA: comparing 2012 (line) and 2016 (color)")
+```
+
+
+Indeed, quite a bit of variation in age distributions throughout MSAs in New Mexico; a fairly consistent theme, however, is that distributions have grown more top-heavy over the last five years.  
+
+
+##Summary
+
+So, some reproducible workflows for quickly profiling a set of geographies historically using the `tidycensus` package, along with some different approaches to visualizing trend data across multiple geographies.  Code can be re-used to profile any collection of geographies in the US.
+

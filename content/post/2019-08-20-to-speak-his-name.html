@@ -15,7 +15,7 @@ tags:
   - 116th Congress
 bibliography: biblio.bib
 link-citations: yes
-banner: banners/potus.png
+banner: banners/potus.png 
 ---
 
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
@@ -139,17 +139,17 @@ cbind(party =names(x$DEM), x%&gt;% bind_rows()) %&gt;%
 <td align="left">REP</td>
 <td align="left">5</td>
 <td align="left">143</td>
-<td align="left">230</td>
-<td align="left">272</td>
+<td align="left">236</td>
+<td align="left">273</td>
 <td align="left">360</td>
 <td align="left">1466</td>
 </tr>
 <tr class="odd">
 <td align="left">DEM</td>
 <td align="left">23</td>
-<td align="left">278</td>
-<td align="left">404</td>
-<td align="left">463</td>
+<td align="left">276</td>
+<td align="left">405</td>
+<td align="left">464</td>
 <td align="left">591</td>
 <td align="left">1624</td>
 </tr>
@@ -201,29 +201,29 @@ potus_sum %&gt;% select(doc_id:prez_gram) %&gt;% sample_n(5) %&gt;% knitr::kable
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">1126141623803568128</td>
-<td align="left">REPMATTGAETZ</td>
-<td align="left">REALDONALDTRUMP</td>
-</tr>
-<tr class="even">
-<td align="left">1110977855561838593</td>
-<td align="left">REPJOEKENNEDY</td>
-<td align="left">TRUMP ADMINISTRATION</td>
-</tr>
-<tr class="odd">
-<td align="left">1110615484335034373</td>
-<td align="left">REPFRANKLUCAS</td>
+<td align="left">1154017323688386560</td>
+<td align="left">REPVALDEMINGS</td>
 <td align="left">THE PRESIDENT</td>
 </tr>
 <tr class="even">
-<td align="left">1131334181815017472</td>
-<td align="left">REPTEDLIEU</td>
-<td align="left">POTUS</td>
+<td align="left">1088844952577150982</td>
+<td align="left">REPANNIEKUSTER</td>
+<td align="left">TRUMP</td>
 </tr>
 <tr class="odd">
-<td align="left">1136024493049163777</td>
-<td align="left">REPWILSON</td>
+<td align="left">1086430676252008450</td>
+<td align="left">REPBENRAYLUJAN</td>
+<td align="left">TRUMP</td>
+</tr>
+<tr class="even">
+<td align="left">1092971752337096705</td>
+<td align="left">REPLOUDERMILK</td>
 <td align="left">REALDONALDTRUMP</td>
+</tr>
+<tr class="odd">
+<td align="left">1133855046821662720</td>
+<td align="left">REPJOHNYARMUTH</td>
+<td align="left">PRESIDENT TRUMP</td>
 </tr>
 </tbody>
 </table>
@@ -248,51 +248,51 @@ potus_sum %&gt;% select(doc_id:prez_gram) %&gt;% sample_n(5) %&gt;% knitr::kable
 <tbody>
 <tr class="odd">
 <td align="left">TRUMP</td>
-<td align="right">6818</td>
-<td align="right">375</td>
-<td align="right">7193</td>
+<td align="right">6794</td>
+<td align="right">337</td>
+<td align="right">7131</td>
 </tr>
 <tr class="even">
 <td align="left">THE PRESIDENT</td>
-<td align="right">3816</td>
-<td align="right">890</td>
-<td align="right">4706</td>
+<td align="right">3773</td>
+<td align="right">867</td>
+<td align="right">4640</td>
 </tr>
 <tr class="odd">
 <td align="left">REALDONALDTRUMP</td>
-<td align="right">2015</td>
-<td align="right">1989</td>
-<td align="right">4004</td>
+<td align="right">2009</td>
+<td align="right">1894</td>
+<td align="right">3903</td>
 </tr>
 <tr class="even">
 <td align="left">POTUS</td>
-<td align="right">1023</td>
-<td align="right">1802</td>
-<td align="right">2825</td>
+<td align="right">1018</td>
+<td align="right">1732</td>
+<td align="right">2750</td>
 </tr>
 <tr class="odd">
 <td align="left">TRUMP ADMINISTRATION</td>
-<td align="right">2497</td>
-<td align="right">133</td>
-<td align="right">2630</td>
+<td align="right">2475</td>
+<td align="right">126</td>
+<td align="right">2601</td>
 </tr>
 <tr class="even">
 <td align="left">PRESIDENT TRUMP</td>
-<td align="right">1649</td>
-<td align="right">776</td>
-<td align="right">2425</td>
+<td align="right">1634</td>
+<td align="right">750</td>
+<td align="right">2384</td>
 </tr>
 <tr class="odd">
 <td align="left">DONALD TRUMP</td>
 <td align="right">224</td>
-<td align="right">23</td>
-<td align="right">247</td>
+<td align="right">17</td>
+<td align="right">241</td>
 </tr>
 <tr class="even">
 <td align="left">MR PRESIDENT</td>
-<td align="right">195</td>
+<td align="right">188</td>
 <td align="right">42</td>
-<td align="right">237</td>
+<td align="right">230</td>
 </tr>
 <tr class="odd">
 <td align="left">PRESIDENT DONALD TRUMP</td>
@@ -302,9 +302,9 @@ potus_sum %&gt;% select(doc_id:prez_gram) %&gt;% sample_n(5) %&gt;% knitr::kable
 </tr>
 <tr class="even">
 <td align="left">Total</td>
-<td align="right">18252</td>
-<td align="right">6042</td>
-<td align="right">24294</td>
+<td align="right">18130</td>
+<td align="right">5777</td>
+<td align="right">23907</td>
 </tr>
 </tbody>
 </table>
@@ -344,50 +344,50 @@ ratios %&gt;% knitr::kable()</code></pre>
 <tr class="odd">
 <td align="left">POTUS</td>
 <td align="right">0.056</td>
-<td align="right">0.298</td>
-<td align="right">5.32</td>
+<td align="right">0.300</td>
+<td align="right">5.36</td>
 </tr>
 <tr class="even">
 <td align="left">REALDONALDTRUMP</td>
-<td align="right">0.110</td>
-<td align="right">0.329</td>
-<td align="right">2.99</td>
+<td align="right">0.111</td>
+<td align="right">0.328</td>
+<td align="right">2.95</td>
 </tr>
 <tr class="odd">
 <td align="left">PRESIDENT TRUMP</td>
 <td align="right">0.090</td>
-<td align="right">0.128</td>
-<td align="right">1.42</td>
+<td align="right">0.130</td>
+<td align="right">1.44</td>
 </tr>
 <tr class="even">
 <td align="left">THE PRESIDENT</td>
-<td align="right">0.209</td>
-<td align="right">0.147</td>
-<td align="right">-1.42</td>
+<td align="right">0.208</td>
+<td align="right">0.150</td>
+<td align="right">-1.39</td>
 </tr>
 <tr class="odd">
 <td align="left">MR PRESIDENT</td>
-<td align="right">0.011</td>
+<td align="right">0.010</td>
 <td align="right">0.007</td>
-<td align="right">-1.57</td>
+<td align="right">-1.43</td>
 </tr>
 <tr class="even">
 <td align="left">DONALD TRUMP</td>
 <td align="right">0.012</td>
-<td align="right">0.004</td>
-<td align="right">-3.00</td>
+<td align="right">0.003</td>
+<td align="right">-4.00</td>
 </tr>
 <tr class="odd">
-<td align="left">TRUMP</td>
-<td align="right">0.374</td>
-<td align="right">0.062</td>
-<td align="right">-6.03</td>
-</tr>
-<tr class="even">
 <td align="left">TRUMP ADMINISTRATION</td>
 <td align="right">0.137</td>
 <td align="right">0.022</td>
 <td align="right">-6.23</td>
+</tr>
+<tr class="even">
+<td align="left">TRUMP</td>
+<td align="right">0.375</td>
+<td align="right">0.058</td>
+<td align="right">-6.47</td>
 </tr>
 </tbody>
 </table>
@@ -556,7 +556,7 @@ ggplot( aes(per_prez,
     backgroundPosition = &#39;right&#39;) </code></pre>
 <p><strong>Rates of 45-reference, total tweets &amp; 2016 Trump margins for members of the 116th House:</strong></p>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[["CA-43","CA-28","AZ-03","LA-03","MD-04","NC-11","OR-04","TN-09","CA-19","OH-04","CA-27","VA-08","CA-14","CA-02","TX-09","FL-21","NJ-09","AZ-05","NY-17","TX-04","NC-04","RI-01","TX-20","TX-35","AZ-07","CA-13","FL-01","FL-10","LA-01","MD-05","PA-03","CA-12","CA-47","CO-01","IL-01","MN-04","NJ-06","OH-09","WI-02","CA-08","MA-09","MI-04","IL-09","NY-08","TX-15","CA-31","CA-51","FL-02","FL-23","MO-05","NY-13","TX-36","VA-11","WI-04","CA-11","CA-15","CA-29","CA-33","CA-35","CA-37","CA-50","CA-53","IL-02","ME-01","MI-09","NY-18","SC-07","TX-27","TX-34","CA-30","CA-32","FL-20","IL-11","MA-05","NJ-10","NJ-12","NY-05","NY-07","OH-13","OK-01","TX-30","WA-09","CA-40","CA-41","CA-46","CO-07","IL-04","IL-05","KY-03","MI-14","NM-03","NY-16","TN-04","TN-07","TX-12","TX-16","CA-09","CA-34","CT-03","FL-11","FL-22","MA-02","MI-05","NY-10","NY-20","PA-02","TX-14","TX-18","TX-19","AL-04","CA-18","CA-39","CO-05","IN-07","MA-04","MI-13","PA-18","SC-03","TX-05","VT-AL","GA-08","MI-01","OH-03","PA-16","TX-26","WV-02","CA-06","CA-24","CA-48","CA-49","GA-04","GA-10","IN-08","LA-04","MD-02","MD-07","MD-08","NY-15","WA-07","CA-03","CA-17","CA-38","FL-04","FL-14","FL-19","GA-01","GA-09","LA-05","MO-08","NV-01","OK-02","TX-25","AR-01","CA-04","IA-04","KS-04","NC-01","NJ-01","NY-01","NY-06","OH-07","TX-11","WI-07","AL-05","AZ-02","CA-23","CA-52","FL-03","FL-09","IN-03","MD-01","MD-03","MD-06","MO-06","NH-02","OH-08","OR-01","PA-14","SC-05","TN-03","TX-06","TX-08","TX-33","WI-05","AZ-04","CT-04","FL-26","GA-11","GA-12","MO-03","NY-04","NY-12","NY-23","RI-02","TX-02","WA-04","WA-10","AL-01","AL-07","CO-02","FL-25","FL-27","IL-10","NY-02","NY-09","NY-25","OK-04","PA-04","PA-05","PA-13","TN-01","WA-01","AR-04","CA-21","CA-45","FL-16","FL-24","GA-02","GA-07","IL-18","MN-05","NC-06","NC-07","NJ-08","SC-06","TN-06","TX-01","VA-10","WY-AL","CA-01","CA-44","FL-17","IL-06","IL-12","IL-17","IN-02","MS-03","MS-04","NC-08","NM-02","TX-28","UT-02","WV-03","CA-07","IL-16","KY-05","MA-08","MO-04","MS-02","NC-10","NY-26","PA-11","SD-AL","TN-05","TN-08","TX-21","VA-01","VA-03","VA-04","WA-02","AK-AL","CA-16","CA-22","CT-02","GA-14","HI-02","IL-08","IN-06","ME-02","MN-01","NE-03","NH-01","OH-06","SC-02","TX-10","TX-29","VA-06","AL-02","AL-06","AZ-08","AZ-09","CA-25","CO-04","FL-06","IL-03","KY-04","LA-02","MA-01","MA-06","MI-08","NC-05","NC-12","NC-13","ND-AL","NM-01","NV-04","OR-02","PA-09","TX-31","AL-03","AR-02","CA-20","CA-42","CO-06","DE-AL","FL-07","FL-13","GA-05","IA-02","IL-13","KS-02","KY-02","KY-06","MA-03","MI-10","MN-03","NE-01","NJ-07","NY-27","OH-10","OH-11","OH-14","OK-03","PA-06","PA-07","PA-08","PA-15","SC-04","TX-13","TX-17","TX-32","WA-05","WI-08","AR-03","CA-05","CA-36","CT-01","FL-15","FL-18","GA-03","IA-03","ID-02","IL-07","LA-06","MI-12","MN-08","NE-02","NY-14","NY-21","OH-15","OR-05","PA-10","UT-03","WV-01","CO-03","FL-05","FL-12","GA-06","IA-01","ID-01","IL-14","IN-05","MA-07","MI-06","MI-07","MI-11","MO-02","MO-07","NY-03","NY-24","TN-02","TX-22","CT-05","HI-01","KS-03","MI-02","MN-06","MS-01","NC-02","NJ-02","NJ-11","NV-03","NY-11","NY-22","OH-02","OH-05","OH-16","SC-01","TX-03","TX-07","TX-23","UT-04","VA-02","VA-05","VA-07","WA-03","WA-08","WI-03","WI-06","AZ-01","AZ-06","CA-10","GA-13","IN-04","MN-02","NJ-03","NJ-05","NY-19","OH-12","OK-05","PA-01","PA-17","VA-09","WA-06","WI-01"],["Waters","Schiff","Grijalva","Higgins","Brown","Meadows","DeFazio","Cohen","Lofgren","Jordan","Chu","Beyer","Speier","Huffman","Green","Frankel","Pascrell","Biggs","Lowey","Ratcliffe","Price","Cicilline","Castro","Doggett","Gallego","Lee","Gaetz","Demings","Scalise","Hoyer","Evans","Pelosi","Lowenthal","DeGette","Rush","McCollum","Pallone","Kaptur","Pocan","Cook","Keating","Moolenaar","Schakowsky","Jeffries","Gonzalez","Aguilar","Vargas","Dunn","Wasserman Schultz","Cleaver","Espaillat","Babin","Connolly","Moore","DeSaulnier","Swalwell","Cárdenas","Lieu","Torres","Bass","Hunter","Davis","Kelly","Pingree","Levin","Maloney","Rice","Cloud","Vela","Sherman","Napolitano","Hastings","Foster","Clark","Payne","Watson Coleman","Meeks","Velázquez","Ryan","Hern","Johnson","Smith","Roybal-Allard","Takano","Correa","Perlmutter","García","Quigley","Yarmuth","Lawrence","Luján","Engel","DesJarlais","Green","Granger","Escobar","McNerney","Gomez","DeLauro","Webster","Deutch","McGovern","Kildee","Nadler","Tonko","Boyle","Weber","Jackson Lee","Arrington","Aderholt","Eshoo","Cisneros","Lamborn","Carson","Kennedy","Tlaib","Doyle","Duncan","Gooden","Welch","Scott","Bergman","Beatty","Kelly","Burgess","Mooney","Matsui","Carbajal","Rouda","Levin","Johnson","Hice","Bucshon","Johnson","Ruppersberger","Cummings","Raskin","Serrano","Jayapal","Garamendi","Khanna","Sánchez","Rutherford","Castor","Rooney","Carter","Collins","Abraham","Smith","Titus","Mullin","Williams","Crawford","McClintock","King","Estes","Butterfield","Norcross","Zeldin","Meng","Gibbs","Conaway","Duffy","Brooks","Kirkpatrick","McCarthy","Peters","Yoho","Soto","Banks","Harris","Sarbanes","Trone","Graves","Kuster","Davidson","Bonamici","Reschenthaler","Norman","Fleischmann","Wright","Brady","Veasey","Sensenbrenner","Gosar","Himes","Mucarsel-Powell","Loudermilk","Allen","Luetkemeyer","Rice","Maloney","Reed","Langevin","Crenshaw","Newhouse","Heck","Byrne","Sewell","Neguse","Diaz-Balart","Shalala","Schneider","King","Clarke","Morelle","Cole","Dean","Scanlon","Joyce","Roe","DelBene","Westerman","Cox","Porter","Buchanan","Wilson","Bishop","Woodall","LaHood","Omar","Walker","Rouzer","Sires","Clyburn","Rose","Gohmert","Wexton","Cheney","LaMalfa","Barragán","Steube","Casten","Bost","Bustos","Walorski","Guest","Palazzo","Hudson","Torres Small","Cuellar","Stewart","Miller","Bera","Kinzinger","Rogers","Lynch","Hartzler","Thompson","McHenry","Higgins","Smucker","Johnson","Cooper","Kustoff","Roy","Wittman","Scott","McEachin","Larsen","Young","Costa","Nunes","Courtney","Graves","Gabbard","Krishnamoorthi","Pence","Golden","Hagedorn","Smith","Pappas","Johnson","Wilson","McCaul","Garcia","Cline","Roby","Palmer","Lesko","Stanton","Hill","Buck","Waltz","Lipinski","Massie","Richmond","Neal","Moulton","Slotkin","Foxx","Adams","Budd","Armstrong","Haaland","Horsford","Walden","Meuser","Carter","Rogers","Hill","Panetta","Calvert","Crow","Blunt Rochester","Murphy","Crist","Lewis","Loebsack","Davis","Watkins","Guthrie","Barr","Trahan","Mitchell","Phillips","Fortenberry","Malinowski","Collins","Turner","Fudge","Joyce","Lucas","Houlahan","Wild","Cartwright","Thompson","Timmons","Thornberry","Flores","Allred","McMorris Rodgers","Gallagher","Womack","Thompson","Ruiz","Larson","Spano","Mast","Ferguson","Axne","Simpson","Davis","Graves","Dingell","Stauber","Bacon","Ocasio-Cortez","Stefanik","Stivers","Schrader","Perry","Curtis","McKinley","Tipton","Lawson","Bilirakis","McBath","Finkenauer","Fulcher","Underwood","Brooks","Pressley","Upton","Walberg","Stevens","Wagner","Long","Suozzi","Katko","Burchett","Olson","Hayes","Case","Davids","Huizenga","Emmer","Kelly","Holding","Van Drew","Sherrill","Lee","Rose","Brindisi","Wenstrup","Latta","Gonzalez","Cunningham","Taylor","Fletcher","Hurd","McAdams","Luria","Riggleman","Spanberger","Herrera Beutler","Schrier","Kind","Grothman","O’Halleran","Schweikert","Harder","Scott","Baird","Craig","Kim","Gottheimer","Delgado","Balderson","Horn","Fitzpatrick","Lamb","Griffith","Kilmer","Steil"],["D","D","D","R","D","R","D","D","D","R","D","D","D","D","D","D","D","R","D","R","D","D","D","D","D","D","R","D","R","D","D","D","D","D","D","D","D","D","D","R","D","R","D","D","D","D","D","R","D","D","D","R","D","D","D","D","D","D","D","D","R","D","D","D","D","D","R","R","D","D","D","D","D","D","D","D","D","D","D","R","D","D","D","D","D","D","D","D","D","D","D","D","R","R","R","D","D","D","D","R","D","D","D","D","D","D","R","D","R","R","D","D","R","D","D","D","D","R","R","D","R","R","D","R","R","R","D","D","D","D","D","R","R","R","D","D","D","D","D","D","D","D","R","D","R","R","R","R","R","D","R","R","R","R","R","R","D","D","R","D","R","R","R","R","D","R","D","R","D","R","R","D","D","R","D","R","D","R","R","R","R","R","D","R","R","D","D","R","R","R","D","D","R","D","R","R","D","R","D","D","R","D","D","R","D","D","R","D","D","R","R","D","R","D","D","R","D","D","R","R","D","R","R","D","D","R","R","D","R","R","D","R","D","R","D","R","R","R","R","D","D","R","R","D","R","R","D","R","D","R","D","R","R","D","R","R","R","D","D","D","R","D","R","D","R","D","D","R","D","R","R","D","R","R","R","D","R","R","R","R","D","D","R","R","D","R","D","D","D","D","R","D","R","R","D","D","R","R","R","R","R","D","R","D","D","D","D","D","D","R","R","R","R","D","R","D","R","D","R","R","D","R","R","D","D","D","R","R","R","R","D","R","R","R","D","D","D","R","R","R","D","R","D","R","D","R","R","D","R","R","D","R","R","R","R","D","R","D","D","R","D","R","D","R","R","D","R","R","D","R","R","R","D","D","D","R","R","R","R","D","D","D","D","D","R","R","R","D","R","D","R","D","D","R","D","R","D","D","R","D","R","D","D","R","D","D","D","D","R","D","R","D","R","D","R"],[0.6,0.55,0.42,0.38,0.38,0.36,0.36,0.36,0.34,0.34,0.33,0.33,0.32,0.31,0.31,0.3,0.3,0.29,0.29,0.29,0.28,0.28,0.28,0.28,0.27,0.27,0.27,0.27,0.27,0.27,0.27,0.26,0.26,0.26,0.26,0.26,0.26,0.26,0.26,0.25,0.25,0.25,0.24,0.24,0.24,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.17,0.17,0.17,0.17,0.17,0.17,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01],[114,185,615,121,432,226,109,781,87,312,330,387,586,102,213,502,505,1033,279,112,405,284,412,1045,267,1036,882,820,457,1269,617,745,678,449,309,708,1201,295,411,16,71,20,545,310,215,134,235,147,585,420,1235,221,309,389,835,370,241,297,508,350,201,171,554,430,498,537,215,40,23,332,224,326,262,327,381,497,308,1026,444,156,119,275,564,409,116,527,454,732,152,352,803,289,183,503,20,675,145,589,330,57,783,574,323,332,402,570,132,884,278,38,129,542,197,307,180,317,294,352,363,133,142,92,879,88,329,204,300,583,401,431,304,279,241,282,305,348,288,229,1237,521,1092,184,236,563,65,142,382,148,306,744,247,314,195,74,143,257,260,259,346,339,116,36,413,238,549,505,933,135,367,692,137,355,411,419,548,408,911,155,220,370,213,526,391,85,344,507,1624,240,172,140,278,1160,208,608,265,111,212,859,481,730,579,768,372,237,347,646,140,451,831,437,178,576,256,405,467,129,763,126,325,358,628,569,151,858,429,216,378,866,130,362,551,146,705,230,738,254,266,402,285,225,254,218,242,316,126,59,491,414,396,131,421,275,276,266,383,759,360,203,549,646,118,215,14,551,185,204,207,416,351,321,249,617,321,385,174,462,215,322,105,428,221,592,174,380,540,843,49,108,366,303,94,879,272,327,995,806,296,221,262,421,318,352,420,644,231,307,364,38,140,495,332,38,184,1110,417,479,223,195,225,128,291,239,172,704,529,111,337,73,41,402,436,407,418,545,964,301,357,203,498,179,388,89,114,141,623,261,1466,27,383,141,131,182,437,169,144,228,188,204,275,193,354,459,539,407,213,796,228,298,259,164,194,775,638,281,394,144,215,286,64,284,508,821,439,716,241,351,251,476,162,571,197,365,780,588,1095,171,210,169,551,692,253,515,80,170,592,343,963,815,230,251,367,185,100,542,544],[-61.7,-49.8,-29.9,38.1,-57.5,29.2,-0.1,-57.7,-51.4,33.6,-37.6,-52.6,-58.7,-45.7,-61.3,-19.5,-31.2,21.1,-20.2,53.6,-40,-25.6,-26.7,-33.6,-49.2,-80.6,39.3,-26.9,42,-32,-83.9,-77.5,-31.6,-45.8,-54,-30.9,-15.6,-22.2,-36.8,15.1,-10.7,24.8,-45.2,-71.1,-16.7,-21.1,-49,35.6,-26.1,-13.5,-86.9,46.8,-39.4,-52.2,-48.8,-45.7,-60.9,-41.3,-40.8,-76.1,15,-34.9,-58.9,-14.8,-7.8,1.9,18.9,23.6,-21.5,-43.4,-38.9,-62.1,-23.5,-43.6,-72.4,-33.2,-73,-76.5,-6.5,28.7,-60.8,-47.2,-69.4,-27.9,-38.4,-12,-68.9,-46.6,-15,-60.9,-15.1,-52.6,41.2,39.3,30.2,-40.7,-18.6,-72.9,-15.5,32.3,-15.8,-19.4,-4.2,-59.5,-13.5,-48,19.8,-56.5,49,63,-53.2,-8.6,24,-22.8,-24.2,-60.7,-27.5,38,28.4,-26.4,28.9,21.3,-38.4,20,26.5,36.4,-44.8,-20.2,-1.7,-7.5,-53.1,25.5,33.7,24,-24.4,-55.6,-34.4,-88.9,-69.9,-12.6,-53.4,-39.6,28,-18.2,22.1,15.5,58.5,29.4,54.4,-29,50.1,14.9,34.8,14.7,27.4,27.2,-37,-24.5,12.3,-33,29.7,58.7,20.4,33.4,-4.9,22,-22.5,16,-12.9,35,28.6,-30.5,-15.1,31.4,-2.4,34.5,-22.8,29,18.5,35.2,12.3,48.8,-49.2,20.1,40.2,-23,-16.3,25,16.2,39,-9.6,-69.8,14.8,-7.1,9.3,22.8,-11.4,29.4,-41.2,-21.3,1.8,-19.6,-29.4,9.1,-69.1,-16.4,37.4,-19.3,-28.2,45.7,57,-16.3,32.9,-15.5,-5.4,10.7,-67.5,-11.7,6.3,27.3,-55.2,14.7,17.7,-54.2,-36.5,48.9,46.9,-10,47.6,19.7,-70.7,27.2,-7,14.8,0.7,23.2,24.5,41.2,15,10.2,-19.8,14,49.2,-11.4,17.2,62.1,-26,36,-28.5,24.6,-19.6,25.8,29.8,-18.3,35.6,10,12.4,-31.7,-21.6,-22.1,15.2,-21.6,9.5,-2.9,52.9,-31.8,-21.7,40.3,10.3,14.9,54.9,1.6,42.6,17.7,9.1,-45.7,24.8,31.9,44.7,21.1,-16.3,-6.7,23.1,17,-15.3,35.9,-52.4,-20.7,-17.9,6.7,17.6,-40,9.4,36.4,-16.5,-4.9,20.1,34,12.7,33,10.7,-47.2,12,-8.9,-11.5,-7.3,-3.2,-73.1,4.1,5.5,18.4,39.9,15.3,-22.8,32.2,-9.4,21.3,-1.1,24.5,7.3,-63.5,11.5,52.7,-9.3,-1.1,9.6,43.3,25.7,63,17.5,-1.9,13.1,17.6,31.4,-44.9,-8.8,-23.1,10,9.2,31.5,3.5,24.7,-78.2,33.8,-26.3,15.6,2.2,-57.9,13.9,15.4,-4.2,8.9,23.9,41.6,12,-25.4,18.6,1.5,3.5,38.3,3.9,11.8,-72.2,8.4,17,4.4,10.3,45.7,-6.1,-3.6,35.4,7.9,-4.1,-32.6,-1.2,17.6,25.7,33,9.6,4.6,0.9,1,9.8,15.5,16.1,25.1,16.7,13.1,14.2,-1.4,-3.4,6.7,3.4,11.1,6.5,7.4,-3,4.5,16.9,1.1,10,-3,-44.4,34.1,1.2,6.2,1.1,6.8,11.3,13.4,-2,2.6,41.5,-12.3,10.3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>CD<\/th>\n      <th>last_name<\/th>\n      <th>party<\/th>\n      <th>per_prez<\/th>\n      <th>all_tweets<\/th>\n      <th>trump_margin<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"fixedColumns":{"leftColumns":[1,2,3]},"columnDefs":[{"className":"dt-right","targets":[3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.010000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (0.600000 - value)/0.590000 * 100 + '%, lightblue ' + (0.600000 - value)/0.590000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","extensions":["FixedColumns"],"data":[["CA-43","CA-28","AZ-03","LA-03","MD-04","OR-04","TN-09","CA-19","OH-04","CA-27","VA-08","CA-14","CA-02","TX-09","FL-21","NJ-09","AZ-05","NY-17","NC-04","RI-01","TX-20","TX-35","AZ-07","CA-13","FL-01","FL-10","LA-01","MD-05","PA-03","CA-12","CA-47","CO-01","IL-01","MN-04","NJ-06","OH-09","WI-02","CA-08","MA-09","MI-04","IL-09","NY-08","TX-15","CA-31","CA-51","FL-02","FL-23","MO-05","NY-13","TX-36","VA-11","WI-04","CA-11","CA-15","CA-29","CA-33","CA-35","CA-37","CA-53","IL-02","ME-01","MI-09","NY-18","SC-07","TX-27","TX-34","CA-30","CA-32","FL-20","IL-11","MA-05","NJ-10","NJ-12","NY-05","NY-07","OH-13","OK-01","TX-30","WA-09","CA-40","CA-41","CA-46","CO-07","IL-04","IL-05","KY-03","MI-14","NM-03","NY-16","TN-04","TN-07","TX-12","TX-16","CA-09","CA-34","CT-03","FL-11","FL-22","MA-02","MI-05","NY-10","NY-20","PA-02","TX-14","TX-18","TX-19","AL-04","CA-18","CA-39","CO-05","IN-07","MA-04","MI-13","PA-18","SC-03","TX-05","VT-AL","GA-08","MI-01","OH-03","PA-16","TX-26","WV-02","CA-06","CA-24","CA-48","CA-49","GA-04","GA-10","IN-08","LA-04","MD-02","MD-08","NY-15","WA-07","CA-03","CA-17","CA-38","FL-04","FL-14","FL-19","GA-01","GA-09","LA-05","MO-08","NV-01","OK-02","TX-25","AR-01","CA-04","IA-04","KS-04","NC-01","NJ-01","NY-01","NY-06","OH-07","TX-11","AL-05","AZ-02","CA-23","CA-52","FL-03","FL-09","IN-03","MD-01","MD-03","MD-06","MO-06","NH-02","OH-08","OR-01","PA-14","SC-05","TN-03","TX-06","TX-08","TX-33","WI-05","AZ-04","CT-04","FL-26","GA-11","GA-12","MO-03","NY-04","NY-12","NY-23","RI-02","TX-02","WA-04","WA-10","AL-01","AL-07","CO-02","FL-25","FL-27","IL-10","NY-02","NY-09","NY-25","OK-04","PA-04","PA-05","PA-13","TN-01","WA-01","AR-04","CA-21","CA-45","FL-16","FL-24","GA-02","GA-07","IL-18","MN-05","NC-06","NC-07","NJ-08","SC-06","TN-06","TX-01","VA-10","WY-AL","CA-01","CA-44","FL-17","IL-06","IL-12","IL-17","IN-02","MS-03","MS-04","NC-08","NM-02","TX-28","UT-02","WV-03","CA-07","IL-16","KY-05","MA-08","MO-04","MS-02","NC-10","NY-26","PA-11","SD-AL","TN-05","TN-08","TX-21","VA-01","VA-03","VA-04","WA-02","AK-AL","CA-16","CA-22","CT-02","GA-14","HI-02","IL-08","IN-06","ME-02","MN-01","NE-03","NH-01","OH-06","SC-02","TX-10","TX-29","VA-06","AL-02","AL-06","AZ-08","AZ-09","CO-04","FL-06","IL-03","KY-04","LA-02","MA-01","MA-06","MI-08","NC-05","NC-12","NC-13","ND-AL","NM-01","NV-04","OR-02","PA-09","TX-31","AL-03","AR-02","CA-20","CA-42","CO-06","DE-AL","FL-07","FL-13","GA-05","IA-02","IL-13","KS-02","KY-02","KY-06","MA-03","MI-10","MN-03","NE-01","NJ-07","OH-10","OH-11","OH-14","OK-03","PA-06","PA-07","PA-08","PA-15","SC-04","TX-13","TX-17","TX-32","WA-05","WI-08","AR-03","CA-05","CT-01","FL-15","FL-18","GA-03","IA-03","ID-02","IL-07","LA-06","MI-12","MN-08","NE-02","NY-14","NY-21","OH-15","OR-05","PA-10","UT-03","WV-01","CO-03","FL-05","FL-12","GA-06","IA-01","ID-01","IL-14","IN-05","MA-07","MI-06","MI-07","MI-11","MO-02","MO-07","NY-03","NY-24","TN-02","TX-22","CT-05","HI-01","KS-03","MI-02","MN-06","MS-01","NC-02","NJ-02","NJ-11","NV-03","NY-11","NY-22","OH-02","OH-05","OH-16","SC-01","TX-03","TX-07","TX-23","UT-04","VA-02","VA-05","VA-07","WA-03","WA-08","WI-03","WI-06","AZ-01","AZ-06","CA-10","GA-13","IN-04","MN-02","NJ-03","NJ-05","NY-19","OH-12","OK-05","PA-01","PA-17","VA-09","WA-06","WI-01"],["Waters","Schiff","Grijalva","Higgins","Brown","DeFazio","Cohen","Lofgren","Jordan","Chu","Beyer","Speier","Huffman","Green","Frankel","Pascrell","Biggs","Lowey","Price","Cicilline","Castro","Doggett","Gallego","Lee","Gaetz","Demings","Scalise","Hoyer","Evans","Pelosi","Lowenthal","DeGette","Rush","McCollum","Pallone","Kaptur","Pocan","Cook","Keating","Moolenaar","Schakowsky","Jeffries","Gonzalez","Aguilar","Vargas","Dunn","Wasserman Schultz","Cleaver","Espaillat","Babin","Connolly","Moore","DeSaulnier","Swalwell","Cárdenas","Lieu","Torres","Bass","Davis","Kelly","Pingree","Levin","Maloney","Rice","Cloud","Vela","Sherman","Napolitano","Hastings","Foster","Clark","Payne","Watson Coleman","Meeks","Velázquez","Ryan","Hern","Johnson","Smith","Roybal-Allard","Takano","Correa","Perlmutter","García","Quigley","Yarmuth","Lawrence","Luján","Engel","DesJarlais","Green","Granger","Escobar","McNerney","Gomez","DeLauro","Webster","Deutch","McGovern","Kildee","Nadler","Tonko","Boyle","Weber","Jackson Lee","Arrington","Aderholt","Eshoo","Cisneros","Lamborn","Carson","Kennedy","Tlaib","Doyle","Duncan","Gooden","Welch","Scott","Bergman","Beatty","Kelly","Burgess","Mooney","Matsui","Carbajal","Rouda","Levin","Johnson","Hice","Bucshon","Johnson","Ruppersberger","Raskin","Serrano","Jayapal","Garamendi","Khanna","Sánchez","Rutherford","Castor","Rooney","Carter","Collins","Abraham","Smith","Titus","Mullin","Williams","Crawford","McClintock","King","Estes","Butterfield","Norcross","Zeldin","Meng","Gibbs","Conaway","Brooks","Kirkpatrick","McCarthy","Peters","Yoho","Soto","Banks","Harris","Sarbanes","Trone","Graves","Kuster","Davidson","Bonamici","Reschenthaler","Norman","Fleischmann","Wright","Brady","Veasey","Sensenbrenner","Gosar","Himes","Mucarsel-Powell","Loudermilk","Allen","Luetkemeyer","Rice","Maloney","Reed","Langevin","Crenshaw","Newhouse","Heck","Byrne","Sewell","Neguse","Diaz-Balart","Shalala","Schneider","King","Clarke","Morelle","Cole","Dean","Scanlon","Joyce","Roe","DelBene","Westerman","Cox","Porter","Buchanan","Wilson","Bishop","Woodall","LaHood","Omar","Walker","Rouzer","Sires","Clyburn","Rose","Gohmert","Wexton","Cheney","LaMalfa","Barragán","Steube","Casten","Bost","Bustos","Walorski","Guest","Palazzo","Hudson","Torres Small","Cuellar","Stewart","Miller","Bera","Kinzinger","Rogers","Lynch","Hartzler","Thompson","McHenry","Higgins","Smucker","Johnson","Cooper","Kustoff","Roy","Wittman","Scott","McEachin","Larsen","Young","Costa","Nunes","Courtney","Graves","Gabbard","Krishnamoorthi","Pence","Golden","Hagedorn","Smith","Pappas","Johnson","Wilson","McCaul","Garcia","Cline","Roby","Palmer","Lesko","Stanton","Buck","Waltz","Lipinski","Massie","Richmond","Neal","Moulton","Slotkin","Foxx","Adams","Budd","Armstrong","Haaland","Horsford","Walden","Meuser","Carter","Rogers","Hill","Panetta","Calvert","Crow","Blunt Rochester","Murphy","Crist","Lewis","Loebsack","Davis","Watkins","Guthrie","Barr","Trahan","Mitchell","Phillips","Fortenberry","Malinowski","Turner","Fudge","Joyce","Lucas","Houlahan","Wild","Cartwright","Thompson","Timmons","Thornberry","Flores","Allred","McMorris Rodgers","Gallagher","Womack","Thompson","Larson","Spano","Mast","Ferguson","Axne","Simpson","Davis","Graves","Dingell","Stauber","Bacon","Ocasio-Cortez","Stefanik","Stivers","Schrader","Perry","Curtis","McKinley","Tipton","Lawson","Bilirakis","McBath","Finkenauer","Fulcher","Underwood","Brooks","Pressley","Upton","Walberg","Stevens","Wagner","Long","Suozzi","Katko","Burchett","Olson","Hayes","Case","Davids","Huizenga","Emmer","Kelly","Holding","Van Drew","Sherrill","Lee","Rose","Brindisi","Wenstrup","Latta","Gonzalez","Cunningham","Taylor","Fletcher","Hurd","McAdams","Luria","Riggleman","Spanberger","Herrera Beutler","Schrier","Kind","Grothman","O’Halleran","Schweikert","Harder","Scott","Baird","Craig","Kim","Gottheimer","Delgado","Balderson","Horn","Fitzpatrick","Lamb","Griffith","Kilmer","Steil"],["D","D","D","R","D","D","D","D","R","D","D","D","D","D","D","D","R","D","D","D","D","D","D","D","R","D","R","D","D","D","D","D","D","D","D","D","D","R","D","R","D","D","D","D","D","R","D","D","D","R","D","D","D","D","D","D","D","D","D","D","D","D","D","R","R","D","D","D","D","D","D","D","D","D","D","D","R","D","D","D","D","D","D","D","D","D","D","D","D","R","R","R","D","D","D","D","R","D","D","D","D","D","D","R","D","R","R","D","D","R","D","D","D","D","R","R","D","R","R","D","R","R","R","D","D","D","D","D","R","R","R","D","D","D","D","D","D","D","R","D","R","R","R","R","R","D","R","R","R","R","R","R","D","D","R","D","R","R","R","D","R","D","R","D","R","R","D","D","R","D","R","D","R","R","R","R","R","D","R","R","D","D","R","R","R","D","D","R","D","R","R","D","R","D","D","R","D","D","R","D","D","R","D","D","R","R","D","R","D","D","R","D","D","R","R","D","R","R","D","D","R","R","D","R","R","D","R","D","R","D","R","R","R","R","D","D","R","R","D","R","R","D","R","D","R","D","R","R","D","R","R","R","D","D","D","R","D","R","D","R","D","D","R","D","R","R","D","R","R","R","D","R","R","R","R","D","R","R","D","R","D","D","D","D","R","D","R","R","D","D","R","R","R","R","R","D","R","D","D","D","D","D","D","R","R","R","R","D","R","D","R","D","R","D","R","R","D","D","D","R","R","R","R","D","R","R","R","D","D","R","R","R","D","R","D","R","D","R","R","D","R","R","D","R","R","R","R","D","R","D","D","R","D","R","D","R","R","D","R","R","D","R","R","R","D","D","D","R","R","R","R","R","D","D","D","D","R","R","R","D","R","D","R","D","D","R","D","R","D","D","R","D","R","D","D","R","D","D","D","D","R","D","R","D","R","D","R"],[0.6,0.55,0.42,0.38,0.38,0.36,0.36,0.34,0.34,0.33,0.33,0.32,0.31,0.31,0.3,0.3,0.29,0.29,0.28,0.28,0.28,0.28,0.27,0.27,0.27,0.27,0.27,0.27,0.27,0.26,0.26,0.26,0.26,0.26,0.26,0.26,0.26,0.25,0.25,0.25,0.24,0.24,0.24,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.23,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.22,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.21,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.19,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.17,0.17,0.17,0.17,0.17,0.17,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.15,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.14,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.13,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.09,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.08,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.07,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.06,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01],[114,185,615,121,432,109,781,87,312,330,387,586,102,213,502,505,1033,279,405,284,412,1045,267,1036,882,820,457,1269,617,745,678,449,309,708,1201,295,411,16,71,20,545,310,215,134,235,147,585,420,1235,221,309,389,835,370,241,297,508,350,171,554,430,498,537,215,40,23,332,224,326,262,327,381,497,308,1026,444,156,119,275,564,409,116,527,454,732,152,352,803,289,183,503,20,675,145,589,330,57,783,574,323,332,402,570,132,884,278,38,129,542,197,307,180,317,294,352,363,133,142,92,879,88,329,204,300,583,401,431,304,279,241,282,305,288,229,1237,521,1092,184,236,563,65,142,382,148,306,744,247,314,195,74,143,257,260,259,346,339,116,36,238,549,505,933,135,367,692,137,355,411,419,548,408,911,155,220,370,213,526,391,85,344,507,1624,240,172,140,278,1160,208,608,265,111,212,859,481,730,579,768,372,237,347,646,140,451,831,437,178,576,256,405,467,129,763,126,325,358,628,569,151,858,429,216,378,866,130,362,551,146,705,230,738,254,266,402,285,225,254,218,242,316,126,59,491,414,396,131,421,275,276,266,383,759,360,203,549,646,118,215,14,551,185,204,207,416,351,321,249,617,321,385,174,462,215,322,105,428,221,174,380,540,843,49,108,366,303,94,879,272,327,995,806,296,221,262,421,318,352,420,644,231,307,364,38,140,495,332,38,184,1110,417,479,223,195,128,291,239,172,704,529,111,337,73,41,402,436,407,418,545,964,357,203,498,179,388,89,114,141,623,261,1466,27,383,141,131,182,437,169,144,228,188,204,275,193,354,459,539,407,213,796,228,298,259,164,194,775,638,281,394,144,215,286,64,284,508,821,439,716,241,351,251,476,162,571,197,365,780,588,1095,171,210,169,551,692,253,515,80,170,592,343,963,815,230,251,367,185,100,542,544],[-61.7,-49.8,-29.9,38.1,-57.5,-0.1,-57.7,-51.4,33.6,-37.6,-52.6,-58.7,-45.7,-61.3,-19.5,-31.2,21.1,-20.2,-40,-25.6,-26.7,-33.6,-49.2,-80.6,39.3,-26.9,42,-32,-83.9,-77.5,-31.6,-45.8,-54,-30.9,-15.6,-22.2,-36.8,15.1,-10.7,24.8,-45.2,-71.1,-16.7,-21.1,-49,35.6,-26.1,-13.5,-86.9,46.8,-39.4,-52.2,-48.8,-45.7,-60.9,-41.3,-40.8,-76.1,-34.9,-58.9,-14.8,-7.8,1.9,18.9,23.6,-21.5,-43.4,-38.9,-62.1,-23.5,-43.6,-72.4,-33.2,-73,-76.5,-6.5,28.7,-60.8,-47.2,-69.4,-27.9,-38.4,-12,-68.9,-46.6,-15,-60.9,-15.1,-52.6,41.2,39.3,30.2,-40.7,-18.6,-72.9,-15.5,32.3,-15.8,-19.4,-4.2,-59.5,-13.5,-48,19.8,-56.5,49,63,-53.2,-8.6,24,-22.8,-24.2,-60.7,-27.5,38,28.4,-26.4,28.9,21.3,-38.4,20,26.5,36.4,-44.8,-20.2,-1.7,-7.5,-53.1,25.5,33.7,24,-24.4,-34.4,-88.9,-69.9,-12.6,-53.4,-39.6,28,-18.2,22.1,15.5,58.5,29.4,54.4,-29,50.1,14.9,34.8,14.7,27.4,27.2,-37,-24.5,12.3,-33,29.7,58.7,33.4,-4.9,22,-22.5,16,-12.9,35,28.6,-30.5,-15.1,31.4,-2.4,34.5,-22.8,29,18.5,35.2,12.3,48.8,-49.2,20.1,40.2,-23,-16.3,25,16.2,39,-9.6,-69.8,14.8,-7.1,9.3,22.8,-11.4,29.4,-41.2,-21.3,1.8,-19.6,-29.4,9.1,-69.1,-16.4,37.4,-19.3,-28.2,45.7,57,-16.3,32.9,-15.5,-5.4,10.7,-67.5,-11.7,6.3,27.3,-55.2,14.7,17.7,-54.2,-36.5,48.9,46.9,-10,47.6,19.7,-70.7,27.2,-7,14.8,0.7,23.2,24.5,41.2,15,10.2,-19.8,14,49.2,-11.4,17.2,62.1,-26,36,-28.5,24.6,-19.6,25.8,29.8,-18.3,35.6,10,12.4,-31.7,-21.6,-22.1,15.2,-21.6,9.5,-2.9,52.9,-31.8,-21.7,40.3,10.3,14.9,54.9,1.6,42.6,17.7,9.1,-45.7,24.8,31.9,44.7,21.1,-16.3,23.1,17,-15.3,35.9,-52.4,-20.7,-17.9,6.7,17.6,-40,9.4,36.4,-16.5,-4.9,20.1,34,12.7,33,10.7,-47.2,12,-8.9,-11.5,-7.3,-3.2,-73.1,4.1,5.5,18.4,39.9,15.3,-22.8,32.2,-9.4,21.3,-1.1,7.3,-63.5,11.5,52.7,-9.3,-1.1,9.6,43.3,25.7,63,17.5,-1.9,13.1,17.6,31.4,-44.9,-23.1,10,9.2,31.5,3.5,24.7,-78.2,33.8,-26.3,15.6,2.2,-57.9,13.9,15.4,-4.2,8.9,23.9,41.6,12,-25.4,18.6,1.5,3.5,38.3,3.9,11.8,-72.2,8.4,17,4.4,10.3,45.7,-6.1,-3.6,35.4,7.9,-4.1,-32.6,-1.2,17.6,25.7,33,9.6,4.6,0.9,1,9.8,15.5,16.1,25.1,16.7,13.1,14.2,-1.4,-3.4,6.7,3.4,11.1,6.5,7.4,-3,4.5,16.9,1.1,10,-3,-44.4,34.1,1.2,6.2,1.1,6.8,11.3,13.4,-2,2.6,41.5,-12.3,10.3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>CD<\/th>\n      <th>last_name<\/th>\n      <th>party<\/th>\n      <th>per_prez<\/th>\n      <th>all_tweets<\/th>\n      <th>trump_margin<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"scrollX":true,"fixedColumns":{"leftColumns":[1,2,3]},"columnDefs":[{"className":"dt-right","targets":[3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.010000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (0.600000 - value)/0.590000 * 100 + '%, lightblue ' + (0.600000 - value)/0.590000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <p>Last question, then: to what extent does a congressional district’s collective support for 45 (per 2016 Trump margins) influence the rate at which House Reps reference 45 on Twitter?</p>
 <p>The much talked about freshmen class of House Dems, for example, is largely comprised of folks from districts that supported Trump in 2016. As such, freshmen Dems are generally more centrist ideologically, representing districts with mixed feeling towards 45. Do they tend to play it safe on Twitter (and with their constituents), and keep the president’s name out of their Twitter mouths?</p>
 <p><strong>Per the plot below</strong>, this would seem to be the case (although freshmen Dems are not explicitly identified). Circe size reflects total tweet count. House members on both sides of the aisle representing districts with slimmer 2016 Trump margins reference 45 on Twitter at lower rates.</p>
