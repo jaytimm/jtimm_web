@@ -57,7 +57,8 @@ dictionary %>%
   filter(descriptor_name %in% c('antiviral', 'hand-hygiene')) %>%
   group_by(category, descriptor_name) %>%
   summarize(term_names = paste0(term_name, collapse = ' | '))  %>%
-  DT::datatable(rownames = FALSE, options = list(dom = 't'))
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 
@@ -107,7 +108,8 @@ tweets1 %>%
   filter(type == 'sen') %>%
   sample_n(3) %>%
   select(6, state_abbrev, created_at, text) %>%
-  DT::datatable(rownames = FALSE, options = list(dom = 't')) #%>%
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE)) #%>%
   #DT::formatStyle(c(1:6),fontSize = '85%')
 ```
 
@@ -306,7 +308,8 @@ term_freqs %>%
   mutate(tf = paste0(term, ' (', term_count, ')')) %>%
   group_by(descriptor_name) %>%
   summarize(relative = paste0(tf, collapse = ' | ')) %>%
-  DT::datatable(rownames = FALSE, options = list(dom = 't'))
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 
@@ -460,7 +463,8 @@ The table below illustrates several examples of the relative prevalences of COVI
 descriptor_by_party %>%
   head() %>%
   mutate_at(c('Democrat', 'Republican', 'ratio'), round, digits = 4) %>%
-  knitr::kable()
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 
@@ -650,7 +654,8 @@ nns %>%
   mutate(neighbors = paste0(term2, ' (', value, ')')) %>%
   group_by(term1) %>%
   summarize(neighbors = paste0(neighbors, collapse = ' | ')) %>%
-  DT::datatable(rownames = FALSE, options = list(dom = 't'))
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 

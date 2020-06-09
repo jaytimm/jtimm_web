@@ -65,9 +65,10 @@ dictionary &lt;-  readxl::read_xlsx (&#39;covid_glossary_w_variants.xlsx&#39;) %
   filter(descriptor_name %in% c(&#39;antiviral&#39;, &#39;hand-hygiene&#39;)) %&gt;%
   group_by(category, descriptor_name) %&gt;%
   summarize(term_names = paste0(term_name, collapse = &#39; | &#39;))  %&gt;%
-  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;))</code></pre>
+  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;,
+                                                 scrollX = TRUE))</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["interventions","prevention"],["antiviral","hand-hygiene"],["anti viral | anti virals | anti_viral | anti_virals | anti-viral | anti-virals | antiviral | antivirals","hand hygiene | hand_hygiene | hand-hygiene | handhygiene"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>category<\/th>\n      <th>descriptor_name<\/th>\n      <th>term_names<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["interventions","prevention"],["antiviral","hand-hygiene"],["anti viral | anti virals | anti_viral | anti_virals | anti-viral | anti-virals | antiviral | antivirals","hand hygiene | hand_hygiene | hand-hygiene | handhygiene"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>category<\/th>\n      <th>descriptor_name<\/th>\n      <th>term_names<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="congressional-twitter-corpus-2020" class="section level2">
 <h2>Congressional Twitter Corpus (2020)</h2>
@@ -106,7 +107,7 @@ tweets1 &lt;- tweets %&gt;%
             by = c(&#39;screen_name&#39; = &#39;twitter&#39;))</code></pre>
 <p><strong>Some sample tweets:</strong></p>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Carper","Reed","Scott"],["DE","RI","FL"],["2020-04-28","2020-03-22","2020-03-19"],["In a democracy, there must be a smooth, peaceful transition of power from one administration to the next. And candidates need to have a plan to do that.","Testing, testing, testing.\nThe Trump Admin’s epic failure to secure &amp;amp; deploy #coronavirus testing kits continues to hinder response &amp;amp; containment. Everyone should have access to testing &amp;amp; every hospital should be granted access to #PPE. We must speed assistance to those in need.","Right now, Congress needs to focus on the Americans that are hurt most by the #Coronavirus.\n\nCongress needs to break up the stimulus package and focus on getting relief to our small businesses, hourly workers &amp;amp; individuals whose livelihoods depend on tips. https://t.co/HzXHiZUlFj"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>last_name<\/th>\n      <th>state_abbrev<\/th>\n      <th>created_at<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Carper","Reed","Scott"],["DE","RI","FL"],["2020-04-28","2020-03-22","2020-03-19"],["In a democracy, there must be a smooth, peaceful transition of power from one administration to the next. And candidates need to have a plan to do that.","Testing, testing, testing.\nThe Trump Admin’s epic failure to secure &amp;amp; deploy #coronavirus testing kits continues to hinder response &amp;amp; containment. Everyone should have access to testing &amp;amp; every hospital should be granted access to #PPE. We must speed assistance to those in need.","Right now, Congress needs to focus on the Americans that are hurt most by the #Coronavirus.\n\nCongress needs to break up the stimulus package and focus on getting relief to our small businesses, hourly workers &amp;amp; individuals whose livelihoods depend on tips. https://t.co/HzXHiZUlFj"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>last_name<\/th>\n      <th>state_abbrev<\/th>\n      <th>created_at<\/th>\n      <th>text<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p><br></p>
 <hr />
 </div>
@@ -250,9 +251,10 @@ descriptor_freq &lt;- term_freqs %&gt;%
   mutate(tf = paste0(term, &#39; (&#39;, term_count, &#39;)&#39;)) %&gt;%
   group_by(descriptor_name) %&gt;%
   summarize(relative = paste0(tf, collapse = &#39; | &#39;)) %&gt;%
-  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;))</code></pre>
+  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;,
+                                                 scrollX = TRUE))</code></pre>
 <div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["flatten-the-curve","front-line-workers","social-distancing"],["flattenthecurve (362) | flatten the curve (140) | flattening the curve (51) | flatteningthecurve (7)","frontline workers (481) | front line workers (89) | frontline worker (7) | frontlineworkers (3)","social distancing (1345) | socialdistancing (153) | social distance (86) | socialdistance (13) | socially distant (10) | socially distanced (8) | social distanced (2)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>descriptor_name<\/th>\n      <th>relative<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["flatten-the-curve","front-line-workers","social-distancing"],["flattenthecurve (362) | flatten the curve (140) | flattening the curve (51) | flatteningthecurve (7)","frontline workers (481) | front line workers (89) | frontline worker (7) | frontlineworkers (3)","social distancing (1345) | socialdistancing (153) | social distance (86) | socialdistance (13) | socially distant (10) | socially distanced (8) | social distanced (2)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>descriptor_name<\/th>\n      <th>relative<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>So, the trickier/hackier part is complete. The <code>text2vec</code> vocabulary object now recognizes the multi-word expressions in our COVID19 lexicon as single units of meaning. And we can carry on.</p>
 </div>
 </div>
@@ -367,61 +369,8 @@ for_plot_historical %&gt;%
   mutate(ratio = round(ratio * 100, 2)) %&gt;%
   filter(!is.na(ratio) &amp; abs(ratio) &lt; 200)</code></pre>
 <p>The table below illustrates several examples of the relative prevalences of COVID19-related concepts as a function of political affiliation. Interpreting table, eg: Republicans are ~30% more likely than Democrats to reference <code>american-dream</code> on Twitter.</p>
-<table>
-<thead>
-<tr class="header">
-<th align="left">descriptor_name</th>
-<th align="right">descriptor_total</th>
-<th align="right">Democrat</th>
-<th align="right">Republican</th>
-<th align="right">ratio</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">american-dream</td>
-<td align="right">112</td>
-<td align="right">2.07</td>
-<td align="right">2.71</td>
-<td align="right">30.92</td>
-</tr>
-<tr class="even">
-<td align="left">cares-act</td>
-<td align="right">3476</td>
-<td align="right">62.82</td>
-<td align="right">86.22</td>
-<td align="right">37.25</td>
-</tr>
-<tr class="odd">
-<td align="left">civil-liberty</td>
-<td align="right">75</td>
-<td align="right">1.30</td>
-<td align="right">1.95</td>
-<td align="right">50.00</td>
-</tr>
-<tr class="even">
-<td align="left">close-contact</td>
-<td align="right">155</td>
-<td align="right">4.04</td>
-<td align="right">1.84</td>
-<td align="right">-119.57</td>
-</tr>
-<tr class="odd">
-<td align="left">community-spread</td>
-<td align="right">54</td>
-<td align="right">1.37</td>
-<td align="right">0.70</td>
-<td align="right">-95.71</td>
-</tr>
-<tr class="even">
-<td align="left">coronavirus</td>
-<td align="right">16397</td>
-<td align="right">313.64</td>
-<td align="right">378.67</td>
-<td align="right">20.73</td>
-</tr>
-</tbody>
-</table>
+<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[["american-dream","cares-act","civil-liberty","close-contact","community-spread","coronavirus"],[112,3476,75,155,54,16397],[2.07,62.82,1.3,4.04,1.37,313.64],[2.71,86.22,1.95,1.84,0.7,378.67],[30.92,37.25,50,-119.57,-95.71,20.73]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>descriptor_name<\/th>\n      <th>descriptor_total<\/th>\n      <th>Democrat<\/th>\n      <th>Republican<\/th>\n      <th>ratio<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p><strong>COVID19-concepts politicized</strong>. A Democrat-Republican continuum. Concepts in green are ~neutral. Certainly some interesting differences, that shed light on both ideology and constituency demographics.</p>
 <pre class="r"><code>descriptor_by_party %&gt;%
   mutate(col1 = ifelse(ratio &gt; 0, &#39;red&#39;, &#39;blue&#39;)) %&gt;%
@@ -527,8 +476,8 @@ nns &lt;- lapply(eg_terms,
               include_targ = T) %&gt;%
   bind_rows()</code></pre>
 <p><strong>Top 10 nearest neighbors</strong> for <code>stay-at-home</code>, <code>outbreak</code>, <code>front-line-workers</code>, <code>vaccine</code> &amp; <code>relief</code>. So, despite a relatively small corpus, some fairly nice results.</p>
-<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[["front-line-workers","outbreak","relief","stay-at-home","vaccine"],["essential-workers (0.584) | first-responders (0.537) | ppe (0.484) | heroes (0.479) | professionals (0.465) | nurses (0.455) | frontline (0.452) | equipment (0.45) | doctors (0.446) | frontlines (0.443)","coronavirus (0.66) | pandemic (0.57) | covid (0.538) | covidー19 (0.526) | crisis (0.502) | spread (0.477) | response (0.471) | virus (0.463) | impacts (0.457) | combat (0.454)","funding (0.604) | aid (0.578) | additional (0.576) | provide (0.573) | bill (0.567) | support (0.565) | package (0.561) | assistance (0.557) | cares-act (0.541) | resources (0.538)","practice (0.564) | social-distancing (0.554) | flatten-the-curve (0.48) | sick (0.475) | stay (0.441) | avoid (0.436) | staying (0.405) | unless (0.397) | you (0.369) | except (0.349)","treatments (0.577) | develop (0.459) | therapies (0.415) | treatment (0.405) | development (0.38) | easy (0.38) | tests (0.349) | genesis (0.327) | research (0.322) | remains (0.321)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>term1<\/th>\n      <th>neighbors<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[["front-line-workers","outbreak","relief","stay-at-home","vaccine"],["essential-workers (0.585) | first-responders (0.539) | ppe (0.484) | heroes (0.483) | professionals (0.466) | frontline (0.455) | nurses (0.454) | equipment (0.451) | doctors (0.446) | frontlines (0.445)","coronavirus (0.661) | pandemic (0.566) | covid (0.542) | covidー19 (0.531) | crisis (0.504) | spread (0.479) | response (0.471) | virus (0.468) | impacts (0.461) | combat (0.45)","funding (0.603) | aid (0.578) | additional (0.577) | provide (0.575) | bill (0.567) | support (0.563) | package (0.562) | assistance (0.557) | cares-act (0.541) | resources (0.54)","practice (0.563) | social-distancing (0.554) | flatten-the-curve (0.481) | sick (0.475) | stay (0.444) | avoid (0.435) | staying (0.407) | unless (0.398) | you (0.368) | except (0.349)","treatments (0.577) | develop (0.458) | therapies (0.417) | treatment (0.402) | development (0.381) | easy (0.38) | tests (0.35) | genesis (0.327) | research (0.323) | remains (0.319)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>term1<\/th>\n      <th>neighbors<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>For a smarter approach to visualizing nearest neighbors, as well as visualizing lexical semantic change historically, see <a href="https://www.jtimm.net/2019/04/14/lexical-change-procrustes/">this post</a>. Or, a similar analysis <a href="https://github.com/jaytimm/google_ngrams_and_R">utilizing Google n-gram data</a>.</p>
 <p>In the second application, we consider a <strong>two-dimensional perspective on the semantic relatedness</strong> of concepts included in our COVID19 lexicon. While we have built vectors for all forms attested in the Congressional Twitter Corpus, here we subset this matrix to just COVID19 concepts. Via classical multidimensional scaling, we project 128 features (per GloVe) into two-dimensional Euclidean space.</p>
 <pre class="r"><code>set.seed(99)
