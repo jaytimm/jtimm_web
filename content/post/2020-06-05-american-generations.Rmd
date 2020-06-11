@@ -1,6 +1,6 @@
 ---
 title: 'the seven living generations in america' 
-date: '2020-06-05'
+date: '2020-06-10'
 slug: american-generations
 output:
   blogdown::html_page:
@@ -12,7 +12,7 @@ tags:
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/generations.png
-description: "Some perspectives on America's living generations."
+description: "Some methods & a roll call."
 ---
 
 
@@ -34,11 +34,19 @@ range <- c('> 2012', '1997-2012', '1981-1996',
 gen_desc <- data.frame(rank = 7:1,
                        gen = gen,
                        range = range,
-                       stringsAsFactors = FALSE)%>%
+                       stringsAsFactors = FALSE) %>%
   arrange(rank)
-
-knitr::kable(gen_desc)
 ```
+
+
+
+**A summary:**
+
+```{r echo=FALSE}
+DT::datatable(gen_desc, rownames = FALSE, options = list(dom = 't',
+                                                         scrollX = TRUE))
+```
+
 
 
 Four of America's seven living generations are more or less "complete," and only getting smaller (albeit at different rates): `Greatest`, `Silent`, `Boomers`, and `Gen X`. The generation comprised of `Millenials` is complete as well, in that it has been delineated chronologically; however, the group likely continues to grow via immigration.  
@@ -111,14 +119,17 @@ gen_pops <- pops %>%
 set.seed(999)
 gen_pops %>% sample_n(7)  %>%
   select(gen, range, race1:pop) %>%
-  knitr::kable()
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 
 
-## American population by generation
+## Composition of American generations
 
-The figure below summarizes the populations of America's seven living generations.  These numbers will vary some depending on the data source.  **Millenials constitute the plurality of Americans**, more recently overtaking a Boomer generation on the wane.
+### Population by generation
+
+The figure below summarizes the US population by generation.  These numbers will vary some depending on the data source.  **Millenials constitute the plurality of Americans**, more recently overtaking a Boomer generation on the wane.
 
 ```{r fig.height=5}
 gen_pops %>%
@@ -144,7 +155,7 @@ gen_pops %>%
 
 
 
-## American generations by age & race
+### Population by single year of age & generation
 
 ```{r}
 gg <- gen_pops %>% 
@@ -155,9 +166,6 @@ gg <- gen_pops %>%
   filter(yob %in% c('1919', '1928', '1946', '1965', 
                     '1981', '1997', '2013'))
 ```
-
-
-### Age
 
 The figure below illustrates the US population by single year of age, ranging from the population aged less than a year to the population over 100 (as of December 2018).   Generation membership per single year of age is specified by color.
 
@@ -196,7 +204,7 @@ gen_pops %>%
 
 
 
-### Age & race
+### Population by single year of age, race & generation
 
 ```{r}
 gen_pal <- c('#b0bcc1','#ead8c3', '#437193', 
@@ -237,7 +245,7 @@ gen_pops %>%
 
 
 
-## White America on the wane 
+### White America on the wane 
 
 ```{r}
 white_label <- gen_pops %>% 
@@ -312,7 +320,8 @@ sums %>%
   spread(race1, per) %>%
   select(-`Native Hawaiian Alone`, 
          -`American Indian Alone`) %>%
-  knitr::kable()
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
 
@@ -391,12 +400,11 @@ dc <- gen %>%
 
 ```{r echo=FALSE}
 dc %>%
-  knitr::kable()
+  DT::datatable(rownames = FALSE, options = list(dom = 't',
+                                                 scrollX = TRUE))
 ```
 
-
-
-
+<br>
 
 ```{r}
 which1 <- gen %>%
@@ -419,14 +427,17 @@ which1 %>%
   left_join(gen_desc) %>%
   select(rank, NAME, gen, relative_entropy) %>%
   arrange(rank) %>%
-  knitr::kable(booktabs = T, format = "html") %>%
-  kableExtra::kable_styling() %>%
-  kableExtra::row_spec(3,  
-                       background = "#dae2ba")
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               scrollX = TRUE,
+                               
+      rowCallback = DT::JS('function(row, data, index, rowId) {',
+                       'console.log(rowId)','if(rowId == 2 ) {',
+                       'row.style.backgroundColor = "#dae2ba";','}','}'))) 
 ```
 
 
-
+<br>
 ```{r}
 which2 <- which1 %>%
   group_by(GEOID, NAME) %>%

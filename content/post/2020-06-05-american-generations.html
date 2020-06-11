@@ -12,18 +12,24 @@ tags:
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/generations.png
-description: "Some perspectives on America's living generations."
+description: "Some methods & a roll call."
 ---
 
-<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 
 <div id="TOC">
 <ul>
 <li><a href="#american-generations">American generations</a></li>
 <li><a href="#monthly-us-population-estimates">Monthly US population estimates</a></li>
-<li><a href="#american-population-by-generation">American population by generation</a></li>
-<li><a href="#american-generations-by-age-race">American generations by age &amp; race</a></li>
-<li><a href="#white-america-on-the-wane">White America on the wane</a></li>
+<li><a href="#composition-of-american-generations">Composition of American generations</a></li>
 <li><a href="#american-generations-in-apparent-time-space">American generations in (apparent) time &amp; space</a></li>
 <li><a href="#summary">Summary</a></li>
 </ul>
@@ -44,56 +50,11 @@ range &lt;- c(&#39;&gt; 2012&#39;, &#39;1997-2012&#39;, &#39;1981-1996&#39;,
 gen_desc &lt;- data.frame(rank = 7:1,
                        gen = gen,
                        range = range,
-                       stringsAsFactors = FALSE)%&gt;%
-  arrange(rank)
-
-knitr::kable(gen_desc)</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="right">rank</th>
-<th align="left">gen</th>
-<th align="left">range</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">1</td>
-<td align="left">Greatest</td>
-<td align="left">&lt; 1927</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="left">Silent</td>
-<td align="left">1928-1945</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="left">Boomers</td>
-<td align="left">1946-1964</td>
-</tr>
-<tr class="even">
-<td align="right">4</td>
-<td align="left">Gen X</td>
-<td align="left">1965-1980</td>
-</tr>
-<tr class="odd">
-<td align="right">5</td>
-<td align="left">Millennial</td>
-<td align="left">1981-1996</td>
-</tr>
-<tr class="even">
-<td align="right">6</td>
-<td align="left">Gen Z</td>
-<td align="left">1997-2012</td>
-</tr>
-<tr class="odd">
-<td align="right">7</td>
-<td align="left">Post-Z</td>
-<td align="left">&gt; 2012</td>
-</tr>
-</tbody>
-</table>
+                       stringsAsFactors = FALSE) %&gt;%
+  arrange(rank)</code></pre>
+<p><strong>A summary:</strong></p>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7],["Greatest","Silent","Boomers","Gen X","Millennial","Gen Z","Post-Z"],["&lt; 1927","1928-1945","1946-1964","1965-1980","1981-1996","1997-2012","&gt; 2012"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>gen<\/th>\n      <th>range<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <p>Four of America’s seven living generations are more or less “complete,” and only getting smaller (albeit at different rates): <code>Greatest</code>, <code>Silent</code>, <code>Boomers</code>, and <code>Gen X</code>. The generation comprised of <code>Millenials</code> is complete as well, in that it has been delineated chronologically; however, the group likely continues to grow via immigration.</p>
 <p>While <code>Gen Z</code> has been tentatively stamped chronologically by the folks at Pew Research, only the very eldest in the group have just entered the work force. So lot’s can happen still. And although we include them here, the <code>Post-Z</code> generation is mostly but a thought; half of the group has yet to be born.</p>
 </div>
@@ -146,81 +107,16 @@ search &lt;- paste(paste0(&#39;^&#39;,race, &#39;_&#39;), collapse =  &#39;|&#39
 set.seed(999)
 gen_pops %&gt;% sample_n(7)  %&gt;%
   select(gen, range, race1:pop) %&gt;%
-  knitr::kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">gen</th>
-<th align="left">range</th>
-<th align="left">race1</th>
-<th align="right">yob</th>
-<th align="right">AGE</th>
-<th align="right">pop</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Gen X</td>
-<td align="left">1965-1980</td>
-<td align="left">Asian Alone</td>
-<td align="right">1973</td>
-<td align="right">46</td>
-<td align="right">290212</td>
-</tr>
-<tr class="even">
-<td align="left">Gen Z</td>
-<td align="left">1997-2012</td>
-<td align="left">Native Hawaiian Alone</td>
-<td align="right">2011</td>
-<td align="right">8</td>
-<td align="right">7964</td>
-</tr>
-<tr class="odd">
-<td align="left">Silent</td>
-<td align="left">1928-1945</td>
-<td align="left">Asian Alone</td>
-<td align="right">1936</td>
-<td align="right">83</td>
-<td align="right">50750</td>
-</tr>
-<tr class="even">
-<td align="left">Gen X</td>
-<td align="left">1965-1980</td>
-<td align="left">American Indian Alone</td>
-<td align="right">1968</td>
-<td align="right">51</td>
-<td align="right">28192</td>
-</tr>
-<tr class="odd">
-<td align="left">Greatest</td>
-<td align="left">&lt; 1927</td>
-<td align="left">Black Alone</td>
-<td align="right">1926</td>
-<td align="right">93</td>
-<td align="right">24189</td>
-</tr>
-<tr class="even">
-<td align="left">Millennial</td>
-<td align="left">1981-1996</td>
-<td align="left">American Indian Alone</td>
-<td align="right">1993</td>
-<td align="right">26</td>
-<td align="right">41055</td>
-</tr>
-<tr class="odd">
-<td align="left">Post-Z</td>
-<td align="left">&gt; 2012</td>
-<td align="left">Black Alone</td>
-<td align="right">2018</td>
-<td align="right">1</td>
-<td align="right">531987</td>
-</tr>
-</tbody>
-</table>
+  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;,
+                                                 scrollX = TRUE))</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["Gen X","Gen Z","Silent","Gen X","Greatest","Millennial","Post-Z"],["1965-1980","1997-2012","1928-1945","1965-1980","&lt; 1927","1981-1996","&gt; 2012"],["Asian Alone","Native Hawaiian Alone","Asian Alone","American Indian Alone","Black Alone","American Indian Alone","Black Alone"],[1973,2011,1936,1968,1926,1993,2018],[46,8,83,51,93,26,1],[290212,7964,50750,28192,24189,41055,531987]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>gen<\/th>\n      <th>range<\/th>\n      <th>race1<\/th>\n      <th>yob<\/th>\n      <th>AGE<\/th>\n      <th>pop<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="american-population-by-generation" class="section level2">
-<h2>American population by generation</h2>
-<p>The figure below summarizes the populations of America’s seven living generations. These numbers will vary some depending on the data source. <strong>Millenials constitute the plurality of Americans</strong>, more recently overtaking a Boomer generation on the wane.</p>
+<div id="composition-of-american-generations" class="section level2">
+<h2>Composition of American generations</h2>
+<div id="population-by-generation" class="section level3">
+<h3>Population by generation</h3>
+<p>The figure below summarizes the US population by generation. These numbers will vary some depending on the data source. <strong>Millenials constitute the plurality of Americans</strong>, more recently overtaking a Boomer generation on the wane.</p>
 <pre class="r"><code>gen_pops %&gt;%
   group_by(gen, rank) %&gt;%
   summarize(pop = sum(pop)) %&gt;%
@@ -240,10 +136,10 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   theme_minimal() +
   labs(title = &#39;Population by American generation&#39;,
        caption = &#39;SOURCE: US Census, Monthly Postcensal Resident Population plus Armed Forces Overseas, December 2018.&#39;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
-<div id="american-generations-by-age-race" class="section level2">
-<h2>American generations by age &amp; race</h2>
+<div id="population-by-single-year-of-age-generation" class="section level3">
+<h3>Population by single year of age &amp; generation</h3>
 <pre class="r"><code>gg &lt;- gen_pops %&gt;% 
   group_by(yob, AGE, gen) %&gt;%
   summarize(tot = sum(pop)) %&gt;%
@@ -251,8 +147,6 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   mutate(tot = max(tot)) %&gt;% #For labels below.
   filter(yob %in% c(&#39;1919&#39;, &#39;1928&#39;, &#39;1946&#39;, &#39;1965&#39;, 
                     &#39;1981&#39;, &#39;1997&#39;, &#39;2013&#39;))</code></pre>
-<div id="age" class="section level3">
-<h3>Age</h3>
 <p>The figure below illustrates the US population by single year of age, ranging from the population aged less than a year to the population over 100 (as of December 2018). Generation membership per single year of age is specified by color.</p>
 <pre class="r"><code>gen_pops %&gt;%
   ggplot(aes(x = AGE, 
@@ -282,10 +176,10 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   ggthemes::scale_fill_stata()+
   scale_x_reverse(breaks = rev(gg$AGE)) +
   labs(title = &#39;American population by single-year age &amp; generation&#39;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
-<div id="age-race" class="section level3">
-<h3>Age &amp; race</h3>
+<div id="population-by-single-year-of-age-race-generation" class="section level3">
+<h3>Population by single year of age, race &amp; generation</h3>
 <pre class="r"><code>gen_pal &lt;- c(&#39;#b0bcc1&#39;,&#39;#ead8c3&#39;, &#39;#437193&#39;, 
              &#39;#c66767&#39;, &#39;#55752f&#39;, &#39;#dae2ba&#39;, 
              &#39;#7b9bb3&#39;)</code></pre>
@@ -315,11 +209,10 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   
   scale_x_reverse(breaks = rev(gg$AGE) )+
   labs(title =&#39;American population by age, race &amp; generation&#39;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
-</div>
-<div id="white-america-on-the-wane" class="section level2">
-<h2>White America on the wane</h2>
+<div id="white-america-on-the-wane" class="section level3">
+<h3>White America on the wane</h3>
 <pre class="r"><code>white_label &lt;- gen_pops %&gt;% 
   group_by(gen, AGE) %&gt;%
   mutate(per = pop/sum(pop))%&gt;%
@@ -361,7 +254,8 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   
   scale_x_reverse(breaks = rev(gg$AGE)) +
   labs(title = &#39;American population by age, race &amp; generation&#39;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
 </div>
 <div id="american-generations-in-apparent-time-space" class="section level2">
 <h2>American generations in (apparent) time &amp; space</h2>
@@ -371,84 +265,8 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   summarize(pop = sum(pop))%&gt;%
   group_by(gen) %&gt;%
   mutate(per = round(pop / sum(pop), 3))</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="right">rank</th>
-<th align="left">gen</th>
-<th align="right">Asian Alone</th>
-<th align="right">Black Alone</th>
-<th align="right">Hispanic</th>
-<th align="right">Two or More Races</th>
-<th align="right">White Alone</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">1</td>
-<td align="left">Greatest</td>
-<td align="right">4.4</td>
-<td align="right">8.0</td>
-<td align="right">7.7</td>
-<td align="right">0.6</td>
-<td align="right">78.9</td>
-</tr>
-<tr class="even">
-<td align="right">2</td>
-<td align="left">Silent</td>
-<td align="right">4.4</td>
-<td align="right">8.4</td>
-<td align="right">8.0</td>
-<td align="right">0.7</td>
-<td align="right">77.9</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="left">Boomers</td>
-<td align="right">4.9</td>
-<td align="right">10.9</td>
-<td align="right">10.6</td>
-<td align="right">1.0</td>
-<td align="right">71.9</td>
-</tr>
-<tr class="even">
-<td align="right">4</td>
-<td align="left">Gen X</td>
-<td align="right">6.7</td>
-<td align="right">12.6</td>
-<td align="right">18.5</td>
-<td align="right">1.3</td>
-<td align="right">60.0</td>
-</tr>
-<tr class="odd">
-<td align="right">5</td>
-<td align="left">Millennial</td>
-<td align="right">7.1</td>
-<td align="right">13.8</td>
-<td align="right">20.9</td>
-<td align="right">2.2</td>
-<td align="right">55.1</td>
-</tr>
-<tr class="even">
-<td align="right">6</td>
-<td align="left">Gen Z</td>
-<td align="right">5.3</td>
-<td align="right">13.8</td>
-<td align="right">24.5</td>
-<td align="right">3.8</td>
-<td align="right">51.6</td>
-</tr>
-<tr class="odd">
-<td align="right">7</td>
-<td align="left">Post-Z</td>
-<td align="right">5.1</td>
-<td align="right">13.7</td>
-<td align="right">26.1</td>
-<td align="right">4.8</td>
-<td align="right">49.3</td>
-</tr>
-</tbody>
-</table>
+<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7],["Greatest","Silent","Boomers","Gen X","Millennial","Gen Z","Post-Z"],[4.4,4.4,4.9,6.7,7.1,5.3,5.1],[8,8.4,10.9,12.6,13.8,13.8,13.7],[7.7,8,10.6,18.5,20.9,24.5,26.1],[0.6,0.7,1,1.3,2.2,3.8,4.8],[78.9,77.9,71.9,60,55.1,51.6,49.3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>gen<\/th>\n      <th>Asian Alone<\/th>\n      <th>Black Alone<\/th>\n      <th>Hispanic<\/th>\n      <th>Two or More Races<\/th>\n      <th>White Alone<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,2,3,4,5,6]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 <div id="race-ethnicity-profiles-for-us-counties" class="section level3">
 <h3>Race-ethnicity profiles for US counties</h3>
 <p>Here, we compare race-ethnicity profiles for US counties to those of American generations. Using the <code>tidycensus</code> R package, we first obtain county-level race-ethnicity estimates (ACS 2018 5-year);</p>
@@ -490,26 +308,9 @@ us_states &lt;- sf::st_transform(us_states, laea)</code></pre>
 <div id="comparing-distributions" class="section level3">
 <h3>Comparing distributions</h3>
 <p>The table below highlights the race-ethnicity distribution for my hometown, <strong>Dutchess County, NY</strong>. GEOID = 36027.</p>
-<table>
-<thead>
-<tr class="header">
-<th align="right">Asian Alone</th>
-<th align="right">Black Alone</th>
-<th align="right">Hispanic</th>
-<th align="right">Two or More Races</th>
-<th align="right">White Alone</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">3.6</td>
-<td align="right">9.7</td>
-<td align="right">11.9</td>
-<td align="right">2.4</td>
-<td align="right">71.9</td>
-</tr>
-</tbody>
-</table>
+<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[[3.6],[9.7],[11.9],[2.4],[71.9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Asian Alone<\/th>\n      <th>Black Alone<\/th>\n      <th>Hispanic<\/th>\n      <th>Two or More Races<\/th>\n      <th>White Alone<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p><br></p>
 <pre class="r"><code>which1 &lt;- gen %&gt;%
   mutate(estimate = ifelse(estimate == 0, .0000001, estimate)) %&gt;%
   inner_join(sums, by = c(&#39;variable&#39; = &#39;race1&#39;)) %&gt;%
@@ -524,128 +325,16 @@ us_states &lt;- sf::st_transform(us_states, laea)</code></pre>
   left_join(gen_desc) %&gt;%
   select(rank, NAME, gen, relative_entropy) %&gt;%
   arrange(rank) %&gt;%
-  knitr::kable(booktabs = T, format = &quot;html&quot;) %&gt;%
-  kableExtra::kable_styling() %&gt;%
-  kableExtra::row_spec(3,  
-                       background = &quot;#dae2ba&quot;)</code></pre>
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:right;">
-rank
-</th>
-<th style="text-align:left;">
-NAME
-</th>
-<th style="text-align:left;">
-gen
-</th>
-<th style="text-align:right;">
-relative_entropy
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Greatest
-</td>
-<td style="text-align:right;">
-0.0284
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Silent
-</td>
-<td style="text-align:right;">
-0.0243
-</td>
-</tr>
-<tr>
-<td style="text-align:right;background-color: #dae2ba !important;">
-3
-</td>
-<td style="text-align:left;background-color: #dae2ba !important;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;background-color: #dae2ba !important;">
-Boomers
-</td>
-<td style="text-align:right;background-color: #dae2ba !important;">
-0.0104
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Gen X
-</td>
-<td style="text-align:right;">
-0.0426
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Millennial
-</td>
-<td style="text-align:right;">
-0.0657
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Gen Z
-</td>
-<td style="text-align:right;">
-0.0914
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:left;">
-Dutchess County, New York
-</td>
-<td style="text-align:left;">
-Post-Z
-</td>
-<td style="text-align:right;">
-0.1131
-</td>
-</tr>
-</tbody>
-</table>
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = &#39;t&#39;,
+                               scrollX = TRUE,
+                               
+      rowCallback = DT::JS(&#39;function(row, data, index, rowId) {&#39;,
+                       &#39;console.log(rowId)&#39;,&#39;if(rowId == 2 ) {&#39;,
+                       &#39;row.style.backgroundColor = &quot;#dae2ba&quot;;&#39;,&#39;}&#39;,&#39;}&#39;))) </code></pre>
+<div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7],["Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York"],["Greatest","Silent","Boomers","Gen X","Millennial","Gen Z","Post-Z"],[0.0284,0.0243,0.0104,0.0426,0.0657,0.0914,0.1131]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>NAME<\/th>\n      <th>gen<\/th>\n      <th>relative_entropy<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"rowCallback":"function(row, data, index, rowId) {\nconsole.log(rowId)\nif(rowId == 2 ) {\nrow.style.backgroundColor = \"#dae2ba\";\n}\n}","columnDefs":[{"className":"dt-right","targets":[0,3]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<p><br></p>
 <pre class="r"><code>which2 &lt;- which1 %&gt;%
   group_by(GEOID, NAME) %&gt;%
   filter(relative_entropy == min(relative_entropy)) %&gt;%
@@ -667,7 +356,7 @@ Post-Z
         axis.text.y=element_blank(),
         legend.position = &#39;bottom&#39;) +
   labs(title = &quot;Counties &amp; Generations in America&quot;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
 </div>
 </div>
 <div id="summary" class="section level2">
