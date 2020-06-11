@@ -320,8 +320,13 @@ sums %>%
   spread(race1, per) %>%
   select(-`Native Hawaiian Alone`, 
          -`American Indian Alone`) %>%
-  DT::datatable(rownames = FALSE, options = list(dom = 't',
-                                                 scrollX = TRUE))
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               scrollX = TRUE,
+                               
+      rowCallback = DT::JS('function(row, data, index, rowId) {',
+                       'console.log(rowId)','if(rowId == 3 ) {',
+                       'row.style.backgroundColor = "#ead8c3";','}','}')))
 ```
 
 
