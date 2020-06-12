@@ -31,11 +31,11 @@ description: 'A super quick investigation into the voting behavior of front-line
 
 <div id="briefly" class="section level2">
 <h2>Briefly</h2>
-<p>A quick look at the voting behavior of the 30 House Democrats that represent congressional districts carried by Trump in 2016 – relative to other House members. Using <code>Rvoteview</code>. For a more in-depth account of the characteristics of front-line House Democrats in the 116th Congress, see <a href="https://www.jtimm.net/2019/12/13/frontline-democrats/">this post</a>.</p>
+<p>A quick look at the voting behavior of the 30 House Democrats that represent congressional districts carried by Trump in 2016. Using <code>Rvoteview</code>. For a more in-depth account of the characteristics of front-line House Democrats in the 116th Congress, see <a href="https://www.jtimm.net/2019/12/13/frontline-democrats/">this post</a>.</p>
 </div>
 <div id="front-line-house-democrats" class="section level2">
 <h2>Front-line House Democrats</h2>
-<p>I have been going on about the House of Representatives lately, especially Democrats representing Trump districts. These guys are so important for any number of reasons. They define the Democratic majority in the House. They are the few remaining moderate voices in the House, from either party. But they are super-vulnerable. Over 2/3s of them are freshman members. Again, their constituents supported Trump in 2016. And they could be trying to defend their seats in 2020 with a Democratic Socialist atop the ticket.</p>
+<p>I have been going on about the House of Representatives quite a bit lately, especially Democratic members representing Trump districts. These guys were instrumental in Democrats recapturing the House majority in 2018. Over two-thirds of these front-liners are freshman members, and as a group they are super vulnerable heading into November 2020.</p>
 <p>I have posted a list of the 30 front-liners as a simple csv, cached as a part of the <code>uspoliticalextras</code> data package. It is available at the link below.</p>
 <pre class="r"><code>library(tidyverse)
 url1 &lt;- &#39;https://raw.githubusercontent.com/jaytimm/uspoliticalextras/master/clean-data-sets/thirty-one-house-democrats.csv&#39;
@@ -44,10 +44,14 @@ fl &lt;- read.csv(url(url1)) </code></pre>
 <div id="ideologies-in-the-116th" class="section level2">
 <h2>Ideologies in the 116th</h2>
 <p>So, using the <code>Rvoteview</code> (!) package, we obtain DW-Nominate scores for all members in the 116th House. This session is still in progress, so these numbers will change depending on when they are accessed.</p>
-<pre class="r"><code>x116 &lt;- Rvoteview::member_search (chamber = &#39;House&#39;, congress = 116) %&gt;%
+<pre class="r"><code>x116 &lt;- Rvoteview::member_search (chamber = &#39;House&#39;, 
+                                  congress = 116) %&gt;%
+  
   mutate(label = gsub(&#39;, .*$&#39;, &#39;&#39;, bioname),
-         party_code = ifelse(bioname %in% fl$house_rep, &#39;xx&#39;, party_code),
-         party_name = ifelse(bioname %in% fl$house_rep, &#39;Frontline Dems&#39;, &#39;Other Dems&#39;))</code></pre>
+         party_code = ifelse(bioname %in% fl$house_rep, 
+                             &#39;xx&#39;, party_code),
+         party_name = ifelse(bioname %in% fl$house_rep, 
+                             &#39;Frontline Dems&#39;, &#39;Other Dems&#39;))</code></pre>
 <p><strong>The plot below</strong> summarizes voting behaviors as approximated by DW-Nominate scores in two dimensions. Here, our focus is on the first dimension (ie, the x-axis). The 30 front-liners are marked in orange. In the aggregate, then, they vote more moderately than their non-front-line Democrat peers.</p>
 <pre class="r"><code>p &lt;- x116 %&gt;%
   ggplot(aes(x=nominate.dim1, 
@@ -69,6 +73,7 @@ fl &lt;- read.csv(url(url1)) </code></pre>
        subtitle = &#39;30 front-line House Democrats in orange&#39;)
 
 p</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_point).</code></pre>
 <p><img src="/post/2020-03-16-political-ideologies-of-front-line-house-democrats_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
 <div id="focusing-on-democrats" class="section level2">
@@ -92,23 +97,23 @@ qq %&gt;% knitr::kable()</code></pre>
 <tbody>
 <tr class="odd">
 <td>0%</td>
-<td align="right">-0.7620</td>
+<td align="right">-0.76100</td>
 </tr>
 <tr class="even">
 <td>25%</td>
-<td align="right">-0.4405</td>
+<td align="right">-0.44525</td>
 </tr>
 <tr class="odd">
 <td>50%</td>
-<td align="right">-0.3780</td>
+<td align="right">-0.37800</td>
 </tr>
 <tr class="even">
 <td>75%</td>
-<td align="right">-0.2860</td>
+<td align="right">-0.28575</td>
 </tr>
 <tr class="odd">
 <td>100%</td>
-<td align="right">-0.0670</td>
+<td align="right">-0.06900</td>
 </tr>
 </tbody>
 </table>
@@ -210,7 +215,7 @@ Other Dems
 58
 </td>
 <td style="text-align:right;">
-28.3
+28.2
 </td>
 </tr>
 <tr>
@@ -224,7 +229,7 @@ Other Dems
 59
 </td>
 <td style="text-align:right;">
-28.8
+28.6
 </td>
 </tr>
 <tr>
@@ -238,7 +243,7 @@ Other Dems
 53
 </td>
 <td style="text-align:right;">
-25.9
+25.7
 </td>
 </tr>
 <tr>
@@ -249,10 +254,10 @@ Other Dems
 4
 </td>
 <td style="text-align:right;">
-35
+36
 </td>
 <td style="text-align:right;">
-17.1
+17.5
 </td>
 </tr>
 </tbody>
