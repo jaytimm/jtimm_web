@@ -251,10 +251,11 @@ dat &lt;- Rvoteview:: member_search(chamber= &#39;House&#39;,
 dat %&gt;%
   DT::datatable(rownames = FALSE,
                 options =  list(pageLength = 15, 
-                                  dom = &#39;t&#39;)) %&gt;% 
+                                columnDefs = list(list(className = &#39;dt-center&#39;, targets = 0:3)),
+                                dom = &#39;t&#39;)) %&gt;% 
   DT::formatStyle(1:ncol(dat), backgroundColor = htmlwidgets::JS(js))</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[102,103,104,105,106,107,108,109,110,111,112,113,114,115,116],["SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","HEINRICH (Dem)","HEINRICH (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","HAALAND (Dem)"],["SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TEAGUE (Dem)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TORRES SMALL (Dem)"],["RICHARDSON (Dem)","RICHARDSON (Dem)","RICHARDSON (Dem)","REDMOND (Rep)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>congress<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":15,"dom":"t","columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[102,103,104,105,106,107,108,109,110,111,112,113,114,115,116],["SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","HEINRICH (Dem)","HEINRICH (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","HAALAND (Dem)"],["SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TEAGUE (Dem)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TORRES SMALL (Dem)"],["RICHARDSON (Dem)","RICHARDSON (Dem)","RICHARDSON (Dem)","REDMOND (Rep)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>congress<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":15,"columnDefs":[{"className":"dt-center","targets":[0,1,2,3]}],"dom":"t","order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
 <p>So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an <strong>all-Democrat delegation</strong> to the House. See <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">this post</a> for some thoughts on how Torres Small carried New Mexico’s second district in 2018.</p>
 </div>
 <div id="us-senate" class="section level3">
@@ -399,7 +400,7 @@ tab1 &lt;- tab1 %&gt;% bind_rows(hand_edits) %&gt;% arrange(year)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>The table below summarizes the total number of years (since 1912) that each party has held the governor’s office, cross-tabbed with the political affiliation of the US President during the same time period. First to note is that Democrats have held gubernatorial control in 70/108 years.</p>
+<p><strong>The table below</strong> summarizes the total number of years (since 1912) that each party has held the governor’s office, cross-tabbed with the political affiliation of the US President during the same time period. First to note is that Democrats have held gubernatorial control in 70/108 years.</p>
 <p>Second to note is that in 59 (39 + 20) of those years the New Mexico governor shared party affiliation with the sitting US President; in 49 (18 + 31) of those years, the two were divided. Roughly a 50-50 split historically, which is pretty interesting.</p>
 <pre class="r"><code>table(tab1$gov_party, tab1$pres_party) %&gt;% 
   data.frame() %&gt;% 
@@ -455,7 +456,7 @@ R
 </tr>
 </tbody>
 </table>
-<p>In rank order by total years, then:</p>
+<p><strong>In rank order by total years, then</strong>:</p>
 <ul>
 <li>[Dem Gov/Dem Pres (39)] &gt; [Dem Gov/Rep Pres (31)] &gt; [Rep Gov/Rep Pres (20)] &gt; [Rep Gov/Dem Pres (18)]</li>
 </ul>

@@ -366,7 +366,8 @@ dat <- Rvoteview:: member_search(chamber= 'House',
 dat %>%
   DT::datatable(rownames = FALSE,
                 options =  list(pageLength = 15, 
-                                  dom = 't')) %>% 
+                                columnDefs = list(list(className = 'dt-center', targets = 0:3)),
+                                dom = 't')) %>% 
   DT::formatStyle(1:ncol(dat), backgroundColor = htmlwidgets::JS(js))
 ```
 
@@ -489,7 +490,7 @@ tab1  %>% head() %>% knitr::kable()%>%
 ```
 
 
-The table below summarizes the total number of years (since 1912) that each party has held the governor's office, cross-tabbed with the political affiliation of the US President during the same time period.  First to note is that Democrats have held gubernatorial control in 70/108 years.  
+**The table below** summarizes the total number of years (since 1912) that each party has held the governor's office, cross-tabbed with the political affiliation of the US President during the same time period.  First to note is that Democrats have held gubernatorial control in 70/108 years.  
 
 Second to note is that in 59 (39 + 20) of those years the New Mexico governor shared party affiliation with the sitting US President; in 49 (18 + 31) of those years, the two were divided.  Roughly a 50-50 split historically, which is pretty interesting.
 
@@ -503,7 +504,7 @@ table(tab1$gov_party, tab1$pres_party) %>%
 ```
 
 
-In rank order by total years, then:
+**In rank order by total years, then**:
 
 * [Dem Gov/Dem Pres (39)] > [Dem Gov/Rep Pres (31)] > [Rep Gov/Rep Pres (20)] > [Rep Gov/Dem Pres (18)]
 
