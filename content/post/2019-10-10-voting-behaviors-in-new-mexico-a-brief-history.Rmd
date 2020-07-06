@@ -348,7 +348,7 @@ The table below details the names & party affiliations of the (3) representative
 
 
 ```{r message=FALSE, warning=FALSE}
-js <- "(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''"
+js <- "(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''"
 
 dat <- Rvoteview:: member_search(chamber= 'House', 
                                  state = 'NM', 
@@ -483,7 +483,7 @@ tab1 <- tab1 %>% bind_rows(hand_edits) %>% arrange(year)
 
 After some cleaning, a sample of our data set is presented below.  Included are the names of sitting US Presidents and their political affiliation.
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 tab1  %>% head() %>% knitr::kable()%>% 
   kableExtra::kable_styling("striped", full_width = T)
 ```
