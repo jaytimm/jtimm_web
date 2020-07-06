@@ -12,11 +12,11 @@ tags:
   - open-government
   - New-Mexico
 banner: banners/nm_history.png
-description: 'A brief political history of New Mexico using a host of data sources, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
+description: 'A brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
 ---
 
 
-In this post, we piece together a brief political history of New Mexico using a host of data sources, including the US Census, the New Mexico State Legislature (NMSL) & VoteView.  A bit of a show/tell post, and one that piggybacks some on a [guide](https://github.com/jaytimm/American_political_data_and_R) I have developed for working with US political data using R.  
+In this post, we piece together a brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL) & VoteView.  A bit of a show/tell post, and one that piggybacks some on a [guide](https://github.com/jaytimm/American_political_data_and_R) I have developed for working with US political data using R.  
 
 In the process, we demonstrate some methods for accessing/cleaning online data sets made available in a variety formats.  Many of these data (especially those made available by the NMSL) have not really seen the light of day; so, we let these data breathe some.  **Fully reproducible. Open methods. Open government.**
 
@@ -371,7 +371,7 @@ dat %>%
 ```
 
 
-So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an **all-Democrat delegation** to the House. And the first time an ALL FEMALE delegation!! See [this post](https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/) for some thoughts on how Torres Small carried New Mexico's second district in 2018.
+So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an **all-Democrat delegation** to the House. See [this post](https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/) for some thoughts on how Torres Small carried New Mexico's second district in 2018.
 
 
 
@@ -602,6 +602,4 @@ tab2 %>%
 
 ## Summary
 
-At present, then, New Mexico is a blue state.  While Trump rallied in Rio Rancho in September in hopes of capturing the state in 2020, New Mexico has (seemed to have) lost some of the SWING that has defined the state through much of its history.  And made it an excellent bellwether for presidential election winners.  
-
-The state supported Clinton in 2016, sends two Democrats to the Senate, 3/3 Democrats to the House, and has a Democratic state government trifecta.  These things are fluid for sure, but the state's demographics continue to move the state's political ideology leftwards.  So, we'll see.  Open data. Open government.
+At present, then, New Mexico is a blue state.  While Trump rallied in Rio Rancho in September in hopes of capturing the state in 2020, New Mexico has (seemed to have) lost some of the SWING that has defined the state through much of its history.  ||  The state supported Clinton in 2016, sends two Democrats to the Senate, 3/3 Democrats to the House, and has a Democratic state government trifecta.  These things are fluid for sure, but the state's demographics continue to move the state's political ideology leftwards.  So, we'll see. 

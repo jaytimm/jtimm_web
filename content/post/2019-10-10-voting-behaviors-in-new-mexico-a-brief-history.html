@@ -12,7 +12,7 @@ tags:
   - open-government
   - New-Mexico
 banner: banners/nm_history.png
-description: 'A brief political history of New Mexico using a host of data sources, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
+description: 'A brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
 ---
 
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
@@ -37,7 +37,7 @@ description: 'A brief political history of New Mexico using a host of data sourc
 </ul>
 </div>
 
-<p>In this post, we piece together a brief political history of New Mexico using a host of data sources, including the US Census, the New Mexico State Legislature (NMSL) &amp; VoteView. A bit of a show/tell post, and one that piggybacks some on a <a href="https://github.com/jaytimm/American_political_data_and_R">guide</a> I have developed for working with US political data using R.</p>
+<p>In this post, we piece together a brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL) &amp; VoteView. A bit of a show/tell post, and one that piggybacks some on a <a href="https://github.com/jaytimm/American_political_data_and_R">guide</a> I have developed for working with US political data using R.</p>
 <p>In the process, we demonstrate some methods for accessing/cleaning online data sets made available in a variety formats. Many of these data (especially those made available by the NMSL) have not really seen the light of day; so, we let these data breathe some. <strong>Fully reproducible. Open methods. Open government.</strong></p>
 <pre class="r"><code>if (!require(&quot;pacman&quot;)) install.packages(&quot;pacman&quot;)
 pacman::p_load(tidyverse, tigris, nmelectiondatr) 
@@ -255,7 +255,7 @@ dat %&gt;%
   DT::formatStyle(1:ncol(dat), backgroundColor = htmlwidgets::JS(js))</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
 <script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[102,103,104,105,106,107,108,109,110,111,112,113,114,115,116],["SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","HEINRICH (Dem)","HEINRICH (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","HAALAND (Dem)"],["SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TEAGUE (Dem)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TORRES SMALL (Dem)"],["RICHARDSON (Dem)","RICHARDSON (Dem)","RICHARDSON (Dem)","REDMOND (Rep)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>congress<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":15,"dom":"t","columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background-color':(/Rep/).test(value) ? '#cf7d7d' : (/Dem/).test(value) ? '#8faabe' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<p>So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an <strong>all-Democrat delegation</strong> to the House. And the first time an ALL FEMALE delegation!! See <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">this post</a> for some thoughts on how Torres Small carried New Mexico’s second district in 2018.</p>
+<p>So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an <strong>all-Democrat delegation</strong> to the House. See <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">this post</a> for some thoughts on how Torres Small carried New Mexico’s second district in 2018.</p>
 </div>
 <div id="us-senate" class="section level3">
 <h3>US Senate</h3>
@@ -539,6 +539,5 @@ tab2 %&gt;%
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>At present, then, New Mexico is a blue state. While Trump rallied in Rio Rancho in September in hopes of capturing the state in 2020, New Mexico has (seemed to have) lost some of the SWING that has defined the state through much of its history. And made it an excellent bellwether for presidential election winners.</p>
-<p>The state supported Clinton in 2016, sends two Democrats to the Senate, 3/3 Democrats to the House, and has a Democratic state government trifecta. These things are fluid for sure, but the state’s demographics continue to move the state’s political ideology leftwards. So, we’ll see. Open data. Open government.</p>
+<p>At present, then, New Mexico is a blue state. While Trump rallied in Rio Rancho in September in hopes of capturing the state in 2020, New Mexico has (seemed to have) lost some of the SWING that has defined the state through much of its history. || The state supported Clinton in 2016, sends two Democrats to the Senate, 3/3 Democrats to the House, and has a Democratic state government trifecta. These things are fluid for sure, but the state’s demographics continue to move the state’s political ideology leftwards. So, we’ll see.</p>
 </div>
