@@ -12,14 +12,11 @@ tags:
   - open-government
   - New-Mexico
 banner: banners/nm_history.png
-description: 'A brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL), VoteView, and the National Conference of State Legislatures.'
+description: 'A brief political history of New Mexico using a host of data sources, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
 ---
 
 
-In this post, we piece together a brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL), VoteView, and the National Conference of State Legislatures.  A bit of a show/tell post, and one that piggybacks some on a [guide](https://github.com/jaytimm/American_political_data_and_R) I have developed for working with 
-US political data using R.  
-
-Here, we focus on the political leanings of voters in New Mexico as attested by who they have backed historically in presidential elections, who they have sent to the US Congress, and who they have elected as representation in the state legislature & governorship.  As we will see, a curious history since statehood in 1912. 
+In this post, we piece together a brief political history of New Mexico using a host of data sources, including the US Census, the New Mexico State Legislature (NMSL) & VoteView.  A bit of a show/tell post, and one that piggybacks some on a [guide](https://github.com/jaytimm/American_political_data_and_R) I have developed for working with US political data using R.  
 
 In the process, we demonstrate some methods for accessing/cleaning online data sets made available in a variety formats.  Many of these data (especially those made available by the NMSL) have not really seen the light of day; so, we let these data breathe some.  **Fully reproducible. Open methods. Open government.**
 
@@ -243,9 +240,15 @@ nm_returns <- nm_returns[,c(1:2, 4:5, 7)]
 colnames(nm_returns) <- c('year', 'winner', 'winner_per', 'loser', 'loser_per')
 
 nm_returns1 <- nm_returns %>%
-  mutate(state_winner = ifelse(winner_per < loser_per, loser, winner))%>%
-  rowwise() %>%
-  mutate(other = round(100 - sum(winner_per, loser_per), 2)) %>%
+  mutate(winner = gsub('\\[.*\\]', '', winner),
+         year = gsub('\\[.*\\]', '', year)) %>%
+  filter(year < 2020) %>%
+  mutate(winner_per = as.numeric(winner_per),
+         loser_per = as.numeric(loser_per),
+         year = as.numeric(year),
+         state_winner = ifelse(winner_per < loser_per, loser, winner)) %>%
+  
+  mutate(other = round(100 - winner_per - loser_per, 2)) %>%
   left_join(us_pres %>% select(-year), by = c('winner' = 'President')) 
 
 wins <- nm_returns1 %>%
@@ -288,7 +291,7 @@ pres_labels <- new %>%
          state_winner = toupper(sub('^.* ', '', state_winner)))
 
 new %>%
-  ggplot(aes(x=year, y=per, fill = Party))+
+  ggplot(aes(x = year, y = per, fill = Party))+
   geom_bar(alpha = 0.85, color = 'white', stat = 'identity') +
   annotate(geom="text", 
            x = pres_labels$year, 
@@ -332,181 +335,6 @@ new %>%
 
 
 
-## New Mexico as bellwether?
-
-While New Mexico got Clinton wrong in 2016, the state seems a fairly consistent bellwether of presidential winners historically, supporting JKF, Ronald Reagan, and Barack Obama alike.  Here, then, we consider how New Mexico stacks up against other states in the Union in terms of voting for the winning presidential candidate. 
-
-Below, we extract voting histories for all US states from Wikipedia.  Tables are mostly uniform across states (eg, [New Mexico](https://en.wikipedia.org/wiki/United_States_presidential_elections_in_New_Mexico)).  California & Pennsylvania tables, eg, are structured a bit differently, and require some individual tweaking.
-
-```{r message=FALSE, warning=FALSE}
-base_url <- 'https://en.wikipedia.org/wiki/United_States_presidential_elections_in_'
-
-states <- uspoliticalextras::uspol_csusa_senate_bios %>%
-  filter(congress == 116) %>%
-  select(state_fips:state_abbrev)%>%
-  distinct() %>%
-  filter(!state %in%  c('Pennsylvania',  'California'))%>%
-  mutate(which_table = ifelse(state %in% c('New York', 'Missouri'), 3, 2))
-
-states_correct <- list()
-for (i in 1:nrow(states)) {
-  states_correct[[i]] <- 
-    paste0(base_url, states$state[i]) %>%
-    xml2::read_html() %>%
-    rvest::html_node(xpath = paste0('//*[@id="mw-content-text"]/div/table[', 
-                                    states$which_table[i],']')) %>%
-    rvest::html_table(fill = TRUE) 
-  
-  states_correct[[i]] <- states_correct[[i]][,c(1:2, 4:5, 7)] 
-  colnames(states_correct[[i]]) <- c('year', 'winner', 'winner_per', 'loser', 'loser_per')
-
-  states_correct[[i]] <- states_correct[[i]] %>%
-    mutate(winner_per = as.numeric(gsub('^$|-|%', 0, winner_per)),
-           loser_per = as.numeric(gsub('^$|-|%', 0, loser_per)),
-           state_winner = ifelse(winner_per < loser_per, loser, winner),
-           correct = ifelse(state_winner == winner, 'correct', 'incorrect'),
-           correct = ifelse(winner_per == 'n\a', NA, correct),
-           year = as.integer(gsub("\\D+", "", year)),
-           year = substr(year, 1,4))}
-
-names(states_correct) <- states$state
-
-states_correct1 <- states_correct %>%
-  bind_rows(.id = 'state') 
-```
-
-
-
-```{r message=FALSE, warning=FALSE, include=FALSE}
-### THIS IS HIDDEN
-
-pres <- states_correct1 %>%
-  filter(state == 'Virginia') %>%
-  mutate(year = as.integer(year))%>%
-  select(year, winner)
-
-url <- 'https://en.wikipedia.org/wiki/United_States_presidential_elections_in_Pennsylvania'
-
-returns <- url %>%
-  xml2::read_html() %>%
-  rvest::html_node(xpath = '//*[@id="mw-content-text"]/div/table[2]') %>%
-  rvest::html_table(fill = TRUE)
-
-returns <- returns[,c(1, 5)]
-colnames(returns) <- c('year', 'state_winner')
-
-returns1 <- returns %>%
-  distinct() %>%
-  filter(year > 1860) %>%
-  left_join(pres) %>% 
-  mutate(state_winner = gsub(' Howard ', ' H\\. ', state_winner),
-         state_winner = gsub('Warren', 'Warren G\\.', state_winner),
-         correct = ifelse(state_winner == winner, 'correct', 'incorrect'),
-         state = 'Pennsylvania', 
-         year = as.integer(year)) %>%
-  select(state, year, correct)
-
-
-url <- 'https://en.wikipedia.org/wiki/United_States_presidential_elections_in_California'
-
-returns_ca <- url %>%
-  xml2::read_html() %>%
-  rvest::html_node(xpath = '//*[@id="mw-content-text"]/div/table[2]') %>%
-  rvest::html_table(fill = TRUE) 
-
-returns_ca <- returns_ca[2:43,c(1:2)]
-colnames(returns_ca) <- c('year', 'state_winner')
-
-returns_ca <- returns_ca %>%
-  filter(year > 1860) %>%
-  mutate(correct = ifelse(grepl('^Y', state_winner), 'correct', 'incorrect'),
-         state_winner = gsub('^.', '', state_winner),
-         state = 'California',
-         year = as.integer(year)) %>%
-  select(state, year, correct)
-```
-
-
-The table below summarizes how states have fared in **predicting presidential election winners since 1912** -- a total of 27 elections.  New Mexico, then is tied for second with Missouri.  Nevada and Ohio voters have only missed two winners since 1912.
-
-```{r}
-correct <- states_correct1  %>%
-  select(state, year, correct) %>%
-  mutate(year = as.integer(year)) %>%
-  bind_rows(returns1, returns_ca) %>%
-  filter(year >  1911) %>%
-  group_by(state, correct) %>%
-  summarize(n = n()) %>%
-  filter(!is.na(correct))%>%
-  spread(correct, n) %>%
-  ungroup() %>%
-  rowwise() %>%
-  mutate(per_correct = round(correct/sum(correct, incorrect), 3))
-
-correct %>%
-  arrange(desc(per_correct))%>%
-  DT::datatable(rownames = FALSE) %>%
-  DT::formatStyle('per_correct',
-    background = DT::styleColorBar(range(correct[4]), 'lightblue'),
-    backgroundSize = '80% 70%',
-    backgroundRepeat = 'no-repeat',
-    backgroundPosition = 'right')
-```
-
-
-
-### Elections New Mexico got wrong
-
-The table below summarizes results for elections that New Mexico, Ohio, Missouri, and Nevada got wrong since 1912.  So, Ohio has been on spot since 1960; Missouri has (seemingly) gone full red.  Also of note: 2/3 presidential nominees that New Mexico got wrong won the popular vote nationally, ie, Al Gore & HR Clinton.    
-
-```{r}
-states_correct1 %>%
-  filter(state %in% c('Ohio', 'Nevada', 'New Mexico', 'Missouri') &
-           correct == 'incorrect' & year > 1911) %>%
-  select(state:loser_per) %>%
-  knitr::kable()
-```
-
-
-
-
-The map below illustrates state ranks for voting with the presidential winner since 1912 (based on table above).  States in darker blue are better bellwethers.  So, the Southwest is generally quite good, while the South & New England less so.
-
-
-```{r fig.height=6.5, message=FALSE, warning=FALSE}
-correct_labels <- correct %>%
-  ungroup() %>%
-  arrange(desc(correct)) %>%
-  mutate(rank = dplyr::dense_rank(desc(correct)))
-
-out <- uspoliticalextras::uspol_dvos_equalarea_sf$tile_outer %>%
-  left_join(correct_labels) 
-
-inner <- uspoliticalextras::uspol_dvos_equalarea_sf$tile_inner %>%
-  left_join(correct_labels) %>%
-  mutate(rank_label = paste0(state_abbrev, '\n', rank))
-
-out %>%
-  ggplot() +   
-    geom_sf(aes(fill = rank),
-            color = 'black') + 
-  ggsflabel::geom_sf_text(data = inner,
-                          aes(label = rank_label), 
-                          size = 3.5,
-                          color = 'black') +
-  theme_minimal() +
-  scale_fill_gradient(low="#2c7bb6", high="#ffffbf")+
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        legend.title=element_blank(),
-        legend.position = 'none') +
-
-  labs(title = "Voting with winning candidate since 1912 by rank")
-```
-
-
 
 
 ## Congressional delegation historically
@@ -520,12 +348,12 @@ The table below details the names & party affiliations of the (3) representative
 
 
 ```{r message=FALSE, warning=FALSE}
-js <- "(/Rep/).test(value) ? '#fcdbc7' : (/Dem/).test(value) ? '#d1e6ef' : ''"
+js <- "(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''"
 
 dat <- Rvoteview:: member_search(chamber= 'House', 
                                  state = 'NM', 
                                  congress = 102:116) %>%
-  mutate(bioname = gsub('\\(Tom\\)', '', bioname),
+  mutate(bioname = gsub(',.*$', '', bioname),
          bioname = ifelse(party_name == 'Democratic Party',
                           paste0(bioname, ' (Dem)'),
                           paste0(bioname, ' (Rep)'))) %>%
@@ -543,7 +371,7 @@ dat %>%
 ```
 
 
-So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an **all-Democrat delegation** to the House. See [this post](https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/) for some thoughts on how Torres Small carried New Mexico's second district in 2018.
+So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an **all-Democrat delegation** to the House. And the first time an ALL FEMALE delegation!! See [this post](https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/) for some thoughts on how Torres Small carried New Mexico's second district in 2018.
 
 
 
@@ -571,7 +399,7 @@ nm_labels <- nm %>%
   group_by(bioname) %>%
   filter(congress == max(congress)) %>%
   ungroup() %>%
-  mutate(bioname =  gsub(',.*$', '', bioname))
+  mutate(bioname =  gsub(',.*$', '', bioname)) 
 ```
 
 
@@ -612,101 +440,9 @@ base2 +
 Finally, we consider the composition of New Mexico's state government historically, namely the governorship and the bicameral house.
 
 
-### State Control in 2019
-
-For a quick look at the current & aggregate composition of New Mexican state leadership relative to other US states, we access data made available by the [National Conference of State Legislatures](http://www.ncsl.org/) (NCSL).  
-
-```{r message=FALSE, warning=FALSE}
-x <- 'http://www.ncsl.org/Portals/1/Documents/Elections/Legis_Control_2019_August%2026th.pdf'
-
-tmp <- tempfile()
-curl::curl_download(x, tmp)
-
-tab <- tabulizer::extract_tables(tmp, 
-                          output = "data.frame", 
-                          encoding = 'UTF-8')[[1]] %>%
-  slice(2:51) %>%
-  select(1,4:5, 7:8, 11:13) %>%
-  separate(col = `Total.House`, into = c('total_house', 'dem'), sep = ' ') %>%
-  select(-total_house) %>%
-  filter(X != 'Nebraska')
-
-colnames(tab) <- c('state', 'sen_dem', 'sen_rep', 'house_dem', 'house_rep',
-                    'legis_control', 'governor', 'state_control')
-
-tab$state_control <- factor(tab$state_control, levels = c('Divided', 'Dem', 'Rep')) 
-```
-
-
-
-The table below presents a sample of the NCSL data set, which includes composition of bicameral state houses by party affiliation, as well as the political affiliation of current governors.  The `legis_control` variable indicates whether the House & Senate are controlled by the same party or not.  Eg, both houses in California are controlled by Democrats, while in Minnesota, Republicans control the House and Democrats the Senate, ie, the houses are divided.  The `state_control` variable indicates whether both houses and the governorship are controlled by the same party or not.   
-
-```{r message=FALSE, warning=FALSE}
-set.seed(89)
-tab %>% sample_n(5) %>% knitr::kable() %>% 
-  kableExtra::kable_styling("striped") 
-```
-
-
-
-
-As far as state legislatures go, very little division exists nationally.  The table below summarizes the distribution of legislature control-types (Republican, Democrat, or divided) for the 49 states in the Union with bicameral state houses.  Only Minnesota has a divided legislature.
-
-```{r echo=FALSE}
-table(tab$legis_control) %>% data.frame() %>% spread(Var1, Freq) %>% knitr::kable()%>% 
-  kableExtra::kable_styling("striped", full_width = F) %>%
-  kableExtra::row_spec(0, angle = -45)
-```
-
-
-
-State control is a bit more divided nationally, with thirteen states having divided gubernatorial and legislative party control.  Thirty-six have **state government trifectas**.  
-
-```{r echo=FALSE}
-table(tab$state_control) %>% data.frame() %>% spread(Var1, Freq) %>%
-  knitr::kable()%>% 
-  kableExtra::kable_styling("striped", full_width = F) %>%
-  kableExtra::row_spec(0, angle = -45)
-```
-
-
-
-The map below illustrates government control by state and party affiliation for 2019.  New Mexico, then, is one of fourteen states with a Democratic state government trifecta.  This is new -- during the previous eight years (at least) state control was divided in New Mexico.  
-
-
-```{r fig.height=6, message=FALSE, warning=FALSE}
-flip_dets <- c('Divided', 'Dem', 'Rep')
-flip_pal <- c('gray', '#395f81', '#9e5055')
-names(flip_pal) <- flip_dets
-
-uspoliticalextras::uspol_dvos_equalarea_sf$tile_outer %>%
-  left_join(tab)  %>%
-  ggplot() + 
-  geom_sf(aes(fill = state_control),
-          color = 'black', 
-          alpha = .75) + 
-  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dvos_equalarea_sf$tile_inner,
-                          aes(label = state_abbrev), 
-                          size = 3.5,
-                          color = 'white') +
-  theme_minimal()+
-  scale_fill_manual(values = flip_pal) +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        legend.title=element_blank(),
-        legend.position = 'bottom') +
-
-  labs(title = "State government control in 2019")
-```
-
-
-
-
 ### Governors historically
 
-Next, we investigate the party affiliation of New Mexico's governors since its statehood in 1912.  These data are made available as a PDF from the New Mexico State Legislature [website](https://www.nmlegis.gov/).
+Here, we investigate the party affiliation of New Mexico's governors since its statehood in 1912.  These data are made available as a PDF from the New Mexico State Legislature [website](https://www.nmlegis.gov/).
 
 ```{r message=FALSE, warning=FALSE}
 url <- 'https://www.nmlegis.gov/Publications/Handbook/leadership_since_statehood_17.pdf'

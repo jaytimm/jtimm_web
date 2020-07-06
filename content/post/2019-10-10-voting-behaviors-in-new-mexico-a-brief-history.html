@@ -12,7 +12,7 @@ tags:
   - open-government
   - New-Mexico
 banner: banners/nm_history.png
-description: 'A brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL), VoteView, and the National Conference of State Legislatures.'
+description: 'A brief political history of New Mexico using a host of data sources, the US Census, the New Mexico State Legislature (NMSL) & VoteView.'
 ---
 
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
@@ -31,16 +31,13 @@ description: 'A brief political history of New Mexico using a host of data sourc
 <li><a href="#new-mexico-demographics-via-tidycensus">New Mexico demographics via <code>tidycensus</code></a></li>
 <li><a href="#presidential-election">2016 Presidential Election</a></li>
 <li><a href="#presidential-elections-in-new-mexico-historically">Presidential elections in New Mexico historically</a></li>
-<li><a href="#new-mexico-as-bellwether">New Mexico as bellwether?</a></li>
 <li><a href="#congressional-delegation-historically">Congressional delegation historically</a></li>
 <li><a href="#new-mexico-state-government">New Mexico State Government</a></li>
 <li><a href="#summary">Summary</a></li>
 </ul>
 </div>
 
-<p>In this post, we piece together a brief political history of New Mexico using a host of data sources, including Wikipedia, the US Census, the New Mexico State Legislature (NMSL), VoteView, and the National Conference of State Legislatures. A bit of a show/tell post, and one that piggybacks some on a <a href="https://github.com/jaytimm/American_political_data_and_R">guide</a> I have developed for working with
-US political data using R.</p>
-<p>Here, we focus on the political leanings of voters in New Mexico as attested by who they have backed historically in presidential elections, who they have sent to the US Congress, and who they have elected as representation in the state legislature &amp; governorship. As we will see, a curious history since statehood in 1912.</p>
+<p>In this post, we piece together a brief political history of New Mexico using a host of data sources, including the US Census, the New Mexico State Legislature (NMSL) &amp; VoteView. A bit of a show/tell post, and one that piggybacks some on a <a href="https://github.com/jaytimm/American_political_data_and_R">guide</a> I have developed for working with US political data using R.</p>
 <p>In the process, we demonstrate some methods for accessing/cleaning online data sets made available in a variety formats. Many of these data (especially those made available by the NMSL) have not really seen the light of day; so, we let these data breathe some. <strong>Fully reproducible. Open methods. Open government.</strong></p>
 <pre class="r"><code>if (!require(&quot;pacman&quot;)) install.packages(&quot;pacman&quot;)
 pacman::p_load(tidyverse, tigris, nmelectiondatr) 
@@ -148,9 +145,15 @@ nm_returns &lt;- nm_returns[,c(1:2, 4:5, 7)]
 colnames(nm_returns) &lt;- c(&#39;year&#39;, &#39;winner&#39;, &#39;winner_per&#39;, &#39;loser&#39;, &#39;loser_per&#39;)
 
 nm_returns1 &lt;- nm_returns %&gt;%
-  mutate(state_winner = ifelse(winner_per &lt; loser_per, loser, winner))%&gt;%
-  rowwise() %&gt;%
-  mutate(other = round(100 - sum(winner_per, loser_per), 2)) %&gt;%
+  mutate(winner = gsub(&#39;\\[.*\\]&#39;, &#39;&#39;, winner),
+         year = gsub(&#39;\\[.*\\]&#39;, &#39;&#39;, year)) %&gt;%
+  filter(year &lt; 2020) %&gt;%
+  mutate(winner_per = as.numeric(winner_per),
+         loser_per = as.numeric(loser_per),
+         year = as.numeric(year),
+         state_winner = ifelse(winner_per &lt; loser_per, loser, winner)) %&gt;%
+  
+  mutate(other = round(100 - winner_per - loser_per, 2)) %&gt;%
   left_join(us_pres %&gt;% select(-year), by = c(&#39;winner&#39; = &#39;President&#39;)) 
 
 wins &lt;- nm_returns1 %&gt;%
@@ -187,7 +190,7 @@ pres_labels &lt;- new %&gt;%
          state_winner = toupper(sub(&#39;^.* &#39;, &#39;&#39;, state_winner)))
 
 new %&gt;%
-  ggplot(aes(x=year, y=per, fill = Party))+
+  ggplot(aes(x = year, y = per, fill = Party))+
   geom_bar(alpha = 0.85, color = &#39;white&#39;, stat = &#39;identity&#39;) +
   annotate(geom=&quot;text&quot;, 
            x = pres_labels$year, 
@@ -224,216 +227,18 @@ new %&gt;%
 <p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 </div>
-<div id="new-mexico-as-bellwether" class="section level2">
-<h2>New Mexico as bellwether?</h2>
-<p>While New Mexico got Clinton wrong in 2016, the state seems a fairly consistent bellwether of presidential winners historically, supporting JKF, Ronald Reagan, and Barack Obama alike. Here, then, we consider how New Mexico stacks up against other states in the Union in terms of voting for the winning presidential candidate.</p>
-<p>Below, we extract voting histories for all US states from Wikipedia. Tables are mostly uniform across states (eg, <a href="https://en.wikipedia.org/wiki/United_States_presidential_elections_in_New_Mexico">New Mexico</a>). California &amp; Pennsylvania tables, eg, are structured a bit differently, and require some individual tweaking.</p>
-<pre class="r"><code>base_url &lt;- &#39;https://en.wikipedia.org/wiki/United_States_presidential_elections_in_&#39;
-
-states &lt;- uspoliticalextras::uspol_csusa_senate_bios %&gt;%
-  filter(congress == 116) %&gt;%
-  select(state_fips:state_abbrev)%&gt;%
-  distinct() %&gt;%
-  filter(!state %in%  c(&#39;Pennsylvania&#39;,  &#39;California&#39;))%&gt;%
-  mutate(which_table = ifelse(state %in% c(&#39;New York&#39;, &#39;Missouri&#39;), 3, 2))
-
-states_correct &lt;- list()
-for (i in 1:nrow(states)) {
-  states_correct[[i]] &lt;- 
-    paste0(base_url, states$state[i]) %&gt;%
-    xml2::read_html() %&gt;%
-    rvest::html_node(xpath = paste0(&#39;//*[@id=&quot;mw-content-text&quot;]/div/table[&#39;, 
-                                    states$which_table[i],&#39;]&#39;)) %&gt;%
-    rvest::html_table(fill = TRUE) 
-  
-  states_correct[[i]] &lt;- states_correct[[i]][,c(1:2, 4:5, 7)] 
-  colnames(states_correct[[i]]) &lt;- c(&#39;year&#39;, &#39;winner&#39;, &#39;winner_per&#39;, &#39;loser&#39;, &#39;loser_per&#39;)
-
-  states_correct[[i]] &lt;- states_correct[[i]] %&gt;%
-    mutate(winner_per = as.numeric(gsub(&#39;^$|-|%&#39;, 0, winner_per)),
-           loser_per = as.numeric(gsub(&#39;^$|-|%&#39;, 0, loser_per)),
-           state_winner = ifelse(winner_per &lt; loser_per, loser, winner),
-           correct = ifelse(state_winner == winner, &#39;correct&#39;, &#39;incorrect&#39;),
-           correct = ifelse(winner_per == &#39;n\a&#39;, NA, correct),
-           year = as.integer(gsub(&quot;\\D+&quot;, &quot;&quot;, year)),
-           year = substr(year, 1,4))}
-
-names(states_correct) &lt;- states$state
-
-states_correct1 &lt;- states_correct %&gt;%
-  bind_rows(.id = &#39;state&#39;) </code></pre>
-<p>The table below summarizes how states have fared in <strong>predicting presidential election winners since 1912</strong> – a total of 27 elections. New Mexico, then is tied for second with Missouri. Nevada and Ohio voters have only missed two winners since 1912.</p>
-<pre class="r"><code>correct &lt;- states_correct1  %&gt;%
-  select(state, year, correct) %&gt;%
-  mutate(year = as.integer(year)) %&gt;%
-  bind_rows(returns1, returns_ca) %&gt;%
-  filter(year &gt;  1911) %&gt;%
-  group_by(state, correct) %&gt;%
-  summarize(n = n()) %&gt;%
-  filter(!is.na(correct))%&gt;%
-  spread(correct, n) %&gt;%
-  ungroup() %&gt;%
-  rowwise() %&gt;%
-  mutate(per_correct = round(correct/sum(correct, incorrect), 3))
-
-correct %&gt;%
-  arrange(desc(per_correct))%&gt;%
-  DT::datatable(rownames = FALSE) %&gt;%
-  DT::formatStyle(&#39;per_correct&#39;,
-    background = DT::styleColorBar(range(correct[4]), &#39;lightblue&#39;),
-    backgroundSize = &#39;80% 70%&#39;,
-    backgroundRepeat = &#39;no-repeat&#39;,
-    backgroundPosition = &#39;right&#39;)</code></pre>
-<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["Nevada","Ohio","Missouri","New Mexico","Florida","Tennessee","Illinois","Kentucky","Montana","Arizona","California","Colorado","Delaware","Idaho","Maryland","New Hampshire","New Jersey","Utah","Wisconsin","Arkansas","Iowa","New York","North Carolina","Oklahoma","Pennsylvania","Texas","Virginia","West Virginia","Wyoming","Connecticut","Louisiana","Massachusetts","Michigan","Oregon","Rhode Island","Washington","Indiana","Kansas","Minnesota","Nebraska","North Dakota","Georgia","South Carolina","Alaska","Hawaii","Mississippi","South Dakota","Alabama","Maine","Vermont"],[25,25,24,24,23,23,22,22,22,21,21,21,21,21,21,21,21,21,21,20,20,20,20,20,20,20,20,20,20,19,19,19,19,19,19,19,18,18,18,18,18,17,17,9,9,16,16,15,15,15],[2,2,3,3,4,4,5,5,5,6,6,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,9,9,9,9,9,10,10,6,6,11,11,12,12,12],[0.926,0.926,0.889,0.889,0.852,0.852,0.815,0.815,0.815,0.778,0.778,0.778,0.778,0.778,0.778,0.778,0.778,0.778,0.778,0.741,0.741,0.741,0.741,0.741,0.741,0.741,0.741,0.741,0.741,0.704,0.704,0.704,0.704,0.704,0.704,0.704,0.667,0.667,0.667,0.667,0.667,0.63,0.63,0.6,0.6,0.593,0.593,0.556,0.556,0.556]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>state<\/th>\n      <th>correct<\/th>\n      <th>incorrect<\/th>\n      <th>per_correct<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background':isNaN(parseFloat(value)) || value <= 0.556000 ? '' : 'linear-gradient(90.000000deg, transparent ' + (0.926000 - value)/0.370000 * 100 + '%, lightblue ' + (0.926000 - value)/0.370000 * 100 + '%)','background-size':'80% 70%','background-repeat':'no-repeat','background-position':'right'});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<div id="elections-new-mexico-got-wrong" class="section level3">
-<h3>Elections New Mexico got wrong</h3>
-<p>The table below summarizes results for elections that New Mexico, Ohio, Missouri, and Nevada got wrong since 1912. So, Ohio has been on spot since 1960; Missouri has (seemingly) gone full red. Also of note: 2/3 presidential nominees that New Mexico got wrong won the popular vote nationally, ie, Al Gore &amp; HR Clinton.</p>
-<pre class="r"><code>states_correct1 %&gt;%
-  filter(state %in% c(&#39;Ohio&#39;, &#39;Nevada&#39;, &#39;New Mexico&#39;, &#39;Missouri&#39;) &amp;
-           correct == &#39;incorrect&#39; &amp; year &gt; 1911) %&gt;%
-  select(state:loser_per) %&gt;%
-  knitr::kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">state</th>
-<th align="left">year</th>
-<th align="left">winner</th>
-<th align="right">winner_per</th>
-<th align="left">loser</th>
-<th align="right">loser_per</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Missouri</td>
-<td align="left">2012</td>
-<td align="left">Barack Obama</td>
-<td align="right">44.38</td>
-<td align="left">Mitt Romney</td>
-<td align="right">53.76</td>
-</tr>
-<tr class="even">
-<td align="left">Missouri</td>
-<td align="left">2008</td>
-<td align="left">Barack Obama</td>
-<td align="right">49.29</td>
-<td align="left">John McCain</td>
-<td align="right">49.43</td>
-</tr>
-<tr class="odd">
-<td align="left">Missouri</td>
-<td align="left">1956</td>
-<td align="left">Dwight D. Eisenhower</td>
-<td align="right">49.89</td>
-<td align="left">Adlai Stevenson II</td>
-<td align="right">50.11</td>
-</tr>
-<tr class="even">
-<td align="left">Nevada</td>
-<td align="left">2016</td>
-<td align="left">Donald Trump</td>
-<td align="right">45.50</td>
-<td align="left">Hillary Clinton</td>
-<td align="right">47.92</td>
-</tr>
-<tr class="odd">
-<td align="left">Nevada</td>
-<td align="left">1976</td>
-<td align="left">Jimmy Carter</td>
-<td align="right">45.81</td>
-<td align="left">Gerald Ford</td>
-<td align="right">50.17</td>
-</tr>
-<tr class="even">
-<td align="left">New Mexico</td>
-<td align="left">2016</td>
-<td align="left">Donald Trump</td>
-<td align="right">40.04</td>
-<td align="left">Hillary Clinton</td>
-<td align="right">48.26</td>
-</tr>
-<tr class="odd">
-<td align="left">New Mexico</td>
-<td align="left">2000</td>
-<td align="left">George W. Bush</td>
-<td align="right">47.85</td>
-<td align="left">Al Gore</td>
-<td align="right">47.91</td>
-</tr>
-<tr class="even">
-<td align="left">New Mexico</td>
-<td align="left">1976</td>
-<td align="left">Jimmy Carter</td>
-<td align="right">48.28</td>
-<td align="left">Gerald Ford</td>
-<td align="right">50.75</td>
-</tr>
-<tr class="odd">
-<td align="left">Ohio</td>
-<td align="left">1960</td>
-<td align="left">John F. Kennedy (D)</td>
-<td align="right">46.72</td>
-<td align="left">Richard Nixon (R)</td>
-<td align="right">53.28</td>
-</tr>
-<tr class="even">
-<td align="left">Ohio</td>
-<td align="left">1944</td>
-<td align="left">Franklin D. Roosevelt (D)</td>
-<td align="right">49.82</td>
-<td align="left">Thomas E. Dewey (R)</td>
-<td align="right">50.18</td>
-</tr>
-</tbody>
-</table>
-<p>The map below illustrates state ranks for voting with the presidential winner since 1912 (based on table above). States in darker blue are better bellwethers. So, the Southwest is generally quite good, while the South &amp; New England less so.</p>
-<pre class="r"><code>correct_labels &lt;- correct %&gt;%
-  ungroup() %&gt;%
-  arrange(desc(correct)) %&gt;%
-  mutate(rank = dplyr::dense_rank(desc(correct)))
-
-out &lt;- uspoliticalextras::uspol_dvos_equalarea_sf$tile_outer %&gt;%
-  left_join(correct_labels) 
-
-inner &lt;- uspoliticalextras::uspol_dvos_equalarea_sf$tile_inner %&gt;%
-  left_join(correct_labels) %&gt;%
-  mutate(rank_label = paste0(state_abbrev, &#39;\n&#39;, rank))
-
-out %&gt;%
-  ggplot() +   
-    geom_sf(aes(fill = rank),
-            color = &#39;black&#39;) + 
-  ggsflabel::geom_sf_text(data = inner,
-                          aes(label = rank_label), 
-                          size = 3.5,
-                          color = &#39;black&#39;) +
-  theme_minimal() +
-  scale_fill_gradient(low=&quot;#2c7bb6&quot;, high=&quot;#ffffbf&quot;)+
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        legend.title=element_blank(),
-        legend.position = &#39;none&#39;) +
-
-  labs(title = &quot;Voting with winning candidate since 1912 by rank&quot;)</code></pre>
-<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
-</div>
-</div>
 <div id="congressional-delegation-historically" class="section level2">
 <h2>Congressional delegation historically</h2>
 <p>Next, we consider the composition of New Mexico’s congressional delegation historically. Here we access data made available via the <a href="https://voteview.com/">VoteView</a> project and the R package <code>Rvoteview</code>.</p>
 <div id="house-of-representatives" class="section level3">
 <h3>House of Representatives</h3>
 <p>The table below details the names &amp; party affiliations of the (3) representatives New Mexico has sent to Washington over the last 15 congresses. District 3, which is comprised of the northern half of the state and includes the Santa Fe metro, has generally gone blue during this time period. District 1 (the ABQ metro area) has flipped from red to blue since the election of Obama in 2008. District 2 (the southern half of the sate) has been a GOP stronghold, with the 111th and 116th congresses being exceptions.</p>
-<pre class="r"><code>js &lt;- &quot;(/Rep/).test(value) ? &#39;#fcdbc7&#39; : (/Dem/).test(value) ? &#39;#d1e6ef&#39; : &#39;&#39;&quot;
+<pre class="r"><code>js &lt;- &quot;(/Rep/).test(value) ? &#39;#7b9bb3&#39; : (/Dem/).test(value) ? &#39;#c66767&#39; : &#39;&#39;&quot;
 
 dat &lt;- Rvoteview:: member_search(chamber= &#39;House&#39;, 
                                  state = &#39;NM&#39;, 
                                  congress = 102:116) %&gt;%
-  mutate(bioname = gsub(&#39;\\(Tom\\)&#39;, &#39;&#39;, bioname),
+  mutate(bioname = gsub(&#39;,.*$&#39;, &#39;&#39;, bioname),
          bioname = ifelse(party_name == &#39;Democratic Party&#39;,
                           paste0(bioname, &#39; (Dem)&#39;),
                           paste0(bioname, &#39; (Rep)&#39;))) %&gt;%
@@ -448,9 +253,9 @@ dat %&gt;%
                 options =  list(pageLength = 15, 
                                   dom = &#39;t&#39;)) %&gt;% 
   DT::formatStyle(1:ncol(dat), backgroundColor = htmlwidgets::JS(js))</code></pre>
-<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[[102,103,104,105,106,107,108,109,110,111,112,113,114,115,116],["SCHIFF, Steven Harvey (Rep)","SCHIFF, Steven Harvey (Rep)","SCHIFF, Steven Harvey (Rep)","SCHIFF, Steven Harvey (Rep)","WILSON, Heather (Rep)","WILSON, Heather (Rep)","WILSON, Heather (Rep)","WILSON, Heather (Rep)","WILSON, Heather (Rep)","HEINRICH, Martin (Dem)","HEINRICH, Martin (Dem)","LUJAN GRISHAM, Michelle (Dem)","LUJAN GRISHAM, Michelle (Dem)","LUJAN GRISHAM, Michelle (Dem)","HAALAND, Debra (Dem)"],["SKEEN, Joseph Richard (Rep)","SKEEN, Joseph Richard (Rep)","SKEEN, Joseph Richard (Rep)","SKEEN, Joseph Richard (Rep)","SKEEN, Joseph Richard (Rep)","SKEEN, Joseph Richard (Rep)","PEARCE, Stevan (Rep)","PEARCE, Stevan (Rep)","PEARCE, Stevan (Rep)","TEAGUE, Harry (Dem)","PEARCE, Stevan (Rep)","PEARCE, Stevan (Rep)","PEARCE, Stevan (Rep)","PEARCE, Stevan (Rep)","TORRES SMALL, Xochitl (Dem)"],["RICHARDSON, Bill (Dem)","RICHARDSON, Bill (Dem)","RICHARDSON, Bill (Dem)","REDMOND, William Thomas (Rep)","UDALL, Thomas  (Dem)","UDALL, Thomas  (Dem)","UDALL, Thomas  (Dem)","UDALL, Thomas  (Dem)","UDALL, Thomas  (Dem)","LUJÁN, Ben Ray (Dem)","LUJÁN, Ben Ray (Dem)","LUJÁN, Ben Ray (Dem)","LUJÁN, Ben Ray (Dem)","LUJÁN, Ben Ray (Dem)","LUJÁN, Ben Ray (Dem)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>congress<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":15,"dom":"t","columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'background-color':(/Rep/).test(value) ? '#fcdbc7' : (/Dem/).test(value) ? '#d1e6ef' : ''});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background-color':(/Rep/).test(value) ? '#fcdbc7' : (/Dem/).test(value) ? '#d1e6ef' : ''});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background-color':(/Rep/).test(value) ? '#fcdbc7' : (/Dem/).test(value) ? '#d1e6ef' : ''});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background-color':(/Rep/).test(value) ? '#fcdbc7' : (/Dem/).test(value) ? '#d1e6ef' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<p>So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an <strong>all-Democrat delegation</strong> to the House. See <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">this post</a> for some thoughts on how Torres Small carried New Mexico’s second district in 2018.</p>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[102,103,104,105,106,107,108,109,110,111,112,113,114,115,116],["SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","SCHIFF (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","WILSON (Rep)","HEINRICH (Dem)","HEINRICH (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","LUJAN GRISHAM (Dem)","HAALAND (Dem)"],["SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","SKEEN (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TEAGUE (Dem)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","PEARCE (Rep)","TORRES SMALL (Dem)"],["RICHARDSON (Dem)","RICHARDSON (Dem)","RICHARDSON (Dem)","REDMOND (Rep)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","UDALL (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)","LUJÁN (Dem)"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>congress<\/th>\n      <th>1<\/th>\n      <th>2<\/th>\n      <th>3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":15,"dom":"t","columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'background-color':(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'background-color':(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'background-color':(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'background-color':(/Rep/).test(value) ? '#7b9bb3' : (/Dem/).test(value) ? '#c66767' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+<p>So, 2018 (the 116th) was only the second time in the last thirty years that New Mexico elected an <strong>all-Democrat delegation</strong> to the House. And the first time an ALL FEMALE delegation!! See <a href="https://www.jtimm.net/2019/01/17/xochitl-torres-small-win-2018/">this post</a> for some thoughts on how Torres Small carried New Mexico’s second district in 2018.</p>
 </div>
 <div id="us-senate" class="section level3">
 <h3>US Senate</h3>
@@ -473,7 +278,7 @@ nm_labels &lt;- nm %&gt;%
   group_by(bioname) %&gt;%
   filter(congress == max(congress)) %&gt;%
   ungroup() %&gt;%
-  mutate(bioname =  gsub(&#39;,.*$&#39;, &#39;&#39;, bioname))</code></pre>
+  mutate(bioname =  gsub(&#39;,.*$&#39;, &#39;&#39;, bioname)) </code></pre>
 <p>Below, the names and political ideology scores (first dimension) of Senators from New Mexico are presented relative to the median ideology for each major party historically. So, a <strong>history of fairly moderate representation in the Senate</strong> – dominated until more recently by the split delegation of Domenici (R) and Bingaman (D), both of whom voted center of their respective party medians. Udall (D) and Heinrich (D) may be drifting left, but this would reflect the state’s shifting ideology in general.</p>
 <pre class="r"><code>base2 &lt;- base1 %&gt;%  
   group_by(congress, party_code) %&gt;%
@@ -497,191 +302,15 @@ base2 +
             aes(label = bioname,
                 x = congress, y =nokken_poole_dim1),
             size = 3)</code></pre>
-<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 </div>
 </div>
 <div id="new-mexico-state-government" class="section level2">
 <h2>New Mexico State Government</h2>
 <p>Finally, we consider the composition of New Mexico’s state government historically, namely the governorship and the bicameral house.</p>
-<div id="state-control-in-2019" class="section level3">
-<h3>State Control in 2019</h3>
-<p>For a quick look at the current &amp; aggregate composition of New Mexican state leadership relative to other US states, we access data made available by the <a href="http://www.ncsl.org/">National Conference of State Legislatures</a> (NCSL).</p>
-<pre class="r"><code>x &lt;- &#39;http://www.ncsl.org/Portals/1/Documents/Elections/Legis_Control_2019_August%2026th.pdf&#39;
-
-tmp &lt;- tempfile()
-curl::curl_download(x, tmp)
-
-tab &lt;- tabulizer::extract_tables(tmp, 
-                          output = &quot;data.frame&quot;, 
-                          encoding = &#39;UTF-8&#39;)[[1]] %&gt;%
-  slice(2:51) %&gt;%
-  select(1,4:5, 7:8, 11:13) %&gt;%
-  separate(col = `Total.House`, into = c(&#39;total_house&#39;, &#39;dem&#39;), sep = &#39; &#39;) %&gt;%
-  select(-total_house) %&gt;%
-  filter(X != &#39;Nebraska&#39;)
-
-colnames(tab) &lt;- c(&#39;state&#39;, &#39;sen_dem&#39;, &#39;sen_rep&#39;, &#39;house_dem&#39;, &#39;house_rep&#39;,
-                    &#39;legis_control&#39;, &#39;governor&#39;, &#39;state_control&#39;)
-
-tab$state_control &lt;- factor(tab$state_control, levels = c(&#39;Divided&#39;, &#39;Dem&#39;, &#39;Rep&#39;)) </code></pre>
-<p>The table below presents a sample of the NCSL data set, which includes composition of bicameral state houses by party affiliation, as well as the political affiliation of current governors. The <code>legis_control</code> variable indicates whether the House &amp; Senate are controlled by the same party or not. Eg, both houses in California are controlled by Democrats, while in Minnesota, Republicans control the House and Democrats the Senate, ie, the houses are divided. The <code>state_control</code> variable indicates whether both houses and the governorship are controlled by the same party or not.</p>
-<pre class="r"><code>set.seed(89)
-tab %&gt;% sample_n(5) %&gt;% knitr::kable() %&gt;% 
-  kableExtra::kable_styling(&quot;striped&quot;) </code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">state</th>
-<th align="left">sen_dem</th>
-<th align="left">sen_rep</th>
-<th align="left">house_dem</th>
-<th align="left">house_rep</th>
-<th align="left">legis_control</th>
-<th align="left">governor</th>
-<th align="left">state_control</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">California</td>
-<td align="left">29</td>
-<td align="left">11</td>
-<td align="left">61</td>
-<td align="left">18</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-</tr>
-<tr class="even">
-<td align="left">Minnesota</td>
-<td align="left">32</td>
-<td align="left">35</td>
-<td align="left">75</td>
-<td align="left">59</td>
-<td align="left">Divided</td>
-<td align="left">Dem</td>
-<td align="left">Divided</td>
-</tr>
-<tr class="odd">
-<td align="left">New York</td>
-<td align="left">40</td>
-<td align="left">22</td>
-<td align="left">106</td>
-<td align="left">43</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-</tr>
-<tr class="even">
-<td align="left">Connecticut</td>
-<td align="left">22</td>
-<td align="left">14</td>
-<td align="left">91</td>
-<td align="left">60</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-<td align="left">Dem</td>
-</tr>
-<tr class="odd">
-<td align="left">Iowa</td>
-<td align="left">18</td>
-<td align="left">32</td>
-<td align="left">46</td>
-<td align="left">53</td>
-<td align="left">Rep</td>
-<td align="left">Rep</td>
-<td align="left">Rep</td>
-</tr>
-</tbody>
-</table>
-<p>As far as state legislatures go, very little division exists nationally. The table below summarizes the distribution of legislature control-types (Republican, Democrat, or divided) for the 49 states in the Union with bicameral state houses. Only Minnesota has a divided legislature.</p>
-<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Dem
-</th>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Divided
-</th>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Rep
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-30
-</td>
-</tr>
-</tbody>
-</table>
-<p>State control is a bit more divided nationally, with thirteen states having divided gubernatorial and legislative party control. Thirty-six have <strong>state government trifectas</strong>.</p>
-<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Divided
-</th>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Dem
-</th>
-<th style="text-align:right;-webkit-transform: rotate(-45deg); -moz-transform: rotate(-45deg); -ms-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg);">
-Rep
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-13
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-22
-</td>
-</tr>
-</tbody>
-</table>
-<p>The map below illustrates government control by state and party affiliation for 2019. New Mexico, then, is one of fourteen states with a Democratic state government trifecta. This is new – during the previous eight years (at least) state control was divided in New Mexico.</p>
-<pre class="r"><code>flip_dets &lt;- c(&#39;Divided&#39;, &#39;Dem&#39;, &#39;Rep&#39;)
-flip_pal &lt;- c(&#39;gray&#39;, &#39;#395f81&#39;, &#39;#9e5055&#39;)
-names(flip_pal) &lt;- flip_dets
-
-uspoliticalextras::uspol_dvos_equalarea_sf$tile_outer %&gt;%
-  left_join(tab)  %&gt;%
-  ggplot() + 
-  geom_sf(aes(fill = state_control),
-          color = &#39;black&#39;, 
-          alpha = .75) + 
-  ggsflabel::geom_sf_text(data = uspoliticalextras::uspol_dvos_equalarea_sf$tile_inner,
-                          aes(label = state_abbrev), 
-                          size = 3.5,
-                          color = &#39;white&#39;) +
-  theme_minimal()+
-  scale_fill_manual(values = flip_pal) +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        legend.title=element_blank(),
-        legend.position = &#39;bottom&#39;) +
-
-  labs(title = &quot;State government control in 2019&quot;)</code></pre>
-<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
-</div>
 <div id="governors-historically" class="section level3">
 <h3>Governors historically</h3>
-<p>Next, we investigate the party affiliation of New Mexico’s governors since its statehood in 1912. These data are made available as a PDF from the New Mexico State Legislature <a href="https://www.nmlegis.gov/">website</a>.</p>
+<p>Here, we investigate the party affiliation of New Mexico’s governors since its statehood in 1912. These data are made available as a PDF from the New Mexico State Legislature <a href="https://www.nmlegis.gov/">website</a>.</p>
 <pre class="r"><code>url &lt;- &#39;https://www.nmlegis.gov/Publications/Handbook/leadership_since_statehood_17.pdf&#39;
 tmp &lt;- tempfile()
 curl::curl_download(url, tmp)
@@ -715,128 +344,61 @@ hand_edits &lt;- data.frame (year = c(1912, 1951:1953, 2000, 2018:2019),
                           pres_party = c(&#39;D&#39;, &#39;D&#39;, &#39;D&#39;, &#39;R&#39;, &#39;D&#39;, &#39;R&#39;, &#39;R&#39;))
 tab1 &lt;- tab1 %&gt;% bind_rows(hand_edits) %&gt;% arrange(year)</code></pre>
 <p>After some cleaning, a sample of our data set is presented below. Included are the names of sitting US Presidents and their political affiliation.</p>
-<table class="table table-striped" style="margin-left: auto; margin-right: auto;">
+<pre><code>## Warning in kableExtra::kable_styling(., &quot;striped&quot;, full_width = T): Please
+## specify format in kable. kableExtra can customize either HTML or LaTeX outputs.
+## See https://haozhu233.github.io/kableExtra/ for details.</code></pre>
+<table>
 <thead>
-<tr>
-<th style="text-align:right;">
-year
-</th>
-<th style="text-align:left;">
-governor
-</th>
-<th style="text-align:left;">
-president
-</th>
-<th style="text-align:left;">
-gov_party
-</th>
-<th style="text-align:left;">
-pres_party
-</th>
+<tr class="header">
+<th align="right">year</th>
+<th align="left">governor</th>
+<th align="left">president</th>
+<th align="left">gov_party</th>
+<th align="left">pres_party</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:right;">
-1912
-</td>
-<td style="text-align:left;">
-McDonald
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="odd">
+<td align="right">1912</td>
+<td align="left">McDonald</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
-<tr>
-<td style="text-align:right;">
-1913
-</td>
-<td style="text-align:left;">
-McDonald
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="even">
+<td align="right">1913</td>
+<td align="left">McDonald</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
-<tr>
-<td style="text-align:right;">
-1914
-</td>
-<td style="text-align:left;">
-McDonald
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="odd">
+<td align="right">1914</td>
+<td align="left">McDonald</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
-<tr>
-<td style="text-align:right;">
-1915
-</td>
-<td style="text-align:left;">
-McDonald
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="even">
+<td align="right">1915</td>
+<td align="left">McDonald</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
-<tr>
-<td style="text-align:right;">
-1916
-</td>
-<td style="text-align:left;">
-McDonald
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="odd">
+<td align="right">1916</td>
+<td align="left">McDonald</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
-<tr>
-<td style="text-align:right;">
-1917
-</td>
-<td style="text-align:left;">
-C de Baca
-</td>
-<td style="text-align:left;">
-Wilson
-</td>
-<td style="text-align:left;">
-D
-</td>
-<td style="text-align:left;">
-D
-</td>
+<tr class="even">
+<td align="right">1917</td>
+<td align="left">C de Baca</td>
+<td align="left">Wilson</td>
+<td align="left">D</td>
+<td align="left">D</td>
 </tr>
 </tbody>
 </table>
@@ -920,7 +482,7 @@ R
         axis.text.x = element_text(angle = 90, hjust = 1)) +
   scale_x_continuous(breaks=seq(1912,2018,4)) +
   labs(title=&quot;Presidential &amp; Gubernatorial Party Affiliation by Year&quot;) </code></pre>
-<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 </div>
 <div id="state-legislature-composition-historically" class="section level3">
 <h3>State legislature composition historically</h3>
@@ -975,7 +537,7 @@ tab2 %&gt;%
   scale_x_continuous(breaks=seq(1913, 2019, 8)) + xlab(&#39;&#39;) +
   ggtitle(&#39;Composition of New Mexico state houses since statehood&#39;) +
   facet_wrap(~house)</code></pre>
-<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<p><img src="/post/2019-10-10-voting-behaviors-in-new-mexico-a-brief-history_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 </div>
 </div>
 <div id="summary" class="section level2">
