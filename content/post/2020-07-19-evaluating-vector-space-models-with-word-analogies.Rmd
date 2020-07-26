@@ -13,7 +13,7 @@ tags:
   - rstats
   - corpus ling
 banner: banners/king-queen.png
-description: 'methods for evaluating vector spaces using word analogies'
+description: '~'
 ---
 
 
