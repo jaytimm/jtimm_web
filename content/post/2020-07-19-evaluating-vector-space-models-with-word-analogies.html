@@ -1,0 +1,375 @@
+---
+title: evaluating vector space models with word analogies
+author: ''
+date: '2020-07-26'
+slug: evaluating-vector-space-models-with-word-analogies
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+bibliography: biblio.bib
+link-citations: yes
+tags:
+  - rstats
+  - corpus ling
+banner: banners/king-queen.png
+description: 'methods for evaluating vector spaces using word analogies'
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#corpus-model">Corpus &amp; model</a></li>
+<li><a href="#evaluation-analogy">Evaluation &amp; analogy</a></li>
+<li><a href="#experimental-set-up">Experimental set-up</a></li>
+<li><a href="#results-model-parameters">Results: model parameters</a></li>
+<li><a href="#results-analogy-categories">Results: analogy categories</a></li>
+<li><a href="#visualizing-vector-offsets">Visualizing vector offsets</a></li>
+<li><a href="#summary-caveats">Summary &amp; caveats</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This post walks through corpus-based methods for evaluating the efficacy of vector space models in capturing semantic relations. Here we consider the standard evaluation tool for VSMs: the <strong>offset method for solving word analogies</strong>. While this method is not without its limitations/criticisms (see <span class="citation">Linzen (<a href="#ref-linzen2016issues" role="doc-biblioref">2016</a>)</span> for a very nice discussion), our focus here is on an R-based work-flow.</p>
+<p>The nuts/bolts of these types of evaluations can often be glossed over in the NLP literature; here we unpack methods and work through some reproducible examples. Ultimately, our goal is to understand how standard VSM parameters (eg, dimensionality &amp; window size) affect model efficacy, specifically for personal and/or non-standard corpora.</p>
+</div>
+<div id="corpus-model" class="section level2">
+<h2>Corpus &amp; model</h2>
+<p>The corpus used here for demonstration is derived from texts made available via <a href="https://www.gutenberg.org/">Project Gutenberg</a>. We have sampled the full PG corpus to create a more manageable sub-corpus of ~7K texts and 250M words. A simple description of its construction is available <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/pg-corpus.md">here</a>.</p>
+<pre class="r"><code>library(tidyverse)
+setwd(&#39;/home/jtimm/jt_work/GitHub/data_sets/project_gutenberg&#39;)
+corpus &lt;- readRDS(&#39;sample-pg-corpus.rds&#39;)</code></pre>
+<p>The type of vector space model (VSM) implemented is a GloVe model; the R package <code>text2vec</code> is utilized to construct this semantic space. Below, two <code>text2vec</code> data primitives are created: an iterator and a vectorized vocabulary. See <a href="http://text2vec.org/">this vignette</a> for a more detailed account of the <code>text2vec</code> framework.</p>
+<pre class="r"><code>t2v_itokens &lt;- text2vec::itoken(unlist(corpus), 
+                       preprocessor = tolower,
+                       tokenizer = text2vec::space_tokenizer, 
+                       n_chunks = 1,
+                       ids = names(corpus)) 
+
+vocab1 &lt;- text2vec::create_vocabulary(t2v_itokens, stopwords = tm::stopwords()) 
+vocab2 &lt;- text2vec::prune_vocabulary(vocab1, term_count_min = 50) 
+vectorizer &lt;- text2vec::vocab_vectorizer(vocab2)</code></pre>
+</div>
+<div id="evaluation-analogy" class="section level2">
+<h2>Evaluation &amp; analogy</h2>
+<p>We use two sets of analogy problems for VSM evaluation: the standard Google data set <span class="citation">(Mikolov et al. <a href="#ref-mikolov2013efficient" role="doc-biblioref">2013</a>)</span> and the BATS set <span class="citation">(Gladkova, Drozd, and Matsuoka <a href="#ref-gladkova2016analogy" role="doc-biblioref">2016</a>)</span>. See this <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests.md">brief appendix</a> for some additional details about the problem sets, including category types and examples. See <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests-2.md">this appendix</a> for a simple code-through of building your own analogy problem sets – compatible structure-wise with the Google data set and the <code>text2vec</code> framework.</p>
+<p>I have stored these files on <a href="https://github.com/jaytimm/tech-notes-american-politics/tree/master/notes/analogy-tests_files">Git Hub</a>, but both are easily accessible online. Important to note, the Google file has not been modified in any way; the BATS file, on the other hand, has been re-structured in the image of the Google file.</p>
+<pre class="r"><code>questions_file &lt;- paste0(analogy_dir, &#39;questions-words.txt&#39;)
+questions_file2 &lt;- paste0(analogy_dir, &#39;bats-questions-words.txt&#39;)
+
+google_analogy_set &lt;- text2vec::prepare_analogy_questions(
+        questions_file_path = questions_file, 
+        vocab_terms = vocab2$term) </code></pre>
+<pre><code>## INFO  [19:43:53.159] 11779 full questions found out of 19544 total</code></pre>
+<pre class="r"><code>bats_analogy_set &lt;- text2vec::prepare_analogy_questions(
+        questions_file_path = questions_file2, 
+        vocab_terms = vocab2$term) </code></pre>
+<pre><code>## INFO  [19:43:53.675] 39378 full questions found out of 56036 total</code></pre>
+<pre class="r"><code>tests &lt;- c(google_analogy_set, bats_analogy_set)</code></pre>
+<p><strong>Long &amp; short</strong> of the vector offset method applied to analogy problems. Per some analogy defined as (1) below:</p>
+<pre><code>(1)  a:a* :: b:__</code></pre>
+<p>where a = Plato, a* = Greek, and b = Copernicus, we solve for b* as</p>
+<pre><code>(2) b* = a* - a + b </code></pre>
+<p>based on the assumption that:</p>
+<pre><code>(3) a* - a = b* - b</code></pre>
+<p>In other words, we assume that the vector offsets between two sets of words related semantically in similar ways will be consistent when plotted in 2d semantic space. Solving for b*, then, amounts to identifying the word whose vector representation is most similar (per cosine similarity) to a* - a + b (excluding a*, a, or b).</p>
+</div>
+<div id="experimental-set-up" class="section level2">
+<h2>Experimental set-up</h2>
+<div id="parameters" class="section level3">
+<h3>Parameters</h3>
+<p>So, to evaluate effects of window size and dimensionality on the efficacy of a GloVe model in solving analogies, we build a total of 50 GloVe models – ie, all combinations of window sizes <em>3:12</em> and model dimensions in (<em>50, 100, 150, 200, 250</em>).</p>
+<pre class="r"><code>p_windows &lt;- c(3:12)
+p_dimensions &lt;- c(50, 100, 150, 200, 250)
+
+ls &lt;- length(p_windows) * length(p_dimensions)
+z = 0
+results &lt;- list()
+details &lt;- vector()</code></pre>
+</div>
+<div id="flow" class="section level3">
+<h3>Flow</h3>
+<p>The nasty <code>for</code> loop below can be translated into layman’s terms as: for window size <em>j</em> and dimensions <em>k</em>, (1) build GloVe model <em>j-k</em> via <code>text2vec::GlobalVectors</code>, and then (2) test accuracy of GloVe model <em>j-k</em> via <code>text2vec::check_analogy_accuracy</code>.</p>
+<pre class="r"><code>for(j in 1:length(p_windows)) {
+  
+  tcm &lt;- text2vec::create_tcm(it = t2v_itokens,
+                              vectorizer = vectorizer,
+                              skip_grams_window = p_windows[j])
+  
+  for(k in 1:length(p_dimensions)) {
+
+    glove &lt;- text2vec::GlobalVectors$new(rank = p_dimensions[k], x_max = 10)
+    wv_main &lt;- glove$fit_transform(tcm, 
+                                   n_iter = 10, 
+                                   convergence_tol = 0.01)
+    glove_vectors &lt;- wv_main + t(glove$components)
+
+    res &lt;- text2vec::check_analogy_accuracy(
+      questions_list = google_analogy_set, 
+      m_word_vectors = glove_vectors)
+    
+    id &lt;- paste0(&#39;-windows_&#39;, p_windows[j], &#39;-dims_&#39;, p_dimensions[k])
+    z &lt;- z + 1
+    results[[z]] &lt;- res
+    details[z] &lt;- id 
+  }
+}</code></pre>
+</div>
+<div id="output-structure" class="section level3">
+<h3>Output structure</h3>
+<p>Responses to the analogy test are summarized as a list of data frames – one for each of our 50 GloVe models.</p>
+<pre class="r"><code>names(results) &lt;- details 
+answers &lt;- results %&gt;%
+    bind_rows(.id = &#39;model&#39;)</code></pre>
+<p>Test components have been hashed (per <code>text2vec</code>) to speed up the “grading” process – here, we cross things back to actual text.</p>
+<pre class="r"><code>key &lt;- vocab2 %&gt;%
+  mutate(id = row_number()) %&gt;%
+  select(id, term)
+
+tests_df &lt;- lapply(tests, data.frame) %&gt;%
+  bind_rows() %&gt;%
+  mutate(aid = row_number())
+
+tests_df$X1 &lt;- key$term[match(tests_df$X1, key$id)]
+tests_df$X2 &lt;- key$term[match(tests_df$X2, key$id)]
+tests_df$X3 &lt;- key$term[match(tests_df$X3, key$id)]
+tests_df$X4 &lt;- key$term[match(tests_df$X4, key$id)]</code></pre>
+<p>Then we join test &amp; response data to create a single, readable data table.</p>
+<pre class="r"><code>predicted_actual &lt;- answers %&gt;% 
+  group_by(window, dimensions) %&gt;%
+  mutate(aid = row_number()) %&gt;%
+  ungroup() %&gt;%
+  left_join(key, by = c(&#39;predicted&#39; = &#39;id&#39;)) %&gt;%
+  rename(predicted_term = term) %&gt;%
+  left_join(key, by = c(&#39;actual&#39; = &#39;id&#39;)) %&gt;%
+  rename(actual_term = term) %&gt;%
+  left_join(tests_df %&gt;% select(aid, X1:X3)) %&gt;%
+  na.omit %&gt;%
+  mutate(correct = ifelse(predicted == actual, &#39;Y&#39;, &#39;n&#39;))</code></pre>
+<p>A sample of this table is presented below. incorrect answers are generally more interesting.</p>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[50,200,250,250,250],[3,6,10,11,12],["lucky","rome","husband","happy","publish"],["luckiest","italy","wife","happiness","published"],["simple","brussels","boy","sad","perform"],["simplest","belgium","girl","sadness","performed"],["simplicity","belgium","lad","sorrow","performed"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>dimensions<\/th>\n      <th>window<\/th>\n      <th>X1<\/th>\n      <th>X2<\/th>\n      <th>X3<\/th>\n      <th>actual<\/th>\n      <th>pred<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="results-model-parameters" class="section level2">
+<h2>Results: model parameters</h2>
+<p>Our performance metric for a given model, then, is the percentage of correct analogy responses, or analogy accuracy. Accuracy scores by dimensions, window size, and data set/analogy category are computed below.</p>
+<pre class="r"><code>mod_category_summary &lt;- answers %&gt;%
+  mutate(correct = ifelse(predicted == actual, &#39;Y&#39;, &#39;N&#39;)) %&gt;%
+  mutate(dset = ifelse(grepl(&#39;gram&#39;, category), &#39;google&#39;, &#39;bats&#39;)) %&gt;%
+  group_by(dset, dimensions, window, category, correct) %&gt;%
+  summarize(n = n()) %&gt;%
+  ungroup() %&gt;%
+  spread(correct, n) %&gt;%
+  mutate(N = as.integer(N),
+         Y = as.integer(Y),)</code></pre>
+<div id="vector-dimensionality-effect" class="section level3">
+<h3>Vector dimensionality effect</h3>
+<pre class="r"><code>mod_summary &lt;- mod_category_summary %&gt;%
+  filter(!is.na(Y)) %&gt;% # 
+  group_by(dset, window, dimensions) %&gt;%
+  summarize(N = sum(N), Y = sum(Y)) %&gt;%
+  ungroup() %&gt;%
+  mutate (per = round(Y/(N+Y) *100, 1)) </code></pre>
+<p>The plot below illustrates the relationship between analogy accuracy and # of model dimensions as a function of window size, faceted by analogy set. Per plot, GloVe model gains in analogy performance plateau at 150 dimensions for all window sizes; in several instances, accuracy decreases at dimensions &gt; 150. Also – the BATS collection of analogies would appear to be a bit more challenging.</p>
+<pre class="r"><code>mod_summary %&gt;%
+  ggplot() +
+  geom_line(aes(x = dimensions, 
+                y = per, 
+                color = factor(window),
+                linetype = factor(window)), size = 1) +
+  facet_wrap(~dset) +
+  
+  theme_minimal() +
+  ggthemes::scale_color_stata() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme(legend.position = &#39;right&#39;) +
+  ylab(&#39;Accuracy (%)&#39;) + xlab(&quot;Dimensions&quot;) +
+  labs(title = &#39;Accuracy (%) versus # Dimensions&#39;)</code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="window-size-effect" class="section level3">
+<h3>Window Size effect</h3>
+<p>The plot below illustrates the relationship between analogy accuracy and window size as a function of dimensionality. Here, model performance improves per step-increase in widow size – accuracy seems to improve most substantially from window sizes 8 to 9. Also, some evidence of a leveling off at window sizes &gt; 9 for higher-dimension models.</p>
+<p><strong>The simplest and highest performing model</strong>, then, for this particular corpus (in the aggregate) is a <em>window size = 10 and dimensions = 150</em> model.</p>
+<pre class="r"><code>mod_summary %&gt;%
+  ggplot() +
+  geom_line(aes(x = window, 
+                y= per, 
+                color = factor(dimensions),
+                linetype = factor(dimensions)
+                ),
+            size = 1.25) +
+  facet_wrap(~dset) +
+  
+  theme_minimal() +
+  ggthemes::scale_color_few() +
+  scale_x_continuous(breaks=c(3:12)) +
+  theme(legend.position = &#39;right&#39;)  +
+  ylab(&#39;Accuracy (%)&#39;) + xlab(&quot;Window Size&quot;) +
+  labs(title = &#39;Accuracy (%) versus Window Size&#39;)</code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+</div>
+<div id="results-analogy-categories" class="section level2">
+<h2>Results: analogy categories</h2>
+<p>Next, we disaggregate model efficacy by analogy category and window size, holding dimensionality constant at 150. Results for each set of analogy problems are visualized as tiled “heatmaps” below; <code>dark green</code> indicates higher accuracy within a particular category, <code>dark brown</code> lower accuracy. Folks have noted previously in the literature that smaller window sizes tend to be better at capturing relations more semantic (as opposed to more grammatical) in nature. Some evidence for that here.</p>
+<div id="google-analogy-set" class="section level3">
+<h3>Google analogy set</h3>
+<pre class="r"><code>mod_category_summary %&gt;%
+  filter(!grepl(&#39;_&#39;, category)) %&gt;%
+  filter(dimensions == 150) %&gt;%
+  mutate(per = round(Y/(N+Y) *100, 1)) %&gt;%
+  filter(!is.na(per)) %&gt;%
+  group_by(category) %&gt;%
+  mutate(rank1 = rank(per)) %&gt;%
+  ungroup() %&gt;% 
+  
+  ggplot(aes(x = factor(window), y = category)) + 
+  geom_tile(aes(fill = rank1)) + 
+  geom_text(aes(fill = rank1, label = per), size = 3) + 
+  scale_fill_gradient2(low = scales::muted(&quot;#d8b365&quot;), 
+                       mid = &quot;#f5f5f5&quot;, 
+                       high = scales::muted(&#39;#5ab4ac&#39;), 
+                       midpoint = 5) +
+  theme(legend.position = &#39;none&#39;)  +
+  xlab(&#39;WINDOW SIZE&#39;) +
+  ggtitle(&#39;Google analogies: accuracy by category&#39;)</code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+<div id="bats-analogy-set" class="section level3">
+<h3>BATS analogy set</h3>
+<pre class="r"><code>mod_category_summary %&gt;%
+  filter(grepl(&#39;_&#39;, category)) %&gt;%
+  filter(dimensions == 150) %&gt;%
+  mutate(per = round(Y/(N+Y) *100, 1),
+         category = gsub(&#39;^.*/&#39;,&#39;&#39;, category)) %&gt;%
+  filter(!is.na(per)) %&gt;%
+  group_by(category) %&gt;%
+  mutate(rank1 = rank(per)) %&gt;%
+  ungroup() %&gt;%
+  
+  ggplot(aes(x = factor(window), y = category)) + 
+  geom_tile(aes(fill = rank1)) + 
+  geom_text(aes(fill = rank1, label = per), size = 3) + 
+  scale_fill_gradient2(low = scales::muted(&quot;#d8b365&quot;), 
+                       mid = &quot;#f5f5f5&quot;, 
+                       high = scales::muted(&#39;#5ab4ac&#39;), 
+                       midpoint = 5) +
+  theme(legend.position = &#39;none&#39;)  +
+  xlab(&#39;WINDOW SIZE&#39;) +
+  ggtitle(&#39;BATS analogies: accuracy by category&#39;)</code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+</div>
+<div id="visualizing-vector-offsets" class="section level2">
+<h2>Visualizing vector offsets</h2>
+<div id="glove-model-in-two-dimensions" class="section level3">
+<h3>GloVe model in two dimensions</h3>
+<p>For demonstration purposes, we use a semantic space derived from the <em>window size = 5 and dimensions = 100</em> GloVe model. This space is transformed from 100 GloVe dimensions to two dimensions via principal component analysis.</p>
+<pre class="r"><code>pca_2d &lt;- prcomp(glove_vectors, 
+                 scale = TRUE, center = TRUE) %&gt;%
+  pluck(5) %&gt;%
+  data.frame() %&gt;%
+  select(PC1, PC2)</code></pre>
+<p><strong>A 30,000 foot view</strong> of this two-dimensional semantic space.</p>
+<pre class="r"><code>ggplot(data = pca_2d, 
+        aes(x = PC1,
+            y = PC2)) + 
+
+    geom_point(size = .05, color = &#39;lightgray&#39;) +
+    geom_text(data = pca_2d,
+            aes(x = PC1,
+            y = PC2,
+            label = rownames(pca_2d)), 
+            size = 3,
+            color = &#39;steelblue&#39;,
+            check_overlap = TRUE) +
+  
+  xlim (-2.5,2.5) + ylim(-2.5,2.5) +
+  theme_minimal() </code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+<div id="copernicus-plato" class="section level3">
+<h3>Copernicus &amp; Plato</h3>
+<pre class="r"><code>x1 = &#39;copernicus&#39;; x2 = &#39;polish&#39;; y1 = &#39;plato&#39;; y2 = &#39;greek&#39;
+y &lt;- pca_2d[rownames(pca_2d) %in% c(x1, x2, y1, y2),]</code></pre>
+<p>Finally, a visual demonstration of the vector offset method at-work in solving the <strong>Copernicus analogy</strong> problem. Situated within the full semantic space for context.</p>
+<pre class="r"><code>ggplot(data = pca_2d, 
+        aes(x = PC1,
+            y = PC2)) + 
+  geom_text(data = pca_2d,
+            aes(x = PC1,
+            y = PC2,
+            label = rownames(pca_2d)), 
+            size = 3,
+            color = &#39;gray&#39;,
+            check_overlap = TRUE) +
+
+  xlim(min(c(off_dims$x1, off_dims$x2)), 
+       max(c(off_dims$x1, off_dims$x2))) +
+  ylim(min(c(off_dims$y1, off_dims$y2)),
+       max(c(off_dims$y1, off_dims$y2))) +
+  geom_segment(data = off_dims[1:2,], 
+               aes(x = x2, y = y2, 
+                   xend = x1, yend = y1),
+               color = &#39;#df6358&#39;,
+               size = 1.25, 
+               arrow = arrow(length = unit(0.025, &quot;npc&quot;))) +
+  geom_segment(data = off_dims[3:4,], 
+               aes(x = x1, y = y1,
+                   xend = x2, yend = y2),
+               color = &#39;steelblue&#39;,
+               size = 1.25, 
+               #linetype = 4, 
+               arrow = arrow(length = unit(0.025, &quot;npc&quot;))) +
+  ggrepel::geom_text_repel(
+    data  = y,
+    aes(label = toupper(rownames(y))), 
+    direction = &quot;y&quot;, 
+    hjust = 0, 
+    size = 4.25, 
+    color = &#39;black&#39;) +
+  theme_minimal() +
+  ggtitle(paste0(x1, &#39;:&#39;, x2, &#39; :: &#39;, y1, &#39;:&#39;, y2))</code></pre>
+<p><img src="/post/2020-07-19-evaluating-vector-space-models-with-word-analogies_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+</div>
+</div>
+<div id="summary-caveats" class="section level2">
+<h2>Summary &amp; caveats</h2>
+<p>Mostly an excuse to gather some thoughts. I use GloVe models quite a bit for exploratory purposes. To better trust insights gained from exploration, it is generally nice to have an evaluative tool, however imperfect. And certainly to justify parameter selection for corpus-specific tasks. Hopefully a useful
+resource and guide. For some innovative and more thoughtful applications of VSMs, see
+<span class="citation">Weston et al. (<a href="#ref-weston2019named" role="doc-biblioref">2019</a>)</span> and <span class="citation">Tshitoyan et al. (<a href="#ref-tshitoyan2019unsupervised" role="doc-biblioref">2019</a>)</span>.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-gladkova2016analogy">
+<p>Gladkova, Anna, Aleksandr Drozd, and Satoshi Matsuoka. 2016. “Analogy-Based Detection of Morphological and Semantic Relations with Word Embeddings: What Works and What Doesn’t.” In <em>Proceedings of the Naacl Student Research Workshop</em>, 8–15.</p>
+</div>
+<div id="ref-linzen2016issues">
+<p>Linzen, Tal. 2016. “Issues in Evaluating Semantic Spaces Using Word Analogies.” <em>arXiv Preprint arXiv:1606.07736</em>.</p>
+</div>
+<div id="ref-mikolov2013efficient">
+<p>Mikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. “Efficient Estimation of Word Representations in Vector Space.” <em>arXiv Preprint arXiv:1301.3781</em>.</p>
+</div>
+<div id="ref-tshitoyan2019unsupervised">
+<p>Tshitoyan, Vahe, John Dagdelen, Leigh Weston, Alexander Dunn, Ziqin Rong, Olga Kononova, Kristin A Persson, Gerbrand Ceder, and Anubhav Jain. 2019. “Unsupervised Word Embeddings Capture Latent Knowledge from Materials Science Literature.” <em>Nature</em> 571 (7763): 95–98.</p>
+</div>
+<div id="ref-weston2019named">
+<p>Weston, Leigh, Vahe Tshitoyan, John Dagdelen, Olga Kononova, Amalie Trewartha, Kristin A Persson, Gerbrand Ceder, and Anubhav Jain. 2019. “Named Entity Recognition and Normalization Applied to Large-Scale Information Extraction from the Materials Science Literature.” <em>Journal of Chemical Information and Modeling</em> 59 (9): 3692–3702.</p>
+</div>
+</div>
+</div>
