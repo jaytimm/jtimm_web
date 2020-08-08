@@ -54,7 +54,7 @@ theme = "hugo-icarus-theme"
 [[params.menu]]
     before = false
     label  = "Technical Notes"
-    link   = "https://github.com/jaytimm/some_technical_notes"
+    link   = "https://www.puremoe.net/"
 	
 # Enter a link for the follow button on the left
 [params.profile]
@@ -92,7 +92,7 @@ theme = "hugo-icarus-theme"
     facebook        = ""
     facebook_admin  = ""
     twitter_domain  = ""
-    twitter         = "JasonTimm13"
+    twitter         = "DrJayTimm"
 
 # Enable and disable widgets for the right sidebar
 [params.widgets]
