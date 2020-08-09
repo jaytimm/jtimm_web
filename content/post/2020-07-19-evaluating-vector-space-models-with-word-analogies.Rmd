@@ -63,11 +63,12 @@ We use two sets of analogy problems for VSM evaluation: the standard Google data
 
 
 ```{r include=FALSE}
-setwd('/home/jtimm/jt_work/GitHub/x_wv_model_eval')
+analogy_dir <- '/home/jtimm/jt_work/GitHub/technical_notes/resources/analogy/'
+post_dir <- '/home/jtimm/jt_work/GitHub/technical_notes/resources/analogy/post/'
+
+setwd(post_dir)
 #saveRDS(vocab2, 'vocab2.rds')
 vocab2 <- readRDS('vocab2.rds') 
-
-analogy_dir <- '/home/jtimm/jt_work/GitHub/some_technical_notes/notes/analogy-tests_files/'
 ```
 
 
@@ -173,7 +174,7 @@ answers <- results %>%
 
 
 ```{r include=FALSE}
-setwd('/home/jtimm/jt_work/GitHub/x_wv_model_eval')
+setwd(post_dir)
 #saveRDS(answers, 'answers_both.rds')
 answers <- readRDS('answers_both.rds') %>%
   filter(!grepl('FLASE', model)) %>%
@@ -389,7 +390,7 @@ mod_category_summary %>%
 
 ```{r include=FALSE}
 library(tidyverse)
-setwd('/home/jtimm/jt_work/GitHub/x_wv_model_eval')
+setwd(post_dir)
 #saveRDS(glove_vectors, 'glove_vectors.rds')
 glove_vectors <- readRDS('glove_vectors.rds')
 ```

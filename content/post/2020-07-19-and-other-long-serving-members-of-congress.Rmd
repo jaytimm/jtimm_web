@@ -1,5 +1,5 @@
 ---
-title: Margins-of-victory, voting behavior & re-election
+title: margins-of-victory, voting behavior & re-election
 author: ''
 date: '2020-07-27'
 slug: re-election-model

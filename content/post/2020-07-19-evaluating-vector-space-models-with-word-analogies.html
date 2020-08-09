@@ -47,7 +47,7 @@ description: '~'
 </div>
 <div id="corpus-model" class="section level2">
 <h2>Corpus &amp; model</h2>
-<p>The corpus used here for demonstration is derived from texts made available via <a href="https://www.gutenberg.org/">Project Gutenberg</a>. We have sampled the full PG corpus to create a more manageable sub-corpus of ~7K texts and 250M words. A simple description of its construction is available <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/pg-corpus.md">here</a>.</p>
+<p>The corpus used here for demonstration is derived from texts made available via <a href="https://www.gutenberg.org/">Project Gutenberg</a>. We have sampled the full PG corpus to create a more manageable sub-corpus of ~7K texts and 250M words. A simple description of its construction is available <a href="https://www.puremoe.net/posts/some-notes-on-a-project-gutenberg-corpus/">here</a>.</p>
 <pre class="r"><code>library(tidyverse)
 setwd(&#39;/home/jtimm/jt_work/GitHub/data_sets/project_gutenberg&#39;)
 corpus &lt;- readRDS(&#39;sample-pg-corpus.rds&#39;)</code></pre>
@@ -64,19 +64,19 @@ vectorizer &lt;- text2vec::vocab_vectorizer(vocab2)</code></pre>
 </div>
 <div id="evaluation-analogy" class="section level2">
 <h2>Evaluation &amp; analogy</h2>
-<p>We use two sets of analogy problems for VSM evaluation: the standard Google data set <span class="citation">(Mikolov et al. <a href="#ref-mikolov2013efficient" role="doc-biblioref">2013</a>)</span> and the BATS set <span class="citation">(Gladkova, Drozd, and Matsuoka <a href="#ref-gladkova2016analogy" role="doc-biblioref">2016</a>)</span>. See this <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests.md">brief appendix</a> for some additional details about the problem sets, including category types and examples. See <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests-2.md">this appendix</a> for a simple code-through of building your own analogy problem sets – compatible structure-wise with the Google data set and the <code>text2vec</code> framework.</p>
-<p>I have stored these files on <a href="https://github.com/jaytimm/tech-notes-american-politics/tree/master/notes/analogy-tests_files">Git Hub</a>, but both are easily accessible online. Important to note, the Google file has not been modified in any way; the BATS file, on the other hand, has been re-structured in the image of the Google file.</p>
+<p>We use two sets of analogy problems for VSM evaluation: the standard Google data set <span class="citation">(Mikolov et al. <a href="#ref-mikolov2013efficient" role="doc-biblioref">2013</a>)</span> and the BATS set <span class="citation">(Gladkova, Drozd, and Matsuoka <a href="#ref-gladkova2016analogy" role="doc-biblioref">2016</a>)</span>. See this <a href="https://www.puremoe.net/posts/vector-space-analogy-briefly/">brief appendix</a> for some additional details about the problem sets, including category types and examples. See <a href="https://www.puremoe.net/posts/vector-space-homegrown-analogies/">this appendix</a> for a simple code-through of building your own analogy problem sets – compatible structure-wise with the Google data set and the <code>text2vec</code> framework.</p>
+<p>I have stored these files on <a href="https://github.com/jaytimm/technical_notes/tree/master/resources/analogy">Git Hub</a>, but both are easily accessible online. Important to note, the Google file has not been modified in any way; the BATS file, on the other hand, has been re-structured in the image of the Google file.</p>
 <pre class="r"><code>questions_file &lt;- paste0(analogy_dir, &#39;questions-words.txt&#39;)
 questions_file2 &lt;- paste0(analogy_dir, &#39;bats-questions-words.txt&#39;)
 
 google_analogy_set &lt;- text2vec::prepare_analogy_questions(
         questions_file_path = questions_file, 
         vocab_terms = vocab2$term) </code></pre>
-<pre><code>## INFO  [20:30:08.056] 11779 full questions found out of 19544 total</code></pre>
+<pre><code>## INFO  [10:21:30.893] 11779 full questions found out of 19544 total</code></pre>
 <pre class="r"><code>bats_analogy_set &lt;- text2vec::prepare_analogy_questions(
         questions_file_path = questions_file2, 
         vocab_terms = vocab2$term) </code></pre>
-<pre><code>## INFO  [20:30:08.502] 39378 full questions found out of 56036 total</code></pre>
+<pre><code>## INFO  [10:21:31.307] 39378 full questions found out of 56036 total</code></pre>
 <pre class="r"><code>tests &lt;- c(google_analogy_set, bats_analogy_set)</code></pre>
 <p><strong>Long &amp; short</strong> of the vector offset method applied to analogy problems. Per some analogy defined as (1) below:</p>
 <pre><code>(1)  a:a* :: b:__</code></pre>
