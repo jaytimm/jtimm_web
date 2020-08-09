@@ -1,0 +1,508 @@
+---
+title: Political ideology, margins-of-victory & re-election
+author: ''
+date: '2020-07-27'
+slug: and-other-long-serving-members-of-congress
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+tags:
+  - rstats
+  - open-government
+  - VoteView
+banner: banners/longserving.png
+description: 'Visualizing political ideology historically -- '
+images: []
+menu: ''
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#breifly">Breifly</a></li>
+<li><a href="#voteview-dw-nominate">VoteView &amp; DW-NOMINATE</a></li>
+<li><a href="#longest-serving-members-of-the-us-house">Longest-serving members of the US House</a></li>
+<li><a href="#longest-serving-members-political-ideology">Longest-serving members &amp; political ideology</a></li>
+<li><a href="#longest-serving-members-election-margins">Longest-serving members &amp; election margins</a></li>
+<li><a href="#margins-ideology-the-example-of-frank-pallone-jr.-nj-06">Margins &amp; ideology: the example of Frank Pallone, Jr. (NJ-06)</a></li>
+<li><a href="#a-re-election-model-logistic-regression">A re-election model – logistic regression</a></li>
+<li><a href="#thoughts">Thoughts</a></li>
+</ul>
+</div>
+
+<div id="breifly" class="section level2">
+<h2>Breifly</h2>
+<p>In this post, we take a couple of different historical perspectives on the US House of Representatives, investigating margins-of-victory, voting behavior, and re-election prospects over the last 40 years. To introduce data sets, we first consider the body’s longest serving members, dubbed here the <strong>Old Guard</strong>.</p>
+<p>Then we build a simple <strong>re-election model</strong> to investigate how <strong>the relationship between political ideology and margins-of-victory</strong> has influenced the likelihood of re-election in the House since 1976. Among other things, model results demonstrate the relevance of voting in-step with one’s constituency to a successful re-election.</p>
+</div>
+<div id="voteview-dw-nominate" class="section level2">
+<h2>VoteView &amp; DW-NOMINATE</h2>
+<p>To identify the longest serving members of the US House, and to explore their respective voting behaviors over time, we consult the <a href="https://voteview.com/">VoteView</a> project via the R package <code>RVoteview</code>. The <code>download_metadata</code> function provides easy access to a host of congressional member details, including <code>Nokken-Poole</code> ideology scores. These scores are congress-specific NOMINATE scores; in contrast, standard DW-NOMINATE scores are aggregated over the entire career of a lawmaker.</p>
+<pre class="r"><code>library(tidyverse)
+house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
+                                              chamber = &#39;house&#39;,
+                                              congress = &#39;all&#39;) </code></pre>
+<pre><code>## [1] &quot;/tmp/RtmptOQgt0/Hall_members.csv&quot;</code></pre>
+<pre class="r"><code>x116 &lt;- house_members %&gt;%
+  filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
+  select(icpsr, chamber)</code></pre>
+<p>Next, we clean things up some, and <strong>derive/add several features to the data set</strong>, including the start year of a given congress and house member tenure (ie, the number of terms served) at the start of a given congress.</p>
+<pre class="r"><code>house_members &lt;- house_members %&gt;%
+  filter(last_means == 1 | is.na(last_means)) %&gt;% # weirdnesses --
+  arrange(congress, bioname) %&gt;%
+  group_by(bioname) %&gt;%
+  mutate(congs_served = row_number()) %&gt;%
+  ungroup() %&gt;%
+  
+  mutate(year = 2019 - (116-congress)*2,
+         party_code = ifelse(party_code == 200, &#39;R&#39;, &#39;D&#39;),
+         age = year - born)</code></pre>
+</div>
+<div id="longest-serving-members-of-the-us-house" class="section level2">
+<h2>Longest-serving members of the US House</h2>
+<p>We filter the full data set to only members presently serving in the 116th House.</p>
+<pre class="r"><code>vnp &lt;- house_members %&gt;%
+  inner_join(x116) %&gt;%
+  group_by(chamber, congress, party_code) %&gt;%
+  mutate(med = median(nominate_dim1)) %&gt;%
+  ungroup() %&gt;%
+  mutate(label = gsub(&#39;([A-Za-z]*)(, )([A-Z])(.*$)&#39;, &#39;\\1, \\3\\.&#39;, bioname),
+         label = paste0(label, &#39; (&#39;, party_code, &#39;-&#39;, state_abbrev, &#39;)&#39;))</code></pre>
+<p>The longest serving members of the US House (currently holding office) since 1990. Focusing on members that have served consecutive, ie, uninterrupted, terms.</p>
+<pre class="r"><code>longs &lt;- vnp %&gt;%
+  group_by(bioname, state_abbrev, party_code, label) %&gt;%
+  summarize(min = min(congress),
+            max = max(congress),
+            n = n()) %&gt;%
+  ungroup() %&gt;%
+  mutate(consec = ifelse(max - min + 1 == n, &#39;y&#39;, &#39;n&#39;),
+         since = 2019 - (n - 1) * 2) %&gt;%
+  arrange(since) %&gt;%
+  filter(consec == &#39;y&#39; &amp; since &lt; 1990) %&gt;%
+  select(bioname, state_abbrev, party_code, label, since) </code></pre>
+<p>The <strong>Old Guard</strong> is presented in the table below. These members have held office since 1975 ~ 1989.</p>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["YOUNG, Donald Edwin","SENSENBRENNER, Frank James, Jr.","ROGERS, Harold Dallas (Hal)","SMITH, Christopher Henry","HOYER, Steny Hamilton","KAPTUR, Marcia Carolyn (Marcy)","VISCLOSKY, Peter","DeFAZIO, Peter Anthony","LEWIS, John R.","UPTON, Frederick Stephen","ENGEL, Eliot Lance","LOWEY, Nita M.","NEAL, Richard Edmund","PALLONE, Frank, Jr.","PELOSI, Nancy"],["AK","WI","KY","NJ","MD","OH","IN","OR","GA","MI","NY","NY","MA","NJ","CA"],["R","R","R","R","D","D","D","D","D","R","D","D","D","D","D"],[1975,1979,1981,1981,1983,1983,1985,1987,1987,1987,1989,1989,1989,1989,1989]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bioname<\/th>\n      <th>state_abbrev<\/th>\n      <th>party_code<\/th>\n      <th>since<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="longest-serving-members-political-ideology" class="section level2">
+<h2>Longest-serving members &amp; political ideology</h2>
+<p>Here we consider the extent to which political ideology scores (may or may not) have shifted historically among the longest serving members of the US House. Again, we consider the <strong>Nokken-Poole first dimension scores</strong> made available via the <code>Rvoteview::download_metadata</code> function.</p>
+<p>The plot below summarizes these scores by congress for each of the old-guard House reps. Note that scores are presented relative to the party median for a given congress. For members of both parties, then, positive values reflect ideology scores that diverge from median towards 0, ie, scores are more moderate relative to median score for a given congress.</p>
+<pre class="r"><code>for_plot &lt;- vnp %&gt;%
+  inner_join(longs %&gt;% select(bioname, since), 
+             by = c(&#39;bioname&#39;)) %&gt;%
+  mutate(delta = med - nokken_poole_dim1,
+         delta = ifelse(party_code == &#39;D&#39;, -delta, delta)) %&gt;% 
+  arrange(bioname)
+  
+ggplot(data = for_plot, 
+       aes(x = year, 
+           y = delta, 
+           fill = factor(party_code))) +
+  
+  geom_bar(alpha = 0.85, color = &#39;white&#39;, stat = &#39;identity&#39;) + 
+  facet_wrap(~label) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme(legend.position = &quot;none&quot;) +
+  ggthemes::scale_fill_stata() +
+  labs(title=&quot;Political ideologies relative to party median&quot;) </code></pre>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>So, each historical voting record a unique story. A more curious example above is the case of Frank Pallone Jr. Early on his career, he voted to the right of the Democratic party median; his voting behavior in more recent congresses has moved to the left of the party median. Also – and in general – some interesting post-9/11 patterns.</p>
+</div>
+<div id="longest-serving-members-election-margins" class="section level2">
+<h2>Longest-serving members &amp; election margins</h2>
+<p>The next piece, then, is election margins. Returns for all congressional house races since 1976 are made available by the <a href="https://github.com/MEDSL">MIT Election Data and Science Lab</a>; I have cleaned these data and included them in my <code>uspoliticalextras</code> data package.</p>
+<pre class="r"><code>house_returns &lt;- uspoliticalextras::uspol_medsl_returns_house_cd </code></pre>
+<p>The tile plot below details historical margins for members of the old guard. Margins for Republicans are calculated as the difference between % Republican vote and % Democratic vote; vice versa for Democrats. A nifty plot, and one that may be more interesting for districts with a bit more swing.</p>
+<pre class="r"><code>lrs &lt;- house_returns %&gt;% 
+  filter(candidate %in% longs$bioname)
+
+for_margins_plot &lt;- lrs  %&gt;%
+  mutate(per = ifelse(party == &#39;Republican Party&#39;,
+                      republican, -democrat),
+         per = round(per),
+         marg = round(republican-democrat)) %&gt;%
+  inner_join(longs, by = c(&#39;candidate&#39; = &#39;bioname&#39;)) %&gt;%
+  select(label, year, congress, marg)
+
+
+ggplot(data = for_margins_plot,
+       aes(x = factor(year),
+           y = label)) + 
+  geom_tile(aes(fill = marg)) + 
+  geom_text(aes(fill = marg,  
+                label = abs(marg)),
+            size = 2.75) + 
+  scale_fill_gradient2(low = scales::muted(&quot;#437193&quot;), 
+                       mid = &quot;white&quot;, 
+                       high = scales::muted(&quot;#ae4952&quot;), 
+                       midpoint = 0) +
+  theme_minimal() +
+  theme(legend.position = &quot;none&quot;,
+        axis.text.x = element_text(angle = 90, hjust = 1)) +
+  xlab(&#39;&#39;) + ylab(&#39;&#39;) +
+  ggtitle(&#39;Old guard election margins&#39;)</code></pre>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="margins-ideology-the-example-of-frank-pallone-jr.-nj-06" class="section level2">
+<h2>Margins &amp; ideology: the example of Frank Pallone, Jr. (NJ-06)</h2>
+<p>Generally, we expect a reasonably strong relationship between political ideology scores &amp; election margins. Slim margins means an ideologically divided/diverse constituency, which translates to more moderate/middle-ground voting behavior in congress – in theory. An ideologically less diverse constituency often translates into more extreme voting behavior.</p>
+<p><strong>A simple demonstration</strong>. The plot below, then, summarizes the relationship between voting margins and ideology scores for sitting House Rep Frank Pallone Jr. Per previous observations, Mr. Pallone’s voting behavior has become less moderate historically; the plot below suggests that this change may in fact be a product of greater margins-of-victory. In other words, a more progressive constituency == more progressive voting behavior. Which == representative democracy. And perhaps, at least in part, a reason for Mr. Pallone’s longevity in congress.</p>
+<pre class="r"><code>for_scatter &lt;- for_plot %&gt;%
+  filter(bioguide_id %in% c(&#39;P000034&#39;)) %&gt;%
+    inner_join(for_margins_plot, by = c(&#39;congress&#39;, &#39;label&#39;)) 
+
+for_scatter %&gt;%
+  ggplot(aes(x = marg, 
+                y= nokken_poole_dim1,
+                label = congress),
+            size = 1.25) +
+  geom_point() +
+  ggrepel::geom_text_repel(
+    data  = for_scatter,
+    segment.color = &quot;grey80&quot;,
+    direction = &quot;y&quot;,
+    hjust = 0, 
+    size = 3.5) +
+  theme_minimal()+
+  labs(title = for_scatter$label,
+       subtitle = &#39;Margins vs. Ideology&#39;)</code></pre>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="a-re-election-model-logistic-regression" class="section level2">
+<h2>A re-election model – logistic regression</h2>
+<p>So, is this particular pattern relevant when we consider House re-elections across the board? In other words, has the relationship between margins-of-victory and voting behavior influenced the likelihood of re-election for House members historically?</p>
+<p><strong>Using election returns and ideology scores for the last twenty congresses</strong>, here we present a simple logistic regression model to get at this particular question. For good measure, we also consider party affiliation, house member tenure, and the decade in which the election took place.</p>
+<div id="re-election-as-dependent-variable" class="section level3">
+<h3>/Re-election as dependent variable</h3>
+<p>With independent variables largely in tow, our goal here is to re-structure the VoteView data set such that each row represents a re-election “event.” For each seat in each congress since 1976.</p>
+<pre class="r"><code>widely &lt;- house_members %&gt;% 
+  filter(congress &gt; 94) %&gt;%  
+  select(congress, state_abbrev, district_code, bioguide_id) %&gt;% #party_code, 
+  group_by(congress, state_abbrev, district_code) %&gt;%
+  slice(1) %&gt;%
+  group_by(state_abbrev, district_code) %&gt;%
+  spread(congress, bioguide_id)</code></pre>
+<p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for South Carolina’s 3rd congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 98th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 99th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of SC-03 in congresses 98 and 99, respectively. So, incumbent representative D000267 (Butler Derrick, Jr.) won re-election to the 99th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
+<p><em>Important methods note: no distinction is made here between losing an election and retiring, for example.</em></p>
+<pre class="r"><code>x &lt;- c(3:24)
+y &lt;- list()
+for (i in 1:length(x)-1) { y[i] &lt;- data.frame(df = c(x[i], x[i+1])) }
+
+house_transitions &lt;- lapply(1:length(y), function(j) {
+      a1 &lt;- widely[, c(1:2, y[[j]])]
+      a1$trans &lt;- paste(colnames(widely)[y[[j]]], collapse = &#39;-&#39;)
+      colnames(a1)[3:4] &lt;- c(&#39;t1&#39;, &#39;t2&#39;)
+      a1 
+  }) %&gt;%
+  
+  bind_rows() %&gt;%
+  na.omit %&gt;%
+  mutate(congress = as.integer(gsub(&#39;-.*$&#39;, &#39;&#39;, trans)),
+         re_elect = ifelse(t1 == t2, &#39;1&#39;, &#39;0&#39;)) %&gt;%
+  ungroup()</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["SC","TN","IN","MA","MS"],[3,9,6,4,4],["D000267","F000262","M001189","F000339","P000601"],["D000267","C001068","M001189","F000339","P000601"],["98-99","109-110","114-115","107-108","112-113"],["1","0","1","1","1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>st<\/th>\n      <th>dc<\/th>\n      <th>t1<\/th>\n      <th>t2<\/th>\n      <th>trans<\/th>\n      <th>re_elect<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="decades-residuals" class="section level3">
+<h3>/decades &amp; residuals</h3>
+<p>Next, we create a simple category for election decade, spanning from the <code>70s</code> to the <code>Teens</code>.</p>
+<pre class="r"><code>h2 &lt;- house_transitions %&gt;%
+  rename(bioguide_id = t1) %&gt;%
+  
+  inner_join(house_members %&gt;% select(congress, state_abbrev, district_code,
+                             bioguide_id, age, congs_served, nokken_poole_dim1)) %&gt;%
+  left_join(house_returns) %&gt;%
+  mutate(margins = republican - democrat) %&gt;%  
+  mutate(decade = case_when (year &lt; 1980 ~ &#39;70s&#39;,
+                           year &lt; 1990 &amp; year &gt; 1979 ~ &#39;80s&#39;,
+                           year &lt; 2000 &amp; year &gt; 1989 ~ &#39;90s&#39;,
+                           year &lt; 2010 &amp; year &gt; 1999 ~ &#39;Aughts&#39;,
+                           year &gt; 2009 ~ &#39;Teens&#39;)) %&gt;%
+  filter(party != &#39;Independent&#39;) %&gt;%
+  na.omit # mostly at-large -- </code></pre>
+<p><strong>The faceted plot below</strong>, then, summarizes the relationship between election margins and political ideology scores across four decades of voting in the US House. Some variation in the details of this relationship historically, especially among Republican House members, but a fairly consistent one in the aggregate.</p>
+<pre class="r"><code>h3 &lt;- h2 %&gt;%
+  filter(abs(margins) &lt; 75) 
+
+h3 %&gt;%
+  filter(decade != &#39;70s&#39;) %&gt;%
+  ggplot(aes(y = abs(nokken_poole_dim1), 
+             x = abs(margins), color = party
+             ))+ 
+
+  geom_point(size = 0.15)+ # 
+  geom_smooth(se = T) + #method=&quot;lm&quot;, se=T
+  facet_wrap(~decade) +
+  ggthemes::scale_color_stata() +
+  theme_minimal() +
+  theme(legend.position = &quot;bottom&quot;) +
+  ylim (0.1, 0.75) +
+  labs(title=&quot;Margins vs. Ideology scores&quot;)</code></pre>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>So, how does this relationship influence the likelihood of re-election? Can I vote like a progressive in congress if I only won my district by a couple of points? ie, will my constituency re-elect me if my voting behavior is not reflective of their ideology, at least in part? Because a point or two the other way, and they are being represented by a Republican, and I never get elected in the first place.</p>
+<p>From this perspective, the plot below highlights some residuals from a simple regression model of ideology scores against election returns (here, not controlled for by decade). Points above the fitted regression line represent House members whose ideology scores were higher (ie, more extreme) than expected based on their election margins; points below the fitted regression line represent members voting more moderately than expected based on election margins.</p>
+<p>Here, we treat these residuals as an independent predictor. And for simplicity, we transform residuals to absolute values; in this way, all deviation from fit is treated equally.</p>
+<pre class="r"><code>dset &lt;- h3
+fit &lt;- lm(abs(nokken_poole_dim1) ~ abs(margins), data = dset) 
+fit1 &lt;- fit %&gt;% broom::augment() %&gt;% janitor::clean_names()
+
+l1 &lt;- ggplot(fit1, aes(x = abs_margins, y = abs_nokken_poole_dim1)) +  
+  geom_point(size = .1, color = &#39;lightgrey&#39;) +
+  geom_smooth(method = &quot;lm&quot;, se = T, color = &quot;steelblue&quot;)
+
+
+set.seed(99)
+fit2 &lt;- fit1 %&gt;% sample_n(50)
+
+l1 +
+  geom_segment(data = fit2, aes(xend = abs_margins, yend = fitted),
+               color = &#39;steelblue&#39;, alpha = 0.5) +
+  geom_point(data = fit2, aes(x = abs_margins, y = abs_nokken_poole_dim1),
+             size = 1, color = &#39;steelblue&#39;) +
+  theme_minimal() + ggtitle(&#39;Residuals: margins vs. ideology&#39;)</code></pre>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+<div id="results" class="section level3">
+<h3>/Results</h3>
+<p>Using logistic regression via <code>glm</code>, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values.</p>
+<pre class="r"><code>dset$residuals &lt;- unname(fit$residuals)
+dset$party &lt;- as.factor(dset$party)
+dset$decade &lt;- as.factor(dset$decade)
+dset$re_elect &lt;- as.factor(dset$re_elect)
+
+mod &lt;- glm(re_elect ~ 
+                  decade +
+                  party +
+                  congs_served +
+                  abs(margins) + 
+                  abs(nokken_poole_dim1) + 
+                  abs(residuals),
+           family = &#39;binomial&#39;, #family=binomial(link=&quot;logit&quot;)
+                data = dset)</code></pre>
+<p><strong>Coefficients are summarized below</strong>; variables with independent effects on the likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong> are highlighted. R<sup>2</sup> value ~ 5%. So, lots of variation on the table, and presumably any number of relevant predictors absent from the model.</p>
+<pre class="r"><code>td &lt;- broom::tidy(mod) %&gt;%
+  mutate_if(is.numeric, round, 3) 
+
+colors1 &lt;- which(td$`p.value` &lt; .05 &amp; td$statistic &gt; 0)
+colors2 &lt;- which(td$`p.value` &lt; .05 &amp; td$statistic &lt; 0)
+
+td %&gt;%
+  knitr::kable(booktabs = T, format = &quot;html&quot;) %&gt;%
+  kableExtra::kable_styling() %&gt;%
+  kableExtra::row_spec(colors1, background = &quot;#e4eef4&quot;) %&gt;%
+  kableExtra::row_spec(colors2, background = &quot;#fcdbc7&quot;)</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+term
+</th>
+<th style="text-align:right;">
+estimate
+</th>
+<th style="text-align:right;">
+std.error
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+(Intercept)
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+1.205
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.127
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+9.514
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+decade80s
+</td>
+<td style="text-align:right;">
+0.223
+</td>
+<td style="text-align:right;">
+0.118
+</td>
+<td style="text-align:right;">
+1.887
+</td>
+<td style="text-align:right;">
+0.059
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+decade90s
+</td>
+<td style="text-align:right;">
+-0.136
+</td>
+<td style="text-align:right;">
+0.114
+</td>
+<td style="text-align:right;">
+-1.191
+</td>
+<td style="text-align:right;">
+0.234
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+decadeAughts
+</td>
+<td style="text-align:right;">
+0.033
+</td>
+<td style="text-align:right;">
+0.117
+</td>
+<td style="text-align:right;">
+0.281
+</td>
+<td style="text-align:right;">
+0.779
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #fcdbc7 !important;">
+decadeTeens
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-0.371
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.118
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-3.154
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #fcdbc7 !important;">
+partyRepublican Party
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-0.158
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.061
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-2.597
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.009
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #fcdbc7 !important;">
+congs_served
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-0.080
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.007
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-11.492
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+abs(margins)
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.023
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.002
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+12.073
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #e4eef4 !important;">
+abs(nokken_poole_dim1)
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.702
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.188
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+3.737
+</td>
+<td style="text-align:right;background-color: #e4eef4 !important;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;background-color: #fcdbc7 !important;">
+abs(residuals)
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-0.906
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.290
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+-3.121
+</td>
+<td style="text-align:right;background-color: #fcdbc7 !important;">
+0.002
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="thoughts" class="section level2">
+<h2>Thoughts</h2>
+<p>So, independent effects for both margins and ideology scores on the likelihood of re-election. Big margins at election <strong><em>t<sub>i</sub></em></strong> means a higher likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong>. As do higher ideology scores during congress <strong><em>t<sub>i</sub></em></strong>. The former speaks to the comforts of sitting in a safe seat. The latter could speak to any number of things, including the fact that fringe party members tend to be more well-known &amp; more popular on social media. In contrast – Old Guard excepted – longer-tenure in the House detracts from the likelihood of re-election.</p>
+<p>All things equal, Republicans have had a harder time getting re-elected over the past 40 years in comparison to their Democratic counterparts. And the Teens have been a tough decade for any/all seeking another term in the House.</p>
+<p>Perhaps of most interest are the independent effects of the ideology residuals on the likelihood of re-election. Per the plot above, the further a representative’s voting behavior strays from that predicted by election margins, the less likely that representative is to get re-elected to congress <strong><em>t<sub>i+!</sub></em></strong>. This is a good thing!! At minimum, some evidence that house reps are not actively ignoring the people they represent when voting. If we wanted to get greedy, evidence of actual representation.</p>
+<p>Of course, lots of caveats. The model is obviously super simple, with lots of variation left to be explained. But hopeful, and I think quite useful from a methodological perspective.</p>
+</div>
