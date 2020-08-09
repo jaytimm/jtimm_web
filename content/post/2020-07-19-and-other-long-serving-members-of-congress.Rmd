@@ -2,7 +2,7 @@
 title: Margins-of-victory, voting behavior & re-election
 author: ''
 date: '2020-07-27'
-slug: and-other-long-serving-members-of-congress
+slug: re-election-model
 output:
   blogdown::html_page:
     toc: true

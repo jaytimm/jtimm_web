@@ -28,7 +28,7 @@ The nuts/bolts of these types of evaluations can often be glossed over in the NL
 
 ## Corpus & model 
 
-The corpus used here for demonstration is derived from texts made available via [Project Gutenberg](https://www.gutenberg.org/).  We have sampled the full PG corpus to create a more manageable sub-corpus of ~7K texts and 250M words.  A simple description of its construction is available [here](https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/pg-corpus.md).
+The corpus used here for demonstration is derived from texts made available via [Project Gutenberg](https://www.gutenberg.org/).  We have sampled the full PG corpus to create a more manageable sub-corpus of ~7K texts and 250M words.  A simple description of its construction is available [here](https://www.puremoe.net/posts/some-notes-on-a-project-gutenberg-corpus/).
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -59,7 +59,7 @@ vectorizer <- text2vec::vocab_vectorizer(vocab2)
 
 ## Evaluation & analogy
 
-We use two sets of analogy problems for VSM evaluation: the standard Google data set [@mikolov2013efficient] and the BATS set [@gladkova2016analogy].  See this [brief appendix](https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests.md) for some additional details about the problem sets, including category types and examples.  See [this appendix](https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/analogy-tests-2.md) for a simple code-through of building your own analogy problem sets -- compatible structure-wise with the Google data set and the `text2vec` framework.
+We use two sets of analogy problems for VSM evaluation: the standard Google data set [@mikolov2013efficient] and the BATS set [@gladkova2016analogy].  See this [brief appendix](https://www.puremoe.net/posts/vector-space-analogy-briefly/) for some additional details about the problem sets, including category types and examples.  See [this appendix](https://www.puremoe.net/posts/vector-space-homegrown-analogies/) for a simple code-through of building your own analogy problem sets -- compatible structure-wise with the Google data set and the `text2vec` framework.
 
 
 ```{r include=FALSE}
@@ -72,7 +72,7 @@ analogy_dir <- '/home/jtimm/jt_work/GitHub/some_technical_notes/notes/analogy-te
 
 
 
-I have stored these files on [Git Hub](https://github.com/jaytimm/tech-notes-american-politics/tree/master/notes/analogy-tests_files), but both are easily accessible online.  Important to note, the Google file has not been modified in any way; the BATS file, on the other hand, has been re-structured in the image of the Google file.  
+I have stored these files on [Git Hub](https://github.com/jaytimm/technical_notes/tree/master/resources/analogy), but both are easily accessible online.  Important to note, the Google file has not been modified in any way; the BATS file, on the other hand, has been re-structured in the image of the Google file.  
 
 ```{r}
 questions_file <- paste0(analogy_dir, 'questions-words.txt')
