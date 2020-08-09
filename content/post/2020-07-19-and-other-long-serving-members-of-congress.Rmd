@@ -12,7 +12,7 @@ tags:
   - open-government
   - VoteView
 banner: banners/longserving.png
-description: 'Visualizing political ideology historically -- '
+description: '~'
 images: []
 menu: ''
 ---
