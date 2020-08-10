@@ -1,7 +1,7 @@
 ---
 title: margins-of-victory, voting behavior & re-election
 author: ''
-date: '2020-07-27'
+date: '2020-08-10'
 slug: re-election-model
 output:
   blogdown::html_page:

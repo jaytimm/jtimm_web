@@ -1,7 +1,7 @@
 ---
 title: margins-of-victory, voting behavior & re-election
 author: ''
-date: '2020-07-27'
+date: '2020-08-10'
 slug: re-election-model
 output:
   blogdown::html_page:
@@ -53,7 +53,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpIiLS0Z/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmplXkuUB/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
