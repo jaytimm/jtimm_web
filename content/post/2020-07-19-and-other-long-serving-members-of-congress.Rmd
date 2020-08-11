@@ -57,7 +57,13 @@ house_members <- house_members %>%
   
   mutate(year = 2019 - (116-congress)*2,
          party_code = ifelse(party_code == 200, 'R', 'D'),
-         age = year - born)
+         age = year - born) %>%
+  
+  group_by(congress, state_abbrev) %>%
+  mutate(n = length(district_code)) %>%
+  ungroup() %>%
+  mutate(district_code = ifelse(n == 1, 0, district_code)) %>%
+  select(-n)
 ```
 
 
@@ -245,7 +251,7 @@ widely <- house_members %>%
 ```
 
 
-A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for South Carolina's 3rd congressional district, where ***t~i~*** is the 98th Congress and ***t~i+1~*** the 99th Congress.  Columns `t1` and `t2` denote bioguide ids for the representative of SC-03 in congresses 98 and 99, respectively.  So, incumbent representative D000267 (Butler Derrick, Jr.)  won re-election to the 99th congress, as denoted by a value of `1` in the `re_elect` column.   
+A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky's 4th congressional district, where ***t~i~*** is the 97th Congress and ***t~i+1~*** the 98th Congress.  Columns `t1` and `t2` denote bioguide ids for the representative of SC-03 in congresses 97 and 98, respectively.  So, incumbent representative S000669 (Marion Snyder)  won re-election to the 98th congress, as denoted by a value of `1` in the `re_elect` column.   
 
 *Important methods note: no distinction is made here between losing an election and retiring, for example.*
 
@@ -271,7 +277,7 @@ house_transitions <- lapply(1:length(y), function(j) {
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-set.seed(109)
+set.seed(1)
 house_transitions %>%
   sample_n(5) %>%
   select(-congress) %>%
@@ -347,7 +353,7 @@ l1 <- ggplot(fit1, aes(x = abs_margins, y = abs_nokken_poole_dim1)) +
   geom_smooth(method = "lm", se = T, color = "steelblue")
 
 
-set.seed(99)
+set.seed(119)
 fit2 <- fit1 %>% sample_n(50)
 
 l1 +
@@ -365,7 +371,7 @@ l1 +
 
 ### /Results
 
-Using logistic regression via `glm`, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values.
+Using logistic regression via `glm`, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values. N = 7,844.
 
 ```{r}
 dset$residuals <- unname(fit$residuals)

@@ -53,7 +53,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmplXkuUB/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmpHSN5zx/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -67,7 +67,13 @@ house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
   
   mutate(year = 2019 - (116-congress)*2,
          party_code = ifelse(party_code == 200, &#39;R&#39;, &#39;D&#39;),
-         age = year - born)</code></pre>
+         age = year - born) %&gt;%
+  
+  group_by(congress, state_abbrev) %&gt;%
+  mutate(n = length(district_code)) %&gt;%
+  ungroup() %&gt;%
+  mutate(district_code = ifelse(n == 1, 0, district_code)) %&gt;%
+  select(-n)</code></pre>
 </div>
 <div id="longest-serving-members-of-the-us-house" class="section level2">
 <h2>Longest-serving members of the US House</h2>
@@ -195,7 +201,7 @@ for_scatter %&gt;%
   slice(1) %&gt;%
   group_by(state_abbrev, district_code) %&gt;%
   spread(congress, bioguide_id)</code></pre>
-<p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for South Carolina’s 3rd congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 98th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 99th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of SC-03 in congresses 98 and 99, respectively. So, incumbent representative D000267 (Butler Derrick, Jr.) won re-election to the 99th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
+<p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky’s 4th congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 97th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 98th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of SC-03 in congresses 97 and 98, respectively. So, incumbent representative S000669 (Marion Snyder) won re-election to the 98th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
 <p><em>Important methods note: no distinction is made here between losing an election and retiring, for example.</em></p>
 <pre class="r"><code>x &lt;- c(3:24)
 y &lt;- list()
@@ -214,7 +220,7 @@ house_transitions &lt;- lapply(1:length(y), function(j) {
          re_elect = ifelse(t1 == t2, &#39;1&#39;, &#39;0&#39;)) %&gt;%
   ungroup()</code></pre>
 <div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["SC","TN","IN","MA","MS"],[3,9,6,4,4],["D000267","F000262","M001189","F000339","P000601"],["D000267","C001068","M001189","F000339","P000601"],["98-99","109-110","114-115","107-108","112-113"],["1","0","1","1","1"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>st<\/th>\n      <th>dc<\/th>\n      <th>t1<\/th>\n      <th>t2<\/th>\n      <th>trans<\/th>\n      <th>re_elect<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["KY","NJ","CA","NY","MA"],[4,6,14,13,3],["S000669","P000034","E000215","R000053","B000576"],["S000669","P000034","E000215","E000297","M000312"],["97-98","113-114","106-107","114-115","104-105"],["1","1","1","0","0"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>st<\/th>\n      <th>dc<\/th>\n      <th>t1<\/th>\n      <th>t2<\/th>\n      <th>trans<\/th>\n      <th>re_elect<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="decades-residuals" class="section level3">
 <h3>/decades &amp; residuals</h3>
@@ -264,7 +270,7 @@ l1 &lt;- ggplot(fit1, aes(x = abs_margins, y = abs_nokken_poole_dim1)) +
   geom_smooth(method = &quot;lm&quot;, se = T, color = &quot;steelblue&quot;)
 
 
-set.seed(99)
+set.seed(119)
 fit2 &lt;- fit1 %&gt;% sample_n(50)
 
 l1 +
@@ -277,7 +283,7 @@ l1 +
 </div>
 <div id="results" class="section level3">
 <h3>/Results</h3>
-<p>Using logistic regression via <code>glm</code>, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values.</p>
+<p>Using logistic regression via <code>glm</code>, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values. N = 7,844.</p>
 <pre class="r"><code>dset$residuals &lt;- unname(fit$residuals)
 dset$party &lt;- as.factor(dset$party)
 dset$decade &lt;- as.factor(dset$decade)
@@ -330,13 +336,13 @@ p.value
 (Intercept)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-1.205
+1.203
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.127
+0.126
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-9.514
+9.579
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -347,16 +353,16 @@ p.value
 decade80s
 </td>
 <td style="text-align:right;">
-0.223
+0.219
 </td>
 <td style="text-align:right;">
-0.118
+0.117
 </td>
 <td style="text-align:right;">
-1.887
+1.869
 </td>
 <td style="text-align:right;">
-0.059
+0.062
 </td>
 </tr>
 <tr>
@@ -364,16 +370,16 @@ decade80s
 decade90s
 </td>
 <td style="text-align:right;">
--0.136
+-0.138
 </td>
 <td style="text-align:right;">
-0.114
+0.113
 </td>
 <td style="text-align:right;">
--1.191
+-1.221
 </td>
 <td style="text-align:right;">
-0.234
+0.222
 </td>
 </tr>
 <tr>
@@ -381,16 +387,16 @@ decade90s
 decadeAughts
 </td>
 <td style="text-align:right;">
-0.033
+0.028
 </td>
 <td style="text-align:right;">
-0.117
+0.116
 </td>
 <td style="text-align:right;">
-0.281
+0.245
 </td>
 <td style="text-align:right;">
-0.779
+0.807
 </td>
 </tr>
 <tr>
@@ -398,16 +404,16 @@ decadeAughts
 decadeTeens
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.371
+-0.377
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.118
+0.117
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.154
+-3.230
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.002
+0.001
 </td>
 </tr>
 <tr>
@@ -415,16 +421,16 @@ decadeTeens
 partyRepublican Party
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.158
+-0.146
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.061
+0.060
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--2.597
+-2.425
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.009
+0.015
 </td>
 </tr>
 <tr>
@@ -432,13 +438,13 @@ partyRepublican Party
 congs_served
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.080
+-0.078
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.007
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--11.492
+-11.256
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.000
@@ -455,7 +461,7 @@ abs(margins)
 0.002
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-12.073
+12.071
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -466,13 +472,13 @@ abs(margins)
 abs(nokken_poole_dim1)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.702
+0.689
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.188
+0.186
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-3.737
+3.697
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -483,16 +489,16 @@ abs(nokken_poole_dim1)
 abs(residuals)
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.906
+-0.929
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.290
+0.288
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.121
+-3.222
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.002
+0.001
 </td>
 </tr>
 </tbody>
