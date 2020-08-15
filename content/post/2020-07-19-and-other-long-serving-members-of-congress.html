@@ -53,7 +53,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpYqVOOX/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmpZPoJdJ/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -507,7 +507,7 @@ abs(residuals)
 </div>
 <div id="thoughts" class="section level2">
 <h2>Thoughts</h2>
-<p>So, independent effects for both margins and ideology scores on the likelihood of re-election. Big margins at election <strong><em>t<sub>i</sub></em></strong> means a higher likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong>. As do higher ideology scores during congress <strong><em>t<sub>i</sub></em></strong>. The former speaks to the comforts of sitting in a safe seat. The latter could speak to any number of things, including the fact that fringe party members tend to be more well-known &amp; more popular on social media. In contrast – Old Guard excepted – longer-tenure in the House detracts from the likelihood of re-election.</p>
+<p>So, independent effects for both margins and ideology scores on the likelihood of re-election. Big margins at election <strong><em>t<sub>i</sub></em></strong> mean a higher likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong>. As do higher ideology scores during congress <strong><em>t<sub>i</sub></em></strong>. The former speaks to the comforts of sitting in a safe seat. The latter could speak to any number of things, including the fact that fringe party members tend to be more well-known &amp; more popular on social media. In contrast – Old Guard excepted – longer-tenure in the House detracts from the likelihood of re-election.</p>
 <p>All things equal, Republicans have had a harder time getting re-elected over the past 40 years in comparison to their Democratic counterparts. And the Teens have been a tough decade for any/all seeking another term in the House.</p>
 <p>Perhaps of most interest are the independent effects of the ideology residuals on the likelihood of re-election. Per the plot above, the further a representative’s voting behavior strays from that predicted by election margins, the less likely that representative is to get re-elected to congress <strong><em>t<sub>i+!</sub></em></strong>. This is a good thing!! At minimum, some evidence that house reps are not actively ignoring the people they represent when voting. If we wanted to get greedy, evidence of actual representation.</p>
 <p>Of course, lots of caveats. The model is obviously super simple, with lots of variation left to be explained. But hopeful, and I think quite useful from a methodological perspective.</p>
