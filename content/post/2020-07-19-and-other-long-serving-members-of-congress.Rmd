@@ -251,7 +251,7 @@ widely <- house_members %>%
 ```
 
 
-A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky's 4th congressional district, where ***t~i~*** is the 97th Congress and ***t~i+1~*** the 98th Congress.  Columns `t1` and `t2` denote bioguide ids for the representative of SC-03 in congresses 97 and 98, respectively.  So, incumbent representative S000669 (Marion Snyder)  won re-election to the 98th congress, as denoted by a value of `1` in the `re_elect` column.   
+A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky's 4th congressional district, where ***t~i~*** is the 97th Congress and ***t~i+1~*** the 98th Congress.  Columns `t1` and `t2` denote bioguide ids for the representative of KY-04 in congresses 97 and 98, respectively.  So, incumbent representative S000669 (Marion Snyder)  won re-election to the 98th congress, as denoted by a value of `1` in the `re_elect` column.   
 
 *Important methods note: no distinction is made here between losing an election and retiring, for example.*
 

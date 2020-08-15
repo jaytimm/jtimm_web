@@ -53,7 +53,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpHSN5zx/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmpYqVOOX/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -201,7 +201,7 @@ for_scatter %&gt;%
   slice(1) %&gt;%
   group_by(state_abbrev, district_code) %&gt;%
   spread(congress, bioguide_id)</code></pre>
-<p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky’s 4th congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 97th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 98th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of SC-03 in congresses 97 and 98, respectively. So, incumbent representative S000669 (Marion Snyder) won re-election to the 98th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
+<p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky’s 4th congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 97th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 98th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of KY-04 in congresses 97 and 98, respectively. So, incumbent representative S000669 (Marion Snyder) won re-election to the 98th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
 <p><em>Important methods note: no distinction is made here between losing an election and retiring, for example.</em></p>
 <pre class="r"><code>x &lt;- c(3:24)
 y &lt;- list()
