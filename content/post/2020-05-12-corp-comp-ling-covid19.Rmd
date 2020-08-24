@@ -13,6 +13,7 @@ tags:
   - COVID-19
 bibliography: biblio.bib
 link-citations: yes
+featuredImage: banners/covid_semantics.png
 banner: banners/covid_semantics.png
 description: 'Some methods for working with controlled vocabularies & multi-word expressions while corpus ling-ing with Twitter data.'
 ---
