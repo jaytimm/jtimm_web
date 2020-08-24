@@ -12,6 +12,7 @@ tags:
   - open-government
   - VoteView
 banner: banners/longserving.png
+featureImage: banners/longserving.png
 description: '~'
 images: []
 menu: ''
