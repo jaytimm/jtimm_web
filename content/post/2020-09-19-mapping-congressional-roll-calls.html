@@ -1,0 +1,361 @@
+---
+title: 'mapping congressional roll calls '
+author: ''
+date: '2020-09-19'
+slug: mapping-congressional-roll-calls
+categories: []
+tags: []
+description: '~'
+banner: banners/maps.png
+---
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>A bit of a depot for things-/methods- mapping with R &amp; <code>ggplot</code>, in the context of visualizing historical roll calls from the US House of Representatives. Roll call data accessed via <a href="https://voteview.com/about">VoteView</a> and the <a href="https://github.com/voteview/Rvoteview">RVoteview</a> package; shapefiles for historical US Congressional Districts downloaded from the <a href="http://cdmaps.polisci.ucla.edu/">Political Science Dept @ UCLA</a>. Visual summary via the <code>patchwork</code> package.</p>
+<p>Here we use as examples the <strong>Voting Rights Act of 1965</strong> and the <strong>Bayh–Celler amendment</strong> (circa 1969), a proposed amendment that would have replaced the Electoral College with a system based on the popular vote.</p>
+<pre class="r"><code>#  devtools::install_github(&quot;voteview/Rvoteview&quot;)
+library(patchwork)
+library(tidyverse) 
+library(tigris); options(tigris_use_cache = TRUE, tigris_class = &quot;sf&quot;)
+nonx &lt;- c(&#39;78&#39;, &#39;69&#39;, &#39;66&#39;, &#39;72&#39;, &#39;60&#39;, &#39;15&#39;, &#39;02&#39;)
+
+states &lt;- tigris::states(cb = TRUE) %&gt;%
+  data.frame() %&gt;%
+  select(STATEFP, STUSPS) %&gt;%
+  rename(state_abbrev = STUSPS)</code></pre>
+</div>
+<div id="historical-urban-centers" class="section level2">
+<h2>Historical urban centers</h2>
+<p>Most populous US cities by decade, from 1790 to 2010; scraped from Wikipedia. For zooming-in on district roll call results for, eg, the ten most populous cities during a given congress.</p>
+<pre class="r"><code>wiki &lt;- &#39;https://en.wikipedia.org/wiki/List_of_most_populous_cities_in_the_United_States_by_decade&#39;
+
+decade &lt;- seq(from = 1780, to = 2010, by = 10)
+pops_list &lt;- xml2::read_html(wiki) %&gt;% 
+  rvest::html_nodes(&quot;table&quot;) %&gt;%
+  rvest::html_table(fill = TRUE)
+
+pops &lt;- lapply(2:24, function(x) {
+  y &lt;- pops_list[[x]] %&gt;%
+    select(1:4) %&gt;%
+    mutate(decade = decade[x])
+  
+  colnames(y) &lt;- c(&#39;rank&#39;, &#39;city&#39;, &#39;state&#39;, &#39;pop&#39;, &#39;decade&#39;)
+  return(y) }) %&gt;%
+  bind_rows() %&gt;%
+  mutate(pop = as.integer(gsub(&quot;[^0-9]&quot;, &quot;&quot;, pop)))</code></pre>
+<p><strong>Most populated US cities circa 1800</strong>:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">rank</th>
+<th align="left">city</th>
+<th align="left">state</th>
+<th align="right">pop</th>
+<th align="right">decade</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">New York</td>
+<td align="left">New York</td>
+<td align="right">60514</td>
+<td align="right">1800</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Philadelphia</td>
+<td align="left">Pennsylvania</td>
+<td align="right">41220</td>
+<td align="right">1800</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Baltimore</td>
+<td align="left">Maryland</td>
+<td align="right">26514</td>
+<td align="right">1800</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Boston</td>
+<td align="left">Massachusetts</td>
+<td align="right">24937</td>
+<td align="right">1800</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Charleston</td>
+<td align="left">South Carolina</td>
+<td align="right">18824</td>
+<td align="right">1800</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="left">Northern Liberties</td>
+<td align="left">Pennsylvania</td>
+<td align="right">10718</td>
+<td align="right">1800</td>
+</tr>
+<tr class="odd">
+<td align="right">7</td>
+<td align="left">Southwark</td>
+<td align="left">Pennsylvania</td>
+<td align="right">9621</td>
+<td align="right">1800</td>
+</tr>
+<tr class="even">
+<td align="right">8</td>
+<td align="left">Salem</td>
+<td align="left">Massachusetts</td>
+<td align="right">9457</td>
+<td align="right">1800</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="left">Providence</td>
+<td align="left">Rhode Island</td>
+<td align="right">7614</td>
+<td align="right">1800</td>
+</tr>
+<tr class="even">
+<td align="right">10</td>
+<td align="left">Norfolk</td>
+<td align="left">Virginia</td>
+<td align="right">6926</td>
+<td align="right">1800</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="historical-congressional-districts" class="section level2">
+<h2>Historical congressional districts</h2>
+<p>Again, via the folks at the <a href="http://cdmaps.polisci.ucla.edu/">Political Science Dept @ UCLA</a>. The Voting Rights Act of 1965 was passed during the 89th congress; a local copy of the shapefile for this congress is loaded below.</p>
+<pre class="r"><code>fname &lt;- &#39;districts089&#39;
+
+cd_sf &lt;- sf::st_read(dsn = paste0(cd_directory, fname), 
+                   layer = fname, 
+                   quiet = TRUE) %&gt;%
+  mutate(STATEFP = substr(ID, 2, 3),
+         district_code = as.numeric(substr(ID, 11, 12))) %&gt;%
+  left_join(states, by = &quot;STATEFP&quot;) %&gt;%
+  filter(!STATEFP %in% nonx) %&gt;%
+  select(STATEFP, state_abbrev, district_code) </code></pre>
+</div>
+<div id="voteview-roll-call-data" class="section level2">
+<h2>VoteView roll call data</h2>
+<p>Downloading roll call data for a specific bill via <code>RVoteview</code> requires a bit of trial and error; different bill versions and vote types complicate things for the layman.</p>
+<pre class="r"><code>vra &lt;- Rvoteview::voteview_search(&#39;(&quot;VOTING RIGHTS ACT OF 1965&quot;) AND (congress:89) 
+                                  AND (chamber:house)&#39;) %&gt;%
+                                  filter( date == &#39;1965-07-09&#39;) %&gt;%
+  janitor::clean_names()
+
+votes &lt;- Rvoteview::voteview_download(vra$id)
+names(votes) &lt;- gsub(&#39;\\.&#39;, &#39;_&#39;, names(votes))</code></pre>
+<p><strong>A quick re-structure</strong> of the roll call output:</p>
+<pre class="r"><code>big_votes &lt;- votes$legis_long_dynamic %&gt;%
+  left_join(votes$votes_long, by = c(&quot;id&quot;, &quot;icpsr&quot;)) %&gt;%
+  filter(!grepl(&#39;POTUS&#39;, cqlabel)) %&gt;%
+  group_by(state_abbrev) %&gt;%
+  mutate(n = length(district_code)) %&gt;%
+  ungroup() %&gt;%
+  mutate(avote = case_when(vote %in% c(1:3) ~ &#39;Yea&#39;,
+                           vote %in% c(4:6) ~ &#39;Nay&#39;,
+                           vote %in% c(7:9) ~ &#39;Not Voting&#39;),
+         
+         party_code = case_when(party_code == 100 ~ &#39;Dem&#39;,
+                                party_code == 200 ~ &#39;Rep&#39; ), 
+         Party_Member_Vote = paste0(party_code, &#39;: &#39;, avote),
+         
+         ## fix at-large -- 
+         district_code = ifelse(district_code %in% c(98, 99), 0, district_code),
+         district_code = ifelse(n == 1 &amp; district_code == 1, 0, district_code),
+         district_code = as.integer(district_code)) %&gt;%
+  select(-n)
+#Members who represent historical “at-large” districts are 
+##assigned 99, 98, or 1 in various circumstances. Per VoteView.</code></pre>
+</div>
+<div id="roll-call-stats" class="section level2">
+<h2>Roll call stats</h2>
+<pre class="r"><code>big_votes$Party_Member_Vote &lt;- factor(big_votes$Party_Member_Vote)
+big_votes$Party_Member_Vote &lt;- 
+  factor(big_votes$Party_Member_Vote, 
+         levels(big_votes$Party_Member_Vote)[c(3,6,1,4,2,5)])</code></pre>
+<div id="results" class="section level3">
+<h3>/Results</h3>
+<pre class="r"><code>summary &lt;- big_votes %&gt;%
+  group_by(party_code, avote) %&gt;%
+  count() %&gt;%
+  spread(avote, n) %&gt;%
+  janitor::adorn_totals(where = c(&#39;row&#39;, &#39;col&#39;)) %&gt;%
+  rename(Party = party_code,
+         NV = `Not Voting`) %&gt;%
+  select(Party, Yea, Nay, NV, Total)</code></pre>
+<table>
+<caption><span id="tab:unnamed-chunk-11">Table 1: </span>Roll call results for the VRA</caption>
+<thead>
+<tr class="header">
+<th align="left">Party</th>
+<th align="right">Yea</th>
+<th align="right">Nay</th>
+<th align="right">NV</th>
+<th align="right">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Dem</td>
+<td align="right">224</td>
+<td align="right">65</td>
+<td align="right">4</td>
+<td align="right">293</td>
+</tr>
+<tr class="even">
+<td align="left">Rep</td>
+<td align="right">112</td>
+<td align="right">23</td>
+<td align="right">5</td>
+<td align="right">140</td>
+</tr>
+<tr class="odd">
+<td align="left">Total</td>
+<td align="right">336</td>
+<td align="right">88</td>
+<td align="right">9</td>
+<td align="right">433</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="by-party-affiliation" class="section level3">
+<h3>/By party affiliation</h3>
+<pre class="r"><code>roll &lt;- big_votes %&gt;% 
+  group_by(Party_Member_Vote) %&gt;%
+  count() %&gt;%
+  ungroup() %&gt;%
+  rename(Vote = Party_Member_Vote) 
+
+rsum &lt;- roll %&gt;% 
+  ggplot(aes(x=Vote, y=n, fill= Vote, label = n)) +
+    geom_col(width=.65, color = &#39;lightgray&#39;) +  
+    geom_text(size = 2.5) +
+    wnomadds::scale_color_rollcall(aesthetics = c(&quot;fill&quot;)) +
+    scale_x_discrete(limits = rev(levels(roll$Vote)))+
+    coord_flip() +
+  ylim (0, 240) +
+    theme_minimal() + 
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.title.y=element_blank(),
+            #axis.text.y=element_blank(),
+            legend.position = &#39;none&#39;)
+
+rsum + ggtitle(vra$short_description)</code></pre>
+<p><img src="/post/2020-09-19-mapping-congressional-roll-calls_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="by-congressional-district" class="section level3">
+<h3>/By congressional district</h3>
+<pre class="r"><code>cd_sf_w_rolls &lt;- cd_sf %&gt;% 
+  left_join(big_votes, by = c(&quot;state_abbrev&quot;, &quot;district_code&quot;)) 
+
+main1 &lt;- cd_sf_w_rolls %&gt;%
+  ggplot() + 
+  geom_sf(aes(fill = Party_Member_Vote), 
+          color = &#39;white&#39;,
+          size = .25) + 
+  
+  wnomadds::scale_fill_rollcall() +
+  theme_minimal() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        legend.position = &#39;none&#39;) # +
+
+main1 + ggtitle(vra$short_description)</code></pre>
+<p><img src="/post/2020-09-19-mapping-congressional-roll-calls_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+</div>
+<div id="zooming-in-to-urban-centers" class="section level2">
+<h2>Zooming in to urban centers</h2>
+<p>A zoom function for closer inspection of roll call results in urban areas. The <code>sub_geo</code> parameter is used to specify a vector of city/state pairs (eg, “Chicago, Illinois”) to be geocoded via the <code>tmaptools::geocode_OSM</code> function. The <code>geo</code> parameter specifies the full map – as <code>sf</code> object.</p>
+<pre class="r"><code>maps_get_minis &lt;- function(sub_geos, geo){
+                           
+  lapply(sub_geos, function(x) {
+    
+    lc &lt;- tmaptools::geocode_OSM (q = x, as.sf = T)
+    lc$bbox &lt;- sf::st_set_crs(lc$bbox, sf::st_crs(geo))
+    cropped &lt;- sf::st_crop(geo, lc$bbox)
+    
+    ggplot() + geom_sf(data = cropped, 
+                     aes(fill = Party_Member_Vote),
+                     color = &#39;white&#39;, size = .25) +
+      
+      # ggsflabel::geom_sf_text_repel(data = cropped, 
+      #                               aes(label = district_code), 
+      #                               size = 2.2) + 
+      
+      wnomadds::scale_fill_rollcall() +
+      theme_minimal() + 
+      theme(axis.title.x=element_blank(),
+            axis.text.x=element_blank(),
+            axis.title.y=element_blank(),
+            axis.text.y=element_blank(),
+            plot.title = element_text(size=9),
+            legend.position = &#39;none&#39;) +
+      ggtitle(gsub(&#39;,.*$&#39;, &#39;&#39;, x))   })
+}</code></pre>
+<div id="coordinates" class="section level3">
+<h3>/Coordinates</h3>
+<pre class="r"><code># x &lt;- &#39;Albuquerque, New Mexico&#39;
+pops1 &lt;- pops %&gt;%
+  filter(decade == paste0(gsub(&#39;.-.*$&#39;, &#39;&#39;, vra$date), 0)) %&gt;%
+  arrange(desc(pop)) %&gt;%
+  mutate(locations = paste0(city, &#39;, &#39;, state)) %&gt;%
+  slice(1:10)
+
+sub_maps &lt;- maps_get_minis(geo = cd_sf_w_rolls, sub_geos = pops1$locations)</code></pre>
+</div>
+<div id="zooms" class="section level3">
+<h3>/Zooms</h3>
+<p>Roll call results for the VRA (1965) – zoomed in to the ten most populous US cities during the 1960s.</p>
+<pre class="r"><code>patchwork::wrap_plots(sub_maps, nrow = 2)</code></pre>
+<p><img src="/post/2020-09-19-mapping-congressional-roll-calls_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+</div>
+<div id="a-patchwork-perspective" class="section level2">
+<h2>A <code>patchwork</code> perspective</h2>
+<pre class="r"><code>t2 &lt;- gridExtra::tableGrob(summary, 
+                           rows = NULL, 
+                           theme = gridExtra::ttheme_minimal(base_size = 8)) 
+
+p0 &lt;- sub_maps[[1]] + sub_maps[[2]] + sub_maps[[3]] +
+  rsum + patchwork::plot_layout(nrow = 1, widths = c(1,1,1,1))
+
+p1 &lt;- sub_maps[[4]] + sub_maps[[5]] + sub_maps[[6]] +
+  t2 + patchwork::plot_layout(nrow = 1, widths = c(1,1,1,1))
+
+p2 &lt;- p0/p1 + patchwork::plot_layout(nrow = 2)#, heights = c(4, 1))</code></pre>
+<pre class="r"><code>main1 / p2  + patchwork::plot_layout(ncol = 1, heights = c(5, 4)) +
+  plot_annotation(
+    title = vra$short_description, 
+    subtitle = paste0(&#39;Congress &#39;, vra$congress, &#39; | &#39;,
+                             vra$date, &#39; | &#39;, vra$bill_number, &#39; | &#39;,
+                             &#39;Support: &#39;, round(vra$support, 1), &#39;%&#39;),
+     caption = &#39;Sources: VoteView | Polisci @ UCLA&#39;)</code></pre>
+<p><img src="/post/2020-09-19-mapping-congressional-roll-calls_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<hr />
+</div>
+<div id="on-the-popular-vote" class="section level2">
+<h2>On the popular vote</h2>
+<p>Per code above, we can create a simple &amp; reproducible work-flow for quickly exploring historical roll calls in the US Congress. For the <strong>Bayh–Celler amendment</strong> (circa 1969), then, we (down-) load the congressional district shapefile for the 91st congress from UCLA, and re-query <code>RVoteview</code>.</p>
+<p><img src="/post/2020-09-19-mapping-congressional-roll-calls_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<hr />
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Lewis, Jeffrey B., Keith Poole, Howard Rosenthal, Adam Boche, Aaron Rudkin, and Luke Sonnet (2020). Voteview: Congressional Roll-Call Votes Database. <a href="https://voteview.com/" class="uri">https://voteview.com/</a></p>
+<p>Lewis, Jeffrey B., Brandon DeVine, Lincoln Pitcher, and Kenneth C. Martis. (2013) Digital Boundary Definitions of United States Congressional Districts, 1789-2012. [Data file and code book]. Retrieved from <a href="http://cdmaps.polisci.ucla.edu" class="uri">http://cdmaps.polisci.ucla.edu</a> on [2020 September 9].</p>
+</div>
