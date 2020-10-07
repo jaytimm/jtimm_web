@@ -1,5 +1,5 @@
 ---
-title: Open States data & New Mexico State Senate Primaries
+title: Open States data & the New Mexico State Senate
 author: ''
 date: '2020-10-07'
 slug: open-states-data-new-mexico-primaries
