@@ -14,7 +14,7 @@ tags:
   - open-government
   - new-mexico
 banner: banners/open-states.png
-description: '~'
+description: 'Reproducible methods for applying DW-NOMINATE scaling procedures to state legislature roll call data made available via Open States.'
 ---
 
 
