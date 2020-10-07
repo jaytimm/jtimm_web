@@ -1,0 +1,392 @@
+---
+title: Open States data & New Mexico State Senate Primaries
+author: ''
+date: '2020-10-07'
+slug: open-states-data-new-mexico-primaries
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+bibliography: biblio.bib
+link-citations: yes
+tags:
+  - rstats
+  - open-government
+  - new-mexico
+banner: banners/open-states.png
+description: '~'
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#nm-state-senate-democrats">NM State Senate Democrats</a></li>
+<li><a href="#open-states-data">Open-States Data</a></li>
+<li><a href="#dw-nominate-procedure">DW-NOMINATE procedure</a></li>
+<li><a href="#loss-of-the-center">Loss of the center</a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p><strong>So, a bit of a dust-up in the State Senate primaries in New Mexico over the summer</strong>. Progressives took aim at five Democratic members of a conservative coalition that has controlled the chamber since 2009. This group of moderate Dems lost four among their ranks: Gabriel Ramos (D-28), Clemente Sanchez (D-30), John Arthur Smith (D-35), and Mary Papen (D-38). Only George Muñoz (D-04) survived. For better or worse, this faction repeatedly hamstringed Michele Lujan Grisham’s more progressive agenda for the state; in response, folks came out to vote in primaries.</p>
+<p>Here, then, some methods for investigating voting behaviors and political ideologies of lawmakers in US state legislatures via roll call data made available by <a href="https://openstates.org/">Open States</a> – using as an example, the 2019 session of the New Mexico State Senate.</p>
+<p><strong>The ultimate goal being to provide a reproducible work-flow – from scratch – for applying DW-NOMINATE scaling procedures to any/all state legislatures in the US</strong>. State politics matter, and state lawmakers need to be held accountable for their voting records.</p>
+</div>
+<div id="nm-state-senate-democrats" class="section level2">
+<h2>NM State Senate Democrats</h2>
+<p>All 42 New Mexico State Senate seats are up for election in November 2020. Sitting Senators have held these seats for the last four years, spanning the 53rd and 54th state legislatures. Democrats held a 26 to 16 majority during this time period; however, as detailed in the intro, five Democrat turncoats have kept things interesting for the better part of the teens.</p>
+<p>In addition to the four senators who lost primaries to left-wing challengers, the center-left will additionally be without Richard Martinez (D-05), who lost his primary as well, and John Sapien (D-09), who will not be seeking re-election in November. Sitting Senate Democrats who will not be on ballots come November, then, are summarized in the table below.</p>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["Richard Martinez","John Sapien","Gabriel Ramos","Clemente Sanchez","John Arthur Smith","Mary Papen"],[5,9,28,30,35,38],["Democrat","Democrat","Democrat","Democrat","Democrat","Democrat"],["Lost primary","Not seeking re-election","Lost primary","Lost primary","Lost primary","Lost primary"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Senator<\/th>\n      <th>District<\/th>\n      <th>Party<\/th>\n      <th>Reason<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":9,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":1}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[9,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="open-states-data" class="section level2">
+<h2>Open-States Data</h2>
+<p>I have previously scraped legislative activity from the New Mexico State Legislature website for the 53rd legislature, and made it available as an R data package. I will not do this again, for any number of reasons. While most of the code I have written does scale to new legislatures, there is enough idiosyncrasy (across thousands of PDFs per session) to make the process less than pleasant. For some more details on this front, see the <a href="https://github.com/jaytimm/nmlegisdatr">Git Hub readme</a>.</p>
+<p>Instead: <a href="https://openstates.org/data/">Open States</a> !!!. The folks at Open States have streamlined these scraping processes across all fifty state legislatures (!), and make data available in a uniform format. Here, we walk through (some of) the tables made available by Open States, specifically those relevant to <strong>quantifying political ideology within the NOMINATE framework</strong>. We also consider important relationships among these tables (from a database organization perspective), and some potential limitations.</p>
+<div id="quick-notes" class="section level3">
+<h3>/Quick notes:</h3>
+<p>Our focus here is on the New Mexico State Senate. The 54th State Legislature concluded in January 2020, at the end of the second session. (The legislature actually ended with a small special session held in June 2020). However, the state has yet to make available details of the second session. As a result, analyses here are limited to the legislative activity of the first session of the 54th, which convened January-March 2019.</p>
+</div>
+<div id="legislators" class="section level3">
+<h3>/Legislators</h3>
+<p>Details on the composition each state legislature are made available by Open States <a href="https://openstates.org/data/legislator-csv/">here</a>. In the case of New Mexico, this list only includes legislators from the most recent session of the most recent congress, ie, the second session of the 54th legislature, which convened Jan-Feb 2020.</p>
+<pre class="r"><code>os_legislators &lt;- read.csv(paste0(open_states_dir, &#39;/legislators/nm.csv&#39;))</code></pre>
+<p>Here, we make some small changes to the legislator data set to help align identifiers with those used in subsequent data sets.</p>
+<pre class="r"><code>legs2020 &lt;- os_legislators %&gt;%
+  mutate(family_name = gsub(&#39;Lara Cadena&#39;, &#39;Cadena&#39;, family_name)) %&gt;%
+  arrange(current_chamber, family_name, given_name) %&gt;%
+  group_by(current_chamber, family_name) %&gt;%
+  mutate(n = n()) %&gt;%
+  ungroup() %&gt;%
+  mutate(family_name = ifelse(n&gt;1, 
+                              paste0(family_name, &#39;, &#39;, given_name),
+                              family_name)) %&gt;%
+  select(current_chamber, name, family_name, given_name, current_party, current_district)</code></pre>
+<p>Not taken into account by the folks at Open States is the fact that the compositions of the both state houses in New Mexico have changed a bit from the 1st (2019) to 2nd (2020) session. The table below includes state lawmakers who served in the first session but not the second. <em>Note that while our focus here will be the Senate, we present methods for sorting out data for both chambers</em>.</p>
+<pre class="r"><code>current_chamber = c(&#39;upper&#39;, &#39;upper&#39;, &#39;lower&#39;, &#39;lower&#39;)
+name &lt;- c(&#39;Carlos Cisneros&#39;, &#39;John Pinto&#39;, 
+          &#39;William Praat&#39;, &#39;Roberto &quot;Bobby&quot; J. Gonzales&#39;)
+family_name &lt;- c(&#39;Cisneros&#39;, &#39;Pinto&#39;, &#39;Praat&#39;, &#39;Gonzales&#39;)
+current_party &lt;- rep(&#39;Democratic&#39;, 4)
+current_district &lt;- c(6, 3, 27, 42)
+##  session_identifier &lt;- &#39;2019&#39;
+
+adds &lt;- data.frame(current_chamber,
+                  name,
+                  family_name,
+                  current_party,
+                  current_district)
+
+adds %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">current_chamber</th>
+<th align="left">name</th>
+<th align="left">family_name</th>
+<th align="left">current_party</th>
+<th align="right">current_district</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">upper</td>
+<td align="left">Carlos Cisneros</td>
+<td align="left">Cisneros</td>
+<td align="left">Democratic</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="left">upper</td>
+<td align="left">John Pinto</td>
+<td align="left">Pinto</td>
+<td align="left">Democratic</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">lower</td>
+<td align="left">William Praat</td>
+<td align="left">Praat</td>
+<td align="left">Democratic</td>
+<td align="right">27</td>
+</tr>
+<tr class="even">
+<td align="left">lower</td>
+<td align="left">Roberto “Bobby” J. Gonzales</td>
+<td align="left">Gonzales</td>
+<td align="left">Democratic</td>
+<td align="right">42</td>
+</tr>
+</tbody>
+</table>
+<p><strong>To account for these changes</strong>, then, we build an independent table for first session lawmakers of the 54th Congress.</p>
+<pre class="r"><code>legs2019 &lt;- legs2020 %&gt;%
+  filter(!paste0(current_chamber, current_district) %in%
+           paste0(adds$current_chamber, adds$current_district)) %&gt;%
+  bind_rows(adds)%&gt;%
+  arrange(current_chamber, family_name, given_name)</code></pre>
+</div>
+<div id="bills" class="section level3">
+<h3>/Bills</h3>
+<p>Details about bills - title, language, sponsors, etc - can be accessed via Open States <a href="https://openstates.org/data/session-csv/">here</a>. Bill information is made available by legislative session; files for the 2019 session include:</p>
+<pre class="r"><code>list.files(path = open_states_dir, pattern = &quot;NM_2019_bill_&quot;, recursive = T)</code></pre>
+<pre><code>## [1] &quot;bills/2019/NM_2019_bill_actions.csv&quot;       
+## [2] &quot;bills/2019/NM_2019_bill_document_links.csv&quot;
+## [3] &quot;bills/2019/NM_2019_bill_documents.csv&quot;     
+## [4] &quot;bills/2019/NM_2019_bill_sources.csv&quot;       
+## [5] &quot;bills/2019/NM_2019_bill_sponsorships.csv&quot;  
+## [6] &quot;bills/2019/NM_2019_bill_version_links.csv&quot; 
+## [7] &quot;bills/2019/NM_2019_bill_versions.csv&quot;</code></pre>
+<p><strong>Load files</strong>:</p>
+<pre class="r"><code>setwd(open_states_dir)
+bill_files &lt;- list.files(path = open_states_dir, pattern = &quot;bills.csv&quot;, recursive = T)
+os_bills &lt;- lapply(bill_files, read.csv) %&gt;% data.table::rbindlist() %&gt;% 
+  mutate(session_identifier = as.character(session_identifier))</code></pre>
+</div>
+<div id="roll-calls" class="section level3">
+<h3>/Roll-calls</h3>
+<p>Next, we load roll call data. These data are scattered across multiple tables, and to get a full picture of vote results and bill details, we need to do some table joining. Below, we load three tables: (1) the <code>votes</code> table, which contains meta data about the vote/bill, and helps cross votes to bill; (2) the <code>votes_people</code> table, which contains actual legislator-level roll calls; and (3) <code>vote_counts</code>, which summarizes vote results.</p>
+<pre class="r"><code>setwd(open_states_dir)
+vdetails_files &lt;- list.files(path = open_states_dir, pattern = &quot;votes.csv&quot;, recursive = T)
+os_vdetails &lt;- lapply(vdetails_files, read.csv) %&gt;% data.table::rbindlist() %&gt;% 
+  mutate(session_identifier = as.character(session_identifier))
+vote_files &lt;- list.files(path = open_states_dir, pattern = &quot;vote_people.csv&quot;, recursive = T) 
+os_votes &lt;- lapply(vote_files, read.csv) %&gt;% data.table::rbindlist() 
+
+##
+roll &lt;- read.csv(&#39;bills/2019/NM_2019_vote_counts.csv&#39;) %&gt;%
+  select(-id) %&gt;%
+  spread(option, value) </code></pre>
+<p>Here, we piece these three tables together to get a clearer perspective on things.</p>
+<pre class="r"><code>bill_votes &lt;- os_vdetails %&gt;% select(-identifier) %&gt;%
+  #mutate(session_identifier = as.character(session_identifier)) %&gt;%
+  left_join(os_bills, by = c(&#39;bill_id&#39; = &#39;id&#39;,
+                             &#39;jurisdiction&#39; = &#39;jurisdiction&#39;,
+                             &#39;session_identifier&#39; = &#39;session_identifier&#39;)) %&gt;%
+  left_join(roll, by = c(&#39;id&#39; = &#39;vote_event_id&#39;))</code></pre>
+<p>A sample of votes on the Senate side for which there is some contention:</p>
+<pre class="r"><code>bill_votes %&gt;%
+  filter(no &gt; 10 &amp; motion_text == &#39;senate passage&#39;) %&gt;%
+  select(identifier, title, yes, no) %&gt;%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = &#39;t&#39;,
+                               pageLength = 16,
+                               scrollX = TRUE))</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["SB 123","SB 136","SB 226","SB 96","SB 219","SB 228","SB 55","SB 145","SB 20","SB 359","SB 76","SB 8","SB 331","SB 85","SB 26","SB 447"],["PUBLIC &amp; PRIVATE CAREGIVER LEAVE ACTS","EFFICIENT USE OF ENERGY ACT AMENDMENTS","PERMANENT DAYLIGHT SAVING TIME","CONVICTION INFO ON JOB APPLICATIONS","HISTORIC PRESERVATION &amp; STATE LAND PROJECTS","WILDLIFE CORRIDORS ACT","NO LIMITATION FOR CRIMES AGAINST CHILDREN","COORDINATE MEDICAL TRANSPORT","SEX DESIGNATION ON VITAL RECORDS","MAX SPEED LIMIT FOR CERTAIN TRUCKS","PROHIBIT COYOTE KILLING CONTESTS","FIREARM SALE BACKGROUND CHECK","CHARTER SCHOOL NEPOTISM &amp; MONITORING","DOMESTIC SERVICE IN MINIMUM WAGE ACT","STANDARDIZE SCHOOL BATHROOM USE POLICIES","ENGINEERING &amp; SURVEYING SCHOLARSHIP &amp; LICENSE"],[26,25,25,28,21,24,24,20,26,26,22,22,21,25,26,13],[14,14,17,11,20,18,15,18,13,11,17,20,17,16,15,28]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>identifier<\/th>\n      <th>title<\/th>\n      <th>yes<\/th>\n      <th>no<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":16,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,16,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="legislator-votes" class="section level3">
+<h3>/Legislator votes</h3>
+<p>Lastly, we combine tables with (1) legislator details and (2) roll call information.</p>
+<pre class="r"><code>leg_votes &lt;- os_votes %&gt;% 
+  select(-id) %&gt;%
+  left_join(bill_votes, by = c(&#39;vote_event_id&#39; = &#39;id&#39;)) </code></pre>
+<p>An issue with Open States data – at least in the case of New Mexico – is that legislators are not assigned a unique <code>voter_id</code> (in the <code>votes_people</code> data set) (the column exists, but is mostly empty - ?), and there are differences in how legislators are referred to in the legislator meta data and in the roll call data – so we can’t join the two data sets. For now, we rely on alphabetical order and some hacks to relate the two data sets, but surnames in New Mexico can present challenges on this front.</p>
+<pre class="r"><code>legs_in_rolls  &lt;- leg_votes %&gt;% 
+  group_by(organization_classification, voter_name) %&gt;% 
+  count() %&gt;% 
+  filter(voter_name != &#39;LT. GOVERNOR&#39; &amp; n &gt; 100) %&gt;%
+  select(-n) %&gt;%
+  ungroup()  %&gt;% 
+  bind_cols(legs2019)</code></pre>
+<p>Then we restructure data in a wider format to ready things for subsequent NOMINATE-based analyses.</p>
+<pre class="r"><code>dups &lt;- c(&#39;ocd-vote/77a697c2-c53b-4856-8631-0773e72f9f06&#39;,
+          &#39;ocd-vote/2b8128f5-768e-4630-9af5-21e986dc2fa8&#39;,
+          &#39;ocd-vote/c7a04b77-f55d-47f0-a8f1-860ed4b3a3d6&#39;)
+
+wide_rolls &lt;- leg_votes %&gt;%
+  filter(!vote_event_id %in% dups) %&gt;%
+  mutate(tid = paste0(session_identifier, &#39;_&#39;, 
+                      gsub(&#39; &#39;, &#39;-&#39;, identifier))) %&gt;%
+  select(voter_name, tid, option) %&gt;%
+  mutate(vote = case_when(option == &quot;yes&quot; ~ 1,
+                          option == &quot;no&quot; ~ 6,
+                          !option %in% c(1,6) ~ 9)) %&gt;%
+  dplyr::select(-option) %&gt;%
+  spread(key = tid, value = vote) %&gt;%
+  arrange(voter_name)</code></pre>
+</div>
+</div>
+<div id="dw-nominate-procedure" class="section level2">
+<h2>DW-NOMINATE procedure</h2>
+<p>Next, we investigate political ideologies in the (first session of the) 54th New Mexico State Legislature using the R package <code>wnominate</code>. I have discussed these methods previously in the context of <a href="https://www.jtimm.net/2018/10/10/nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress/">New Mexico’s 53rd State Legislature</a>. Here, then, a quick/simple run through of the code.</p>
+<pre class="r"><code>chamber &lt;- &#39;upper&#39;
+leg_sub &lt;- legs_in_rolls %&gt;% filter(current_chamber == chamber)</code></pre>
+<div id="build-roll-call-object" class="section level3">
+<h3>/Build roll call object</h3>
+<pre class="r"><code>roll_obj &lt;- wide_rolls %&gt;%
+  filter(voter_name %in% leg_sub$voter_name) %&gt;%
+  select(-voter_name) %&gt;% 
+  pscl::rollcall(yea = 1,
+                 nay = 6,
+                 missing = 9,
+                 notInLegis = NA,
+                 vote.names = grep(&#39;-&#39;, colnames(wide_rolls), value = T), 
+                 legis.names = leg_sub$voter_name) </code></pre>
+</div>
+<div id="build-dw-nominate-model" class="section level3">
+<h3>/Build DW-NOMINATE model</h3>
+<pre class="r"><code>if(chamber == &#39;lower&#39;) { pol &lt;- c(&#39;Townsend&#39;, &#39;Rehm&#39;)} else
+  {pol &lt;- c(&#39;INGLE&#39;, &#39;INGLE&#39;)}
+
+ideal_2d &lt;- roll_obj %&gt;%
+  wnominate::wnominate (dims = 2, 
+                        minvotes = 20,
+                        lop = 0.025,
+                        polarity = pol,
+                        verbose = FALSE)</code></pre>
+</div>
+<div id="visualize-two-dimensional-solution" class="section level3">
+<h3>/Visualize two-dimensional solution</h3>
+<p>A two-dimensional model was specified. Per the multidimensional scaling procedure, the plot below represents legislators in two-dimensional political space based on roll call voting records for the first session of the 54th legislature. Dimensions:</p>
+<ul>
+<li><p>1D: Right-Left –&gt; Conservative – Liberal;</p></li>
+<li><p>2D: North-South –&gt; socially conservative – socially liberal.</p></li>
+</ul>
+<p>The latter: a distinction that has become less useful (in accounting for variation in voting behavior at the federal level) over the past 20 years.</p>
+<pre class="r"><code>chamber_data &lt;- ideal_2d$legislators %&gt;% 
+  bind_cols(leg_sub) 
+
+chamber_data %&gt;% 
+  ggplot(aes(x=coord1D, 
+             y=coord2D, 
+             label = family_name)) +
+  geom_point(aes(color = current_party),
+             size= 3, 
+             shape= 17) +
+  
+  wnomadds::scale_color_party() + 
+  annotate(&quot;path&quot;,
+           x = cos(seq(0,2*pi, length.out = 300)),
+           y = sin(seq(0,2*pi, length.out = 300)),
+           color = &#39;gray&#39;,
+           size = .25) +
+  
+  ggrepel::geom_text_repel(
+    data  = chamber_data,
+    nudge_y =  -0.005,
+    direction = &quot;y&quot;,
+    hjust = 0,
+    size = 3.5) +
+   
+  theme_minimal() +
+  theme(legend.position = &#39;none&#39;) +
+  labs(title = &quot;Ideal point estimates in two-dimensional space&quot;,
+       subtitle = &quot;New Mexico State Senate 2019&quot;) </code></pre>
+<p><img src="/post/2020-09-14-open-states-data-new-mexico-primaries_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+</div>
+<div id="wnomadds-cutting-lines" class="section level3">
+<h3>/wnomadds &amp; cutting lines</h3>
+<pre class="r"><code>## IF ROLL CALLS are dropped -- this may cause problems --
+row.names(ideal_2d$rollcalls) &lt;- colnames(wide_rolls)[2:ncol(wide_rolls)]
+
+with_cuts &lt;- wnomadds::wnm_get_cutlines(ideal_2d, 
+                                        rollcall_obj = roll_obj, 
+                                        add_arrows = TRUE,
+                                        arrow_length = 0.05)</code></pre>
+<pre class="r"><code>ggplot () + 
+  wnomadds::scale_color_party() +
+  theme_minimal() +
+  theme(legend.position = &#39;none&#39;) + 
+  annotate(&quot;path&quot;,
+           x = cos(seq(0,2*pi, length.out = 300)),
+           y = sin(seq(0,2*pi, length.out = 300)),
+           color = &#39;lightgray&#39;,
+           size = .25) +
+  geom_point(data=chamber_data, 
+               aes(x=coord1D, y=coord2D, color = current_party),
+               size= 3, 
+               shape= 17) +
+  geom_segment(data=with_cuts, 
+               aes(x = x_1, y = y_1, xend = x_2, yend = y_2), color=&#39;gray&#39;,) + 
+  geom_segment(data=with_cuts, 
+               aes(x = x_2, y = y_2, xend = x_2a, yend = y_2a), color=&#39;gray&#39;,
+               arrow = arrow(length = unit(0.2,&quot;cm&quot;))) +
+  geom_segment(data=with_cuts, 
+               aes(x = x_1, y = y_1, xend = x_1a, yend = y_1a), color=&#39;gray&#39;,
+               arrow = arrow(length = unit(0.2,&quot;cm&quot;)))+
+  geom_text(data=with_cuts, 
+               aes(x = x_1a, y = y_1a, label = Bill_Code), 
+               size=2.5, 
+               nudge_y = 0.03,
+               check_overlap = TRUE) +
+  #coord_fixed(ratio=1) + 
+  labs(title = &quot;Cutting lines &amp; legislator coordinates&quot;,
+       subtitle = &quot;New Mexico State Senate 2019&quot;)</code></pre>
+<p><img src="/post/2020-09-14-open-states-data-new-mexico-primaries_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+</div>
+</div>
+<div id="loss-of-the-center" class="section level2">
+<h2>Loss of the center</h2>
+<p>The plot below summarizes ideology scores for New Mexico’s State Senate (based on roll calls for the first session of the 54th congress). Again, the 1D scores reflect the traditional left-right ideological distinction. Sitting senators not running in the 2020 general election are denoted with a triangle.</p>
+<pre class="r"><code>centers &lt;- outs %&gt;%
+  #filter(Party == &#39;Democrat&#39;) %&gt;%
+  mutate(label = gsub(&#39;(^.* )([A-Za-z]*$)&#39;, &#39;\\2&#39;, Senator))
+
+chamber_data %&gt;%
+  mutate(size1 = ifelse(family_name %in% centers$label, &#39;Y&#39;, &#39;N&#39;)) %&gt;%
+  
+  ggplot(aes(x=reorder(family_name, coord1D), 
+             y = coord1D, 
+             group = size1,
+             label = family_name)) + 
+  geom_point(stat=&#39;identity&#39;, 
+             aes(col = current_party,
+                 shape = size1,
+                 size = size1)) + #, size = 3
+
+  scale_shape_manual(values=c(16, 17))+
+  scale_size_manual(values=c(2, 4.5))+
+  
+  geom_hline(yintercept = c(-0.5, 0.5),
+             linetype =2, 
+             color = &#39;black&#39;, 
+             size = .25) +
+  wnomadds::scale_color_party()+
+  geom_text(size=3.5, nudge_y = -0.1) +
+  labs(title = &quot;1D Ideal Point Estimates&quot;,
+       subtitle = &quot;New Mexico State Senate 2019&quot;) + 
+
+  theme_minimal() +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = &#39;none&#39;) +
+  coord_flip()</code></pre>
+<p><img src="/post/2020-09-14-open-states-data-new-mexico-primaries_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p><strong>So, Soules (D-37), Las Cruces</strong>, was the most liberal voter during this session; Pirtle (R-32), Roswell, the most conservative. <a href="https://www.jtimm.net/2018/10/10/nominate-multi-dimensional-scaling-new-mexico-s-53rd-congress/">Per a previous post</a>, the ideological space is fairly comparable to that of New Mexico’s 53rd Senate. As can be noted per the space demarcated by dashed lines, lots of moderate voters on the way out.</p>
+<p>Using the R package <code>nmlegisdatr</code>, the table below highlights <strong>2016 general election margins-of-victory</strong> for the six Democrats vacating seats in 2020. Of these six, four won uncontested races in 2016 – exceptions being the seats vacated by Papen and Sapien. Perhaps progressive nominees may inspire a contest or two among Republicans in November.</p>
+<pre class="r"><code>nmelectiondatr::nmel_results_summary %&gt;%
+  mutate(District = as.integer(Type_Sub),
+         Percent = round(Percent * 100, 1)) %&gt;%
+  filter(Type == &#39;State Senator&#39; &amp; Winner == &#39;Winner&#39; &amp; 
+           District %in% outs$District &amp; Party == &#39;DEM&#39;) %&gt;%
+  arrange(District) %&gt;%
+  select(District, Candidate:Percent) %&gt;% 
+  
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = &#39;t&#39;,
+                               pageLength = nrow(outs),
+                               scrollX = TRUE))</code></pre>
+<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[[5,9,28,30,35,38],["RICHARD C MARTINEZ","JOHN M SAPIEN","HOWIE C MORALES","CLEMENTE SANCHEZ","JOHN ARTHUR SMITH","MARY KAY PAPEN"],["DEM","DEM","DEM","DEM","DEM","DEM"],[15535,12724,15063,11973,12502,9588],[100,50.4,100,100,100,67]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>District<\/th>\n      <th>Candidate<\/th>\n      <th>Party<\/th>\n      <th>Votes<\/th>\n      <th>Percent<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":9,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,3,4]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[9,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>So, as to whether the loss of the center will result in Republican seats, or a clearer path for more progressive politics with an MLG-led New Mexico – we shall see. Regardless, some new faces come 2021 in the State Senate.</p>
+<p>And, hopefully some useful methods presented here, reproducible to investigating political ideology in other state legislatures. Check out the work being done by the folks at <a href="https://openstates.org/">Open States</a>!</p>
+<p>State houses are up for grabs!</p>
+<p>November 3!!</p>
+</div>
