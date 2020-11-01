@@ -12,6 +12,7 @@ tags:
   - open-government
   - VoteView
 banner: banners/longserving.png
+featureImage: banners/longserving.png
 description: '~'
 images: []
 menu: ''
@@ -27,6 +28,7 @@ menu: ''
 <link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
 <script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
 <script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 <div id="TOC">
 <ul>
@@ -35,7 +37,6 @@ menu: ''
 <li><a href="#longest-serving-members-of-the-us-house">Longest-serving members of the US House</a></li>
 <li><a href="#longest-serving-members-political-ideology">Longest-serving members &amp; political ideology</a></li>
 <li><a href="#longest-serving-members-election-margins">Longest-serving members &amp; election margins</a></li>
-<li><a href="#margins-ideology-the-example-of-frank-pallone-jr.-nj-06">Margins &amp; ideology: the example of Frank Pallone, Jr. (NJ-06)</a></li>
 <li><a href="#a-re-election-model-logistic-regression">A re-election model – logistic regression</a></li>
 <li><a href="#thoughts">Thoughts</a></li>
 </ul>
@@ -43,8 +44,8 @@ menu: ''
 
 <div id="breifly" class="section level2">
 <h2>Breifly</h2>
-<p>In this post, we take a couple of different historical perspectives on the US House of Representatives, investigating margins-of-victory, voting behavior, and re-election prospects over the last 40 years. To introduce data sets, we first consider the body’s longest serving members, dubbed here the <strong>Old Guard</strong>.</p>
-<p>Then we build a simple <strong>re-election model</strong> to investigate how <strong>the relationship between political ideology and margins-of-victory</strong> has influenced the likelihood of re-election in the House since 1976. Among other things, model results demonstrate the relevance of voting in-step with one’s constituency to a successful re-election.</p>
+<p>In this post, we take a couple of different historical perspectives on the US House of Representatives, investigating margins-of-victory, voting behavior, and re-election over the last 40 years. To introduce data sets, we first consider the body’s longest serving members, dubbed here the <strong>Old Guard</strong>.</p>
+<p>Then we build a simple <strong>re-election model</strong> to investigate how <strong>the relationship between political ideology and margins-of-victory</strong> has influenced the likelihood of re-election in the House since 1976; among other things, model results demonstrate the relevance of voting in-step with one’s constituency.</p>
 </div>
 <div id="voteview-dw-nominate" class="section level2">
 <h2>VoteView &amp; DW-NOMINATE</h2>
@@ -53,7 +54,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpZPoJdJ/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmpCrLhOs/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -162,34 +163,10 @@ ggplot(data = for_margins_plot,
   ggtitle(&#39;Old guard election margins&#39;)</code></pre>
 <p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 </div>
-<div id="margins-ideology-the-example-of-frank-pallone-jr.-nj-06" class="section level2">
-<h2>Margins &amp; ideology: the example of Frank Pallone, Jr. (NJ-06)</h2>
-<p>Generally, we expect a reasonably strong relationship between political ideology scores &amp; election margins. Slim margins means an ideologically divided/diverse constituency, which translates to more moderate/middle-ground voting behavior in congress – in theory. An ideologically less diverse constituency often translates into more extreme voting behavior.</p>
-<p><strong>A simple demonstration</strong>. The plot below, then, summarizes the relationship between voting margins and ideology scores for sitting House Rep Frank Pallone Jr. Per previous observations, Mr. Pallone’s voting behavior has become less moderate historically; the plot below suggests that this change may in fact be a product of greater margins-of-victory. In other words, a more progressive constituency == more progressive voting behavior. Which == representative democracy. And perhaps, at least in part, a reason for Mr. Pallone’s longevity in congress.</p>
-<pre class="r"><code>for_scatter &lt;- for_plot %&gt;%
-  filter(bioguide_id %in% c(&#39;P000034&#39;)) %&gt;%
-    inner_join(for_margins_plot, by = c(&#39;congress&#39;, &#39;label&#39;)) 
-
-for_scatter %&gt;%
-  ggplot(aes(x = marg, 
-                y= nokken_poole_dim1,
-                label = congress),
-            size = 1.25) +
-  geom_point() +
-  ggrepel::geom_text_repel(
-    data  = for_scatter,
-    segment.color = &quot;grey80&quot;,
-    direction = &quot;y&quot;,
-    hjust = 0, 
-    size = 3.5) +
-  theme_minimal()+
-  labs(title = for_scatter$label,
-       subtitle = &#39;Margins vs. Ideology&#39;)</code></pre>
-<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-</div>
 <div id="a-re-election-model-logistic-regression" class="section level2">
 <h2>A re-election model – logistic regression</h2>
-<p>So, is this particular pattern relevant when we consider House re-elections across the board? In other words, has the relationship between margins-of-victory and voting behavior influenced the likelihood of re-election for House members historically?</p>
+<p>Generally, we expect a reasonably strong relationship between political ideology scores &amp; election margins. Slim margins means an ideologically divided/diverse constituency, which translates to more moderate/middle-ground voting behavior in congress – in theory. An ideologically less diverse constituency often translates into more extreme voting behavior.</p>
+<p>So, has the relationship between margins-of-victory and voting behavior influenced the likelihood of re-election for House members historically?</p>
 <p><strong>Using election returns and ideology scores for the last twenty congresses</strong>, here we present a simple logistic regression model to get at this particular question. For good measure, we also consider party affiliation, house member tenure, and the decade in which the election took place.</p>
 <div id="re-election-as-dependent-variable" class="section level3">
 <h3>/Re-election as dependent variable</h3>
@@ -202,7 +179,7 @@ for_scatter %&gt;%
   group_by(state_abbrev, district_code) %&gt;%
   spread(congress, bioguide_id)</code></pre>
 <p>A sample of the re-election portion of the data set is presented below. The first row summarizes the re-election event for Kentucky’s 4th congressional district, where <strong><em>t<sub>i</sub></em></strong> is the 97th Congress and <strong><em>t<sub>i+1</sub></em></strong> the 98th Congress. Columns <code>t1</code> and <code>t2</code> denote bioguide ids for the representative of KY-04 in congresses 97 and 98, respectively. So, incumbent representative S000669 (Marion Snyder) won re-election to the 98th congress, as denoted by a value of <code>1</code> in the <code>re_elect</code> column.</p>
-<p><em>Important methods note: no distinction is made here between losing an election and retiring, for example.</em></p>
+<p><em>Important methods note: no distinction is made here between losing an election and not seeking re-elction, for example.</em></p>
 <pre class="r"><code>x &lt;- c(3:24)
 y &lt;- list()
 for (i in 1:length(x)-1) { y[i] &lt;- data.frame(df = c(x[i], x[i+1])) }
@@ -257,8 +234,8 @@ h3 %&gt;%
   theme(legend.position = &quot;bottom&quot;) +
   ylim (0.1, 0.75) +
   labs(title=&quot;Margins vs. Ideology scores&quot;)</code></pre>
-<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<p>So, how does this relationship influence the likelihood of re-election? Can I vote like a progressive in congress if I only won my district by a couple of points? ie, will my constituency re-elect me if my voting behavior is not reflective of their ideology, at least in part? Because a point or two the other way, and they are being represented by a Republican, and I never get elected in the first place.</p>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>So, how does this relationship influence the likelihood of re-election? Can I vote like a progressive in congress if I only won my district by a couple of points? ie, will my constituency re-elect me if my voting behavior is not reflective of their ideology, at least in part?</p>
 <p>From this perspective, the plot below highlights some residuals from a simple regression model of ideology scores against election returns (here, not controlled for by decade). Points above the fitted regression line represent House members whose ideology scores were higher (ie, more extreme) than expected based on their election margins; points below the fitted regression line represent members voting more moderately than expected based on election margins.</p>
 <p>Here, we treat these residuals as an independent predictor. And for simplicity, we transform residuals to absolute values; in this way, all deviation from fit is treated equally.</p>
 <pre class="r"><code>dset &lt;- h3
@@ -279,7 +256,7 @@ l1 +
   geom_point(data = fit2, aes(x = abs_margins, y = abs_nokken_poole_dim1),
              size = 1, color = &#39;steelblue&#39;) +
   theme_minimal() + ggtitle(&#39;Residuals: margins vs. ideology&#39;)</code></pre>
-<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p><img src="/post/2020-07-19-and-other-long-serving-members-of-congress_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 </div>
 <div id="results" class="section level3">
 <h3>/Results</h3>
@@ -507,8 +484,7 @@ abs(residuals)
 </div>
 <div id="thoughts" class="section level2">
 <h2>Thoughts</h2>
-<p>So, independent effects for both margins and ideology scores on the likelihood of re-election. Big margins at election <strong><em>t<sub>i</sub></em></strong> mean a higher likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong>. As do higher ideology scores during congress <strong><em>t<sub>i</sub></em></strong>. The former speaks to the comforts of sitting in a safe seat. The latter could speak to any number of things, including the fact that fringe party members tend to be more well-known &amp; more popular on social media. In contrast – Old Guard excepted – longer-tenure in the House detracts from the likelihood of re-election.</p>
-<p>All things equal, Republicans have had a harder time getting re-elected over the past 40 years in comparison to their Democratic counterparts. And the Teens have been a tough decade for any/all seeking another term in the House.</p>
-<p>Perhaps of most interest are the independent effects of the ideology residuals on the likelihood of re-election. Per the plot above, the further a representative’s voting behavior strays from that predicted by election margins, the less likely that representative is to get re-elected to congress <strong><em>t<sub>i+!</sub></em></strong>. This is a good thing!! At minimum, some evidence that house reps are not actively ignoring the people they represent when voting. If we wanted to get greedy, evidence of actual representation.</p>
-<p>Of course, lots of caveats. The model is obviously super simple, with lots of variation left to be explained. But hopeful, and I think quite useful from a methodological perspective.</p>
+<p>So, independent effects for both margins and ideology scores on the likelihood of re-election. Big margins at election <strong><em>t<sub>i</sub></em></strong> mean a higher likelihood of re-election to congress <strong><em>t<sub>i+1</sub></em></strong>; as do higher ideology scores during congress <strong><em>t<sub>i</sub></em></strong>. The former speaks to the comforts of sitting in a safe seat. The latter could speak to any number of things, including the fact that fringe party members tend to be more well-known &amp; more popular on social media, etc. In contrast – Old Guard excepted – longer-tenure in the House detracts from the likelihood of re-election.</p>
+<p>Perhaps of most interest are the independent effects of the ideology residuals on the likelihood of re-election. Per the plot above, the further a representative’s voting behavior strays from that predicted by election margins, the less likely that representative is to get re-elected to congress <strong><em>t<sub>i+!</sub></em></strong>. So, some evidence that House reps are being held to account.</p>
+<p>Of course, lots of caveats. The model is obviously super simple, with lots of variation left to be explained. But hopefully some useful methods.</p>
 </div>

@@ -12,7 +12,7 @@ tags:
 bibliography: biblio.bib
 link-citations: yes
 banner: banners/generations.png
-description: "Some methods & a roll call."
+description: "~"
 ---
 
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
@@ -30,14 +30,13 @@ description: "Some methods & a roll call."
 <li><a href="#american-generations">American generations</a></li>
 <li><a href="#monthly-us-population-estimates">Monthly US population estimates</a></li>
 <li><a href="#composition-of-american-generations">Composition of American generations</a></li>
-<li><a href="#american-generations-in-apparent-time-space">American generations in (apparent) time &amp; space</a></li>
 <li><a href="#summary">Summary</a></li>
 </ul>
 </div>
 
 <div id="american-generations" class="section level2">
 <h2>American generations</h2>
-<p>A quick look at the composition of American generations. Per Pew Research <a href="https://www.pewresearch.org/fact-tank/2019/01/17/where-millennials-end-and-generation-z-begins/">definitions</a> &amp; US Census data. In the process, a static perspective on the changing demographics of America.</p>
+<p>A quick look at the composition of American generations. Per Pew Research <a href="https://www.pewresearch.org/fact-tank/2019/01/17/where-millennials-end-and-generation-z-begins/">definitions</a> &amp; US Census data.</p>
 <pre class="r"><code>library(tidyverse)
 gen &lt;- c(&#39;Post-Z&#39;, &#39;Gen Z&#39;, &#39;Millennial&#39;, 
          &#39;Gen X&#39;, &#39;Boomers&#39;, &#39;Silent&#39;, 
@@ -136,6 +135,7 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   theme_minimal() +
   labs(title = &#39;Population by American generation&#39;,
        caption = &#39;SOURCE: US Census, Monthly Postcensal Resident Population plus Armed Forces Overseas, December 2018.&#39;)</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;gen&#39; (override with `.groups` argument)</code></pre>
 <p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 </div>
 <div id="population-by-single-year-of-age-generation" class="section level3">
@@ -147,6 +147,7 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
   mutate(tot = max(tot)) %&gt;% #For labels below.
   filter(yob %in% c(&#39;1919&#39;, &#39;1928&#39;, &#39;1946&#39;, &#39;1965&#39;, 
                     &#39;1981&#39;, &#39;1997&#39;, &#39;2013&#39;))</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;yob&#39;, &#39;AGE&#39; (override with `.groups` argument)</code></pre>
 <p>The figure below illustrates the US population by single year of age, ranging from the population aged less than a year to the population over 100 (as of December 2018). Generation membership per single year of age is specified by color.</p>
 <pre class="r"><code>gen_pops %&gt;%
   ggplot(aes(x = AGE, 
@@ -257,109 +258,7 @@ gen_pops %&gt;% sample_n(7)  %&gt;%
 <p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 </div>
 </div>
-<div id="american-generations-in-apparent-time-space" class="section level2">
-<h2>American generations in (apparent) time &amp; space</h2>
-<p>Aggregate race-ethnicity profiles for America’s seven living generations are presented in the table below. Per <a href="https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/America_american.md">American Community Survey (ACS) 2018 5-year estimates</a>, the <code>Gen X</code> race-ethnicity profile (or distribution) is most representative of American demographics overall.</p>
-<pre class="r"><code>sums &lt;- gen_pops %&gt;%
-  group_by(rank, gen, race1) %&gt;%
-  summarize(pop = sum(pop))%&gt;%
-  group_by(gen) %&gt;%
-  mutate(per = round(pop / sum(pop), 3))</code></pre>
-<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7],["Greatest","Silent","Boomers","Gen X","Millennial","Gen Z","Post-Z"],[4.4,4.4,4.9,6.7,7.1,5.3,5.1],[8,8.4,10.9,12.6,13.8,13.8,13.7],[7.7,8,10.6,18.5,20.9,24.5,26.1],[0.6,0.7,1,1.3,2.2,3.8,4.8],[78.9,77.9,71.9,60,55.1,51.6,49.3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>gen<\/th>\n      <th>Asian Alone<\/th>\n      <th>Black Alone<\/th>\n      <th>Hispanic<\/th>\n      <th>Two or More Races<\/th>\n      <th>White Alone<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"rowCallback":"function(row, data, index, rowId) {\nconsole.log(rowId)\nif(rowId == 3 ) {\nrow.style.backgroundColor = \"#ead8c3\";\n}\n}","columnDefs":[{"className":"dt-right","targets":[0,2,3,4,5,6]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<div id="race-ethnicity-profiles-for-us-counties" class="section level3">
-<h3>Race-ethnicity profiles for US counties</h3>
-<p>Here, we compare race-ethnicity profiles for US counties to those of American generations. Using the <code>tidycensus</code> R package, we first obtain county-level race-ethnicity estimates (ACS 2018 5-year);</p>
-<pre class="r"><code>#x &lt;- tidycensus::load_variables(year = 2018, dataset = &#39;acs5/profile&#39;)
-variable &lt;- c(&#39;DP05_0071P&#39;, &#39;DP05_0077P&#39;, &#39;DP05_0078P&#39;,
-              &#39;DP05_0079P&#39;, &#39;DP05_0080P&#39;, 
-              &#39;DP05_0081P&#39;, &#39;DP05_0082P&#39;, 
-              &#39;DP05_0083P&#39;)
-
-variable_name &lt;- c(&#39;Hispanic&#39;, &#39;White Alone&#39;, &#39;Black Alone&#39;,
-                   &#39;American Indian Alone&#39;, &#39;Asian Alone&#39;,
-                   &#39;Native Hawaiian Alone&#39;, &#39;Some Other Race Alone&#39;,
-                   &#39;Two or More Races&#39;)
-
-gen &lt;-  tidycensus::get_acs(geography = &#39;county&#39;,
-                            variables = variable,
-                            year = 2018,
-                            survey = &#39;acs5&#39;) %&gt;%
-  left_join(data.frame(variable, variable_name, stringsAsFactors = FALSE))%&gt;%
-  select(-variable, -moe) %&gt;%
-  rename(variable = variable_name) %&gt;%
-  select(GEOID:NAME, variable, estimate)</code></pre>
-<p>then, via the <code>tigris</code> library, we obtain shapefiles for (1) all US counties and (2) US states.</p>
-<pre class="r"><code>nonx &lt;- c(&#39;78&#39;, &#39;69&#39;, &#39;66&#39;, &#39;72&#39;, &#39;60&#39;, &#39;15&#39;, &#39;02&#39;)
-
-library(tigris)
-options(tigris_use_cache = TRUE, 
-        tigris_class = &quot;sf&quot;)
-
-us_counties &lt;- tigris::counties(cb = TRUE) %&gt;% 
-  filter(!STATEFP %in% nonx)
-us_states &lt;- tigris::states(cb = TRUE) %&gt;% 
-  filter(!STATEFP %in% nonx)
-
-laea &lt;- sf::st_crs(&quot;+proj=laea +lat_0=30 +lon_0=-95&quot;)
-us_counties &lt;- sf::st_transform(us_counties, laea)
-us_states &lt;- sf::st_transform(us_states, laea)</code></pre>
-</div>
-<div id="comparing-distributions" class="section level3">
-<h3>Comparing distributions</h3>
-<p>The table below highlights the race-ethnicity distribution for my hometown, <strong>Dutchess County, NY</strong>. GEOID = 36027.</p>
-<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[[3.6],[9.7],[11.9],[2.4],[71.9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Asian Alone<\/th>\n      <th>Black Alone<\/th>\n      <th>Hispanic<\/th>\n      <th>Two or More Races<\/th>\n      <th>White Alone<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-<p><br></p>
-<pre class="r"><code>which1 &lt;- gen %&gt;%
-  mutate(estimate = ifelse(estimate == 0, .0000001, estimate)) %&gt;%
-  inner_join(sums, by = c(&#39;variable&#39; = &#39;race1&#39;)) %&gt;%
-  
-  mutate(div = estimate/100 * log((estimate/100)/per)) %&gt;%
-  group_by(GEOID, NAME, gen) %&gt;%
-  summarize (relative_entropy = round(sum(div), 4)) %&gt;%
-  ungroup()</code></pre>
-<p>Via <code>Kullback–Leibler divergence</code> (ie, <a href="(https://github.com/jaytimm/tech-notes-american-politics/blob/master/notes/America_american.md#calculating-relative-entropy)">relative entropy</a>), we compare the demographic profile of Dutchess County to the demographic profiles of each American generation. Per the table below, the Dutchess County profile is most similar to that of the <code>Boomer</code> generation. <em>Per the lowest relative entropy value</em>. This is not to say that there are more Boomers in Dutchess County; instead, <strong>the racial demographics of Dutchess County are most akin to an America when Boomers were in their prime</strong>.</p>
-<pre class="r"><code>which1 %&gt;%
-  filter(GEOID == 36027) %&gt;%
-  left_join(gen_desc) %&gt;%
-  select(rank, NAME, gen, relative_entropy) %&gt;%
-  arrange(rank) %&gt;%
-  DT::datatable(rownames = FALSE, 
-                options = list(dom = &#39;t&#39;,
-                               scrollX = TRUE,
-                               
-      rowCallback = DT::JS(&#39;function(row, data, index, rowId) {&#39;,
-                       &#39;console.log(rowId)&#39;,&#39;if(rowId == 2 ) {&#39;,
-                       &#39;row.style.backgroundColor = &quot;#dae2ba&quot;;&#39;,&#39;}&#39;,&#39;}&#39;))) </code></pre>
-<div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7],["Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York","Dutchess County, New York"],["Greatest","Silent","Boomers","Gen X","Millennial","Gen Z","Post-Z"],[0.0284,0.0243,0.0104,0.0426,0.0657,0.0914,0.1131]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>rank<\/th>\n      <th>NAME<\/th>\n      <th>gen<\/th>\n      <th>relative_entropy<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","scrollX":true,"rowCallback":"function(row, data, index, rowId) {\nconsole.log(rowId)\nif(rowId == 2 ) {\nrow.style.backgroundColor = \"#dae2ba\";\n}\n}","columnDefs":[{"className":"dt-right","targets":[0,3]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
-<p><br></p>
-<pre class="r"><code>which2 &lt;- which1 %&gt;%
-  group_by(GEOID, NAME) %&gt;%
-  filter(relative_entropy == min(relative_entropy)) %&gt;%
-  ungroup() </code></pre>
-<p>So, while <code>Gen X</code> is most representative of America in the aggregate, <strong>per the map below</strong>, the demographics of America’s youngest &amp; eldest generations are most prevalent at the county-level. <code>Post-Z</code> in the West, and the <code>Greatest</code> in the East &amp; Midwest. (With <code>Boomer</code> &amp; <code>Millenial</code> demographics most prevalent in the South.) New &amp; Old Americas, perhaps.</p>
-<pre class="r"><code>us_counties %&gt;%
-  left_join(which2, by = &#39;GEOID&#39;) %&gt;%
-  ggplot() + 
-  geom_sf(aes(fill = gen),  lwd = 0) + 
-  ggthemes::scale_fill_stata() +
-  geom_sf(data=us_states, 
-          fill = NA, 
-          show.legend = F, 
-          color=&quot;darkgray&quot;, 
-          lwd=.5) +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        legend.position = &#39;bottom&#39;) +
-  labs(title = &quot;Counties &amp; Generations in America&quot;)</code></pre>
-<p><img src="/post/2020-06-05-american-generations_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
-</div>
-</div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>Some different perspectives on the composition of America &amp; American generations, as well as a novel (static) take on the changing demographics of America.</p>
+<p>Some different perspectives on the composition of America &amp; American generations.</p>
 </div>
