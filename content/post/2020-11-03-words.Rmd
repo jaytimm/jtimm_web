@@ -1,7 +1,7 @@
 ---
 title: 'time-lining the Trump presidency'
 author: ''
-date: '2020-11-05'
+date: '2020-11-06'
 slug: time-lining-trump-presidency
 categories: []
 tags: []
