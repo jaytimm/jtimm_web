@@ -1,0 +1,99 @@
+---
+title: 'time-lining the Trump presidency'
+author: ''
+date: '2020-11-05'
+slug: time-lining-trump-presidency
+categories: []
+tags: []
+description: 'Wikipedia timeline of the Trump presidency scraped, structured, etc.'
+banner: banners/timeline.png
+---
+
+
+### Introduction
+
+A simple function from the [uspols](https://github.com/jaytimm/uspols) package -- dubbed `uspols_wiki_timeline()` -- that scrapes Wikipedia's [Timeline of the Donald Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency).   Facilitating, among other things, the ability to hover over points in a time series to see what the President was up to **on any given day** over the course of the last four years. 
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+
+```{r eval=FALSE}
+library(devtools)
+devtools::install_github("jaytimm/uspols")
+library(uspols) 
+```
+
+
+
+A simple call to the function returns a table of the president's daily happenings via Wikipedia -- from 20 January 2017 to the most recent update. This is clearly not an official accounting, and Wikipedia is not gospel. **But a super quick/easy way to get one's bearings (in a maelstrom) and contextualize data points**.  
+
+```{r}
+longs <- uspols::uspols_wiki_timeline()
+```
+
+
+**Table structure is detailed some below**.  The folks at Wikipedia have delineated events (chronologically?) via bullet points per each day of Trump's presidency, which have been enumerated here in the `bullets` column as independent rows.  I have mostly done this to make text easier to read/access/etc.  I am not sure how meaningful event distinctions (for a given day) actually are.   
+
+```{r}
+longs %>%
+  select(-quarter:-daypres, -dow) %>%
+  head() %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = 6,
+                               scrollX = TRUE))
+```
+
+
+
+
+### A simple use-case
+
+```{r}
+summary <- longs %>%
+  filter(!is.na(Events)) %>%
+  mutate(tokens = tokenizers::count_words(Events)) %>%
+  group_by(date) %>%
+  mutate(daily_count = sum(tokens)) %>%
+  slice(1) %>%
+  ungroup()
+```
+
+
+
+For demonstration, we calculate total word counts of event descriptions per day from the time-line table.  The plot below, then, summarizes these daily counts since inauguration.  The plot itself is fairly meaningless, but the hover-action should be useful. For clarity purposes, only the first event for each day is included in the pop-up,.
+
+```{r message=FALSE, warning=FALSE}
+dp <- summary %>%
+  mutate(text = stringr::str_wrap(string = Events,
+                                  width = 20,
+                                  indent = 1,
+                                  exdent = 1)) %>%
+  
+  plotly::plot_ly(x = ~date, 
+                  y = ~daily_count,
+                  text = ~text,
+                  type = 'scatter',
+                  mode = 'lines') %>%
+  
+  plotly::layout(#atitle = "Top 10 Drug Types", 
+                 tooltip = c('Events'),
+                 yaxis = list (title = "Daily event word count per Wikipedia"))
+```
+
+
+
+
+### Example plot with Trump daily event on hover
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,  out.width='100%'}
+dp
+```
+
+
+### FIN
+
+For [a more complete perspective](https://github.com/jaytimm/A-timeline-of-the-Trump-presidency#lest-we-forget) ::

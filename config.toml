@@ -51,10 +51,10 @@ theme = "hugo-icarus-theme"
     label  = "Home"
     link   = "/"
 	
-[[params.menu]]
-    before = false
-    label  = "Technical Notes"
-    link   = "https://www.puremoe.net/"
+#[[params.menu]]
+#    before = false
+#    label  = "Technical Notes"
+#    link   = "https://www.puremoe.net/"
 	
 # Enter a link for the follow button on the left
 [params.profile]
