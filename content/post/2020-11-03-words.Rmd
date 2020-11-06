@@ -5,7 +5,7 @@ date: '2020-11-05'
 slug: time-lining-trump-presidency
 categories: []
 tags: []
-description: 'Wikipedia timeline of the Trump presidency scraped, structured, etc.'
+description: 'Wikipedia timeline of the Trump presidency:: scraped, structured, etc.'
 banner: banners/timeline.png
 ---
 
