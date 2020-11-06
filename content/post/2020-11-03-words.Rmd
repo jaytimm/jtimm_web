@@ -12,7 +12,7 @@ banner: banners/timeline.png
 
 ### Introduction
 
-A simple function from the [uspols](https://github.com/jaytimm/uspols) package -- dubbed `uspols_wiki_timeline()` -- that scrapes Wikipedia's [Timeline of the Donald Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency).   Facilitating, among other things, the ability to hover over points in a time series to see what the President was up to **on any given day** over the course of the last four years. 
+A simple function from the [uspols](https://github.com/jaytimm/uspols) package -- dubbed `uspols_wiki_timeline()` -- that scrapes Wikipedia's [Timeline of the Donald Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency).   Facilitating, among other things, the ability to hover over data points in a time series to see what the President was up to **on any given day** over the course of the last four years. 
 
 
 ```{r message=FALSE, warning=FALSE}
