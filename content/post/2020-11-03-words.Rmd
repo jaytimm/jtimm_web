@@ -12,7 +12,7 @@ banner: banners/timeline.png
 
 ### Introduction
 
-A simple function from the [uspols](https://github.com/jaytimm/uspols) package -- dubbed `uspols_wiki_timeline()` -- that scrapes Wikipedia's [Timeline of the Donald Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency).   Facilitating, among other things, the ability to hover over data points in a time series to see what the President was up to **on any given day** over the course of the last four years. 
+The [uspols](https://github.com/jaytimm/uspols) package includes a simple function for scraping a Wikipedia-based [timeline of the Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency) --  `uspols_wiki_timeline()`.  
 
 
 ```{r message=FALSE, warning=FALSE}
@@ -27,8 +27,7 @@ library(uspols)
 ```
 
 
-
-A simple call to the function returns a table of the president's daily happenings via Wikipedia -- from 20 January 2017 to the most recent update. This is clearly not an official accounting, and Wikipedia is not gospel. **But a super quick/easy way to get one's bearings (in a maelstrom) and contextualize data points**.  
+The function returns an up-to-date table of daily administration happenings from 20 Jan 2017 onward.  Here we walk through a simple work-flow for adding timeline data to time series data. While not an official accounting, *a super quick/easy way to get one's bearings (in a maelstrom) and contextualize data points**.  
 
 ```{r}
 longs <- uspols::uspols_wiki_timeline()
