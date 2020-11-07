@@ -15,11 +15,6 @@ banner: banners/timeline.png
 The [uspols](https://github.com/jaytimm/uspols) package includes a simple function for scraping a Wikipedia-based [timeline of the Trump presidency](https://en.wikipedia.org/wiki/Timeline_of_the_Donald_Trump_presidency) --  `uspols_wiki_timeline()`.  
 
 
-```{r message=FALSE, warning=FALSE}
-library(tidyverse)
-```
-
-
 ```{r eval=FALSE}
 library(devtools)
 devtools::install_github("jaytimm/uspols")
@@ -27,7 +22,7 @@ library(uspols)
 ```
 
 
-The function returns an up-to-date table of daily administration happenings from 20 Jan 2017 onward.  Here we walk through a simple work-flow for adding timeline data to time series data. While not an official accounting, *a super quick/easy way to get one's bearings (in a maelstrom) and contextualize data points**.  
+The function returns an up-to-date table of daily administration happenings from 20 Jan 2017 onward.  Here we walk through a simple work-flow for adding timeline data to time series data. While not an official accounting, **a super quick/easy way to get one's bearings (in a maelstrom) and contextualize data points**.  
 
 ```{r}
 longs <- uspols::uspols_wiki_timeline()
@@ -36,7 +31,8 @@ longs <- uspols::uspols_wiki_timeline()
 
 **Table structure is detailed some below**.  The folks at Wikipedia have delineated events (chronologically?) via bullet points per each day of Trump's presidency, which have been enumerated here in the `bullets` column as independent rows.  I have mostly done this to make text easier to read/access/etc.  I am not sure how meaningful event distinctions (for a given day) actually are.   
 
-```{r}
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
 longs %>%
   select(-quarter:-daypres, -dow) %>%
   head() %>%
