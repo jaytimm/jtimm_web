@@ -1,0 +1,288 @@
+---
+title: twitter for historic memory
+author: ''
+date: '2021-01-18'
+slug: historic-memory
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+categories: []
+tags: []
+description: 'Lest we forget.'
+banner: banners/mnem.jpg
+---
+
+
+
+## Thoughts
+
+A previous post [here](https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/) detailed a simple function (from the `uspols` package) for [extracting the timeline of the Trump presidency](https://github.com/jaytimm/A-timeline-of-the-Trump-presidency) from Wikipedia. In this post, then, we turn this timeline into a Twitter bot -- one that [remembers daily](https://twitter.com/MemoryHistoric) what happened four years ago in the Trump presidency.  
+
+
+A fairly trivial task; what is a bit tricky, however, is (1) dealing with Twitter's 280 character limit, and (2) automating the posting of **Twitter threads**, as Wikipedia's daily accounting of the last four years can be fairly detailed.  Via the `rtweet` package.   For good measure, we demonstrate an unsupervised approach to adding hashtags to our tweet-threads in the form of named entities via `spacy` / `spacyr`. 
+
+
+
+## Timeline content
+
+The Trump timeline can be extracted using the `uspols::uspols_wiki_timeline()` function.  A static table will shortly suffice.  
+
+```{r message=FALSE, warning=FALSE}
+# devtools::install_github("jaytimm/uspols")
+library(tidyverse)
+locals1 <- uspols::uspols_wiki_timeline()
+## feature-izing Events --
+locals1$nsent <- tokenizers::count_sentences(locals1$Events)
+locals1$nchar1 <- nchar(locals1$Events)
+## -- 
+locals1 <- subset(locals1, nchar1 > 0)
+```
+
+
+
+```{r}
+
+```
+
+
+Details of table content returned from `uspols_wiki_timeline()`: we consider the 699th day of the Trump presidency.  A Thursday.  
+
+```{r}
+eg <- locals1 %>%filter(daypres == 699)
+eg %>% select(quarter:dow) %>% slice(1) %>% knitr::kable()
+```
+
+
+
+As detailed below, Wikipedia summarizes the day's happenings as individual "Events."  Some days were more eventful than others during the past four years. I have added a `bullet` column for simple enumeration; day 699, then, included four events.  Per above, we have added some Event-level features relevant to a tweet-bot: sentence count and character count.
+
+```{r message=FALSE, warning=FALSE}
+eg %>% select(bullet, nsent, nchar1, Events) %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = nrow(eg),
+                               scrollX = TRUE))
+```
+
+
+In this example, then, Events #3 and #4 will present problems from a character-limit perspective.    
+
+
+
+## Automated tweet-sizing of a thought
+
+### Sentence-based
+
+One approach to "tweet-sizing" Wikipedia-based events is simply to extract sentences up until we exceed some character threshold.  An easy solution.  Below we eliminate stops as markers of abbreviation (eg, honorifics `Ms.` or `Dr.`) -- which makes sentence tokenizers infinitely more useful.
+
+```{r}
+locals1$Events <- gsub('([A-Z])(\\.)', '\\1', locals1$Events) 
+```
+
+
+The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the `chars` parameter.  As we want to add some affixal matter to our tweet threads, we set this at 250.  
+
+```{r}
+extract_sent1 <- function(x, chars = 250) { 
+  z1 <- data.frame(ts = tokenizers::tokenize_sentences(x)[[1]])
+  z1$nchar_sent <- nchar(z1$ts) + 1
+  z1$cum_char <- cumsum(z1$nchar_sent)
+  z2 <- subset(z1, cum_char < chars)
+  paste0(z2$ts, collapse = ' ')
+  }
+```
+
+
+The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure.  Per this method, we lose some (perhaps useful) detail from our thread.
+
+```{r}
+Events <- unlist(lapply(eg$Events, extract_sent1, chars = 250))
+
+data.frame(nsent = tokenizers::count_sentences(Events),
+           nchar1 = nchar(Events),
+           Events = Events) %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = nrow(eg),
+                               scrollX = TRUE))
+```
+
+
+### Via ellipses
+
+If, instead, we wanted to preserve full event content, one approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses.  The function below is taken directly from this [SO post](https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset). 
+
+```{r}
+cumsum_reset <- function(x, thresh = 4) {
+    ans <- numeric()
+    i <- 0
+
+    while(length(x) > 0) {
+        cs_over <- cumsum(x)
+        ntimes <- sum( cs_over <= thresh )
+        x      <- x[-(1:ntimes)]
+        ans <- c(ans, rep(i, ntimes))
+        i   <- i + 1
+    } 
+    return(ans) 
+    }
+```
+
+
+
+
+The second function implements `cumsum_reset` in the context of counting characters at the word level -- once a certain character-count threshold is reached, counting resets.  
+
+```{r}
+to_thread <- function(x, chars = 250){ # no thread counts at present -- 
+  
+  x1 <- data.frame(text = unlist(strsplit(x, ' ')))
+  x1$chars <- nchar(x1$text) + 1
+  x1$cs1 <- cumsum(x1$chars)
+  x1$sub_text <- cumsum_reset(x1$chars, thresh = chars)
+  
+  x2 <- aggregate(x1$text, list(x1$sub_text), paste, collapse = " ")
+
+  x2$ww <- 'm'
+  x2$ww[1] <- 'f'
+  x2$ww[nrow(x2)] <- 'l'
+  
+  x2$x <- ifelse(x2$ww %in% c('f', 'm'), paste0(x2$x, ' ...'), x2$x)
+  x2$x <- ifelse(x2$ww %in% c('l', 'm'), paste0('... ', x2$x), x2$x)
+  paste0(x2$x, collapse = ' || ') 
+}
+```
+
+
+
+For a demonstration of how these functions work, we use a super long event from the Wikipedia timeline -- from 12 August 2018 (day 573) -- which is over 1200 characters in length.  
+
+```{r}
+eg1 <- locals1 %>% filter(nchar1 == max(nchar1))
+```
+
+
+```{r echo=FALSE}
+eg1 %>%
+  select(Events) %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = nrow(eg1),
+                               scrollX = TRUE))
+```
+
+
+**Function output is summarized below**. Also, we add a thread counter, and check in on character counts.   
+
+```{r}
+eg2 <- eg1 %>%
+  select(Events) %>%
+  mutate(Events = to_thread(Events)) %>% ##### --- !!
+  
+  separate_rows(Events, sep = ' \\|\\| ') 
+
+eg3 <- eg2 %>%
+  mutate(Events = paste0(Events, ' [', 
+                         row_number(), ' / ', 
+                         nrow(eg2), ']'),
+         nchar1 = nchar(Events)) %>%
+  select(nchar1, Events)
+```
+
+
+
+```{r echo=FALSE}
+eg3 %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = nrow(eg3),
+                               scrollX = TRUE))
+```
+
+
+
+
+
+
+
+
+## Hashtags sans supervision
+
+A simple unsupervised approach to adding hashtags to tweets based on event content.  Here, (1) extract named entities from tweet via the `spacyr` package, and (character-count depending) (2) add a randomly selected entity as hashtag to tweet.  
+
+
+```{r message=FALSE, warning=FALSE}
+ent1 <- spacyr::entity_extract(spacyr::spacy_parse(eg2$Events))
+
+ent1 %>% slice(1:5) %>% knitr::kable()
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+ent2 <- ent1 %>%
+  select(doc_id, entity) %>%
+  group_by(doc_id) %>%
+  distinct() %>%
+  mutate(n = n()) %>%
+  filter( !(entity == 'Trump' & n !=1) ) %>%
+  sample_n(1) %>%
+  ungroup() %>%
+  mutate(doc_id = as.integer(gsub('text', '', doc_id)),
+         entity = paste0('#', gsub("_|,|^the|'s", '', entity)))
+
+eg3 <- eg3 %>%
+  mutate(doc_id = row_number()) %>%
+  left_join(ent2, by = c('doc_id')) %>%
+  mutate(txt3 = ifelse((nchar(Events) + nchar(entity)) > 280, 
+                           Events, paste0(Events, ' ', entity)),
+         nchar1 = nchar(txt3))
+```
+
+
+```{r echo=FALSE}
+eg3 %>%
+  select(nchar1, txt3) %>%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = 't',
+                               pageLength = nrow(eg3),
+                               scrollX = TRUE))
+```
+
+
+
+## Posting thread using `rtweet` 
+
+We can piece together these different workflows as a [simple script]() to be run daily via [cron](https://github.com/bnosac/cronR).  The daily script (not detailed here) filters the Event timeline to the day's date four years ago, and then applies our **tweet re-sizing functions** to address any potential character-count issues.  The code below illustrates how threads are composed based on Event features (ie, sentence and character counts).
+
+
+```{r eval=FALSE}
+rowwise() %>%
+mutate (THREAD = case_when (nchar1 < 251 ~ Events, 
+                            nchar1 > 250 & nsent > 1 ~ extract_sent1(Events),
+                            nchar1 > 250 & nsent == 1 ~to_thread(Events)
+```
+
+
+Lastly, we build threads by looping through our list of tweet-readied events, replying to each previously posted tweet via the `in_reply_to_status_id` parameter of the `rtweet::post_tweet()` function.     
+
+```{r eval=FALSE}
+rtweet::post_tweet(tred2$txt3[1], token = tk)
+
+if(nrow(tred1) > 1) {
+  for(i in 2:length(tred2$txt3)) {
+    Sys.sleep(1)
+    last_tweet <- rtweet::get_timeline(user = 'MemoryHistoric')$status_id[1]
+    
+    rtweet::post_tweet(tred2$txt3[i],
+                       in_reply_to_status_id = last_tweet,
+                       token = tk) } 
+} else {NULL}
+
+```
+
+
+## Summary
+
+See and follow [MemoryHistoric](https://twitter.com/MemoryHistoric) on Twitter!

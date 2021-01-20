@@ -1,0 +1,259 @@
+---
+title: twitter for historic memory
+author: ''
+date: '2021-01-18'
+slug: historic-memory
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 2
+categories: []
+tags: []
+description: 'Lest we forget.'
+banner: banners/mnem.jpg
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+<div id="TOC">
+<ul>
+<li><a href="#thoughts">Thoughts</a></li>
+<li><a href="#timeline-content">Timeline content</a></li>
+<li><a href="#automated-tweet-sizing-of-a-thought">Automated tweet-sizing of a thought</a></li>
+<li><a href="#hashtags-sans-supervision">Hashtags sans supervision</a></li>
+<li><a href="#posting-thread-using-rtweet">Posting thread using <code>rtweet</code></a></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<div id="thoughts" class="section level2">
+<h2>Thoughts</h2>
+<p>A previous post <a href="https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/">here</a> detailed a simple function (from the <code>uspols</code> package) for <a href="https://github.com/jaytimm/A-timeline-of-the-Trump-presidency">extracting the timeline of the Trump presidency</a> from Wikipedia. In this post, then, we turn this timeline into a Twitter bot – one that <a href="https://twitter.com/MemoryHistoric">remembers daily</a> what happened four years ago in the Trump presidency.</p>
+<p>A fairly trivial task; what is a bit tricky, however, is (1) dealing with Twitter’s 280 character limit, and (2) automating the posting of <strong>Twitter threads</strong>, as Wikipedia’s daily accounting of the last four years can be fairly detailed. Via the <code>rtweet</code> package. For good measure, we demonstrate an unsupervised approach to adding hashtags to our tweet-threads in the form of named entities via <code>spacy</code> / <code>spacyr</code>.</p>
+</div>
+<div id="timeline-content" class="section level2">
+<h2>Timeline content</h2>
+<p>The Trump timeline can be extracted using the <code>uspols::uspols_wiki_timeline()</code> function. A static table will shortly suffice.</p>
+<pre class="r"><code># devtools::install_github(&quot;jaytimm/uspols&quot;)
+library(tidyverse)
+locals1 &lt;- uspols::uspols_wiki_timeline()
+## feature-izing Events --
+locals1$nsent &lt;- tokenizers::count_sentences(locals1$Events)
+locals1$nchar1 &lt;- nchar(locals1$Events)
+## -- 
+locals1 &lt;- subset(locals1, nchar1 &gt; 0)</code></pre>
+<p>Details of table content returned from <code>uspols_wiki_timeline()</code>: we consider the 699th day of the Trump presidency. A Thursday.</p>
+<pre class="r"><code>eg &lt;- locals1 %&gt;%filter(daypres == 699)
+eg %&gt;% select(quarter:dow) %&gt;% slice(1) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">quarter</th>
+<th align="left">weekof</th>
+<th align="right">daypres</th>
+<th align="left">date</th>
+<th align="left">dow</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2018_Q4</td>
+<td align="left">2018-12-16</td>
+<td align="right">699</td>
+<td align="left">2018-12-20</td>
+<td align="left">Thursday</td>
+</tr>
+</tbody>
+</table>
+<p>As detailed below, Wikipedia summarizes the day’s happenings as individual “Events.” Some days were more eventful than others during the past four years. I have added a <code>bullet</code> column for simple enumeration; day 699, then, included four events. Per above, we have added some Event-level features relevant to a tweet-bot: sentence count and character count.</p>
+<pre class="r"><code>eg %&gt;% select(bullet, nsent, nchar1, Events) %&gt;%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = &#39;t&#39;,
+                               pageLength = nrow(eg),
+                               scrollX = TRUE))</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[1,2,3,4],[1,2,2,2],[138,158,288,280],["Secretary of Defense Jim Mattis announces his resignation, effective February 28, 2019, with a rebuke of President Trump's foreign policy.","President Trump announces that he intends to significantly reduce troop numbers in Afghanistan. As with the previous announcement, consultation is negligible.","President Trump reverses again on a federal government shutdown over his border wall, vowing he will not sign any budget extension bill that does not fund the wall. The Senate and House are in stalemate with the former voting for no funding and the latter voting for funding for the wall.","North Korea announces that it will not eliminate its nuclear weapons unless the U.S. first removes nuclear weapons and forces from the region. North Korea further accuses President Trump of twisting the agreement made between himself and Kim Jong-un in Singapore on June 22, 2018."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bullet<\/th>\n      <th>nsent<\/th>\n      <th>nchar1<\/th>\n      <th>Events<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":4,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,1,2]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p>In this example, then, Events #3 and #4 will present problems from a character-limit perspective.</p>
+</div>
+<div id="automated-tweet-sizing-of-a-thought" class="section level2">
+<h2>Automated tweet-sizing of a thought</h2>
+<div id="sentence-based" class="section level3">
+<h3>Sentence-based</h3>
+<p>One approach to “tweet-sizing” Wikipedia-based events is simply to extract sentences up until we exceed some character threshold. An easy solution. Below we eliminate stops as markers of abbreviation (eg, honorifics <code>Ms.</code> or <code>Dr.</code>) – which makes sentence tokenizers infinitely more useful.</p>
+<pre class="r"><code>locals1$Events &lt;- gsub(&#39;([A-Z])(\\.)&#39;, &#39;\\1&#39;, locals1$Events) </code></pre>
+<p>The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the <code>chars</code> parameter. As we want to add some affixal matter to our tweet threads, we set this at 250.</p>
+<pre class="r"><code>extract_sent1 &lt;- function(x, chars = 250) { 
+  z1 &lt;- data.frame(ts = tokenizers::tokenize_sentences(x)[[1]])
+  z1$nchar_sent &lt;- nchar(z1$ts) + 1
+  z1$cum_char &lt;- cumsum(z1$nchar_sent)
+  z2 &lt;- subset(z1, cum_char &lt; chars)
+  paste0(z2$ts, collapse = &#39; &#39;)
+  }</code></pre>
+<p>The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure. Per this method, we lose some (perhaps useful) detail from our thread.</p>
+<pre class="r"><code>Events &lt;- unlist(lapply(eg$Events, extract_sent1, chars = 250))
+
+data.frame(nsent = tokenizers::count_sentences(Events),
+           nchar1 = nchar(Events),
+           Events = Events) %&gt;%
+  DT::datatable(rownames = FALSE, 
+                options = list(dom = &#39;t&#39;,
+                               pageLength = nrow(eg),
+                               scrollX = TRUE))</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[[1,2,1,1],[138,158,164,142],["Secretary of Defense Jim Mattis announces his resignation, effective February 28, 2019, with a rebuke of President Trump's foreign policy.","President Trump announces that he intends to significantly reduce troop numbers in Afghanistan. As with the previous announcement, consultation is negligible.","President Trump reverses again on a federal government shutdown over his border wall, vowing he will not sign any budget extension bill that does not fund the wall.","North Korea announces that it will not eliminate its nuclear weapons unless the U.S. first removes nuclear weapons and forces from the region."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>nsent<\/th>\n      <th>nchar1<\/th>\n      <th>Events<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":4,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[0,1]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="via-ellipses" class="section level3">
+<h3>Via ellipses</h3>
+<p>If, instead, we wanted to preserve full event content, one approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses. The function below is taken directly from this <a href="https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset">SO post</a>.</p>
+<pre class="r"><code>cumsum_reset &lt;- function(x, thresh = 4) {
+    ans &lt;- numeric()
+    i &lt;- 0
+
+    while(length(x) &gt; 0) {
+        cs_over &lt;- cumsum(x)
+        ntimes &lt;- sum( cs_over &lt;= thresh )
+        x      &lt;- x[-(1:ntimes)]
+        ans &lt;- c(ans, rep(i, ntimes))
+        i   &lt;- i + 1
+    } 
+    return(ans) 
+    }</code></pre>
+<p>The second function implements <code>cumsum_reset</code> in the context of counting characters at the word level – once a certain character-count threshold is reached, counting resets.</p>
+<pre class="r"><code>to_thread &lt;- function(x, chars = 250){ # no thread counts at present -- 
+  
+  x1 &lt;- data.frame(text = unlist(strsplit(x, &#39; &#39;)))
+  x1$chars &lt;- nchar(x1$text) + 1
+  x1$cs1 &lt;- cumsum(x1$chars)
+  x1$sub_text &lt;- cumsum_reset(x1$chars, thresh = chars)
+  
+  x2 &lt;- aggregate(x1$text, list(x1$sub_text), paste, collapse = &quot; &quot;)
+
+  x2$ww &lt;- &#39;m&#39;
+  x2$ww[1] &lt;- &#39;f&#39;
+  x2$ww[nrow(x2)] &lt;- &#39;l&#39;
+  
+  x2$x &lt;- ifelse(x2$ww %in% c(&#39;f&#39;, &#39;m&#39;), paste0(x2$x, &#39; ...&#39;), x2$x)
+  x2$x &lt;- ifelse(x2$ww %in% c(&#39;l&#39;, &#39;m&#39;), paste0(&#39;... &#39;, x2$x), x2$x)
+  paste0(x2$x, collapse = &#39; || &#39;) 
+}</code></pre>
+<p>For a demonstration of how these functions work, we use a super long event from the Wikipedia timeline – from 12 August 2018 (day 573) – which is over 1200 characters in length.</p>
+<pre class="r"><code>eg1 &lt;- locals1 %&gt;% filter(nchar1 == max(nchar1))</code></pre>
+<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["Former CIA Director John Brennan responds to Trump's unilateral revocation of his security clearance, contending in a New York Times opinion-editorial, that \"Trump's 'no collusion' claims are hogwash\", and that Trump \"revoked [Brennan's] security clearance to try to silence anyone who would dare challenge him\". In addition, William McRaven, a navy admiral best known for his role as special operations commander overseeing the raid that killed Osama bin Laden, publicly expresses a political position by authoring an opinion-editorial in The Washington Post in defense of Brennan; McRaven dares Trump to also revoke his security clearance, writing:I would consider it an honor if you would revoke my security clearance as well, so I can add my name to the list of men and women who have spoken up against your presidency.In response, President Trump threatens to revoke the security clearances of more former top-level intelligence officials. Observers draw comparisons between Trump's list of officials whose security clearances he threatens to revoke (which includes James Clapper, James Comey, Michael Hayden, Sally Yates, Susan Rice, Andrew McCabe, Peter Strzok, Lisa Page, and Bruce Ohr) and Richard Nixon's Enemies List."]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Events<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":1,"scrollX":true,"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[1,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<p><strong>Function output is summarized below</strong>. Also, we add a thread counter, and check in on character counts.</p>
+<pre class="r"><code>eg2 &lt;- eg1 %&gt;%
+  select(Events) %&gt;%
+  mutate(Events = to_thread(Events)) %&gt;% ##### --- !!
+  
+  separate_rows(Events, sep = &#39; \\|\\| &#39;) 
+
+eg3 &lt;- eg2 %&gt;%
+  mutate(Events = paste0(Events, &#39; [&#39;, 
+                         row_number(), &#39; / &#39;, 
+                         nrow(eg2), &#39;]&#39;),
+         nchar1 = nchar(Events)) %&gt;%
+  select(nchar1, Events)</code></pre>
+<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[[258,262,264,265,247],["Former CIA Director John Brennan responds to Trump's unilateral revocation of his security clearance, contending in a New York Times opinion-editorial, that \"Trump's 'no collusion' claims are hogwash\", and that Trump \"revoked [Brennan's] security ... [1 / 5]","... clearance to try to silence anyone who would dare challenge him\". In addition, William McRaven, a navy admiral best known for his role as special operations commander overseeing the raid that killed Osama bin Laden, publicly expresses a political ... [2 / 5]","... position by authoring an opinion-editorial in The Washington Post in defense of Brennan; McRaven dares Trump to also revoke his security clearance, writing:I would consider it an honor if you would revoke my security clearance as well, so I can add ... [3 / 5]","... my name to the list of men and women who have spoken up against your presidency.In response, President Trump threatens to revoke the security clearances of more former top-level intelligence officials. Observers draw comparisons between Trump's list ... [4 / 5]","... of officials whose security clearances he threatens to revoke (which includes James Clapper, James Comey, Michael Hayden, Sally Yates, Susan Rice, Andrew McCabe, Peter Strzok, Lisa Page, and Bruce Ohr) and Richard Nixon's Enemies List. [5 / 5]"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>nchar1<\/th>\n      <th>Events<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":5,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="hashtags-sans-supervision" class="section level2">
+<h2>Hashtags sans supervision</h2>
+<p>A simple unsupervised approach to adding hashtags to tweets based on event content. Here, (1) extract named entities from tweet via the <code>spacyr</code> package, and (character-count depending) (2) add a randomly selected entity as hashtag to tweet.</p>
+<pre class="r"><code>ent1 &lt;- spacyr::entity_extract(spacyr::spacy_parse(eg2$Events))
+
+ent1 %&gt;% slice(1:5) %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">doc_id</th>
+<th align="right">sentence_id</th>
+<th align="left">entity</th>
+<th align="left">entity_type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">text1</td>
+<td align="right">1</td>
+<td align="left">CIA</td>
+<td align="left">ORG</td>
+</tr>
+<tr class="even">
+<td align="left">text1</td>
+<td align="right">1</td>
+<td align="left">John_Brennan</td>
+<td align="left">PERSON</td>
+</tr>
+<tr class="odd">
+<td align="left">text1</td>
+<td align="right">1</td>
+<td align="left">Trump</td>
+<td align="left">ORG</td>
+</tr>
+<tr class="even">
+<td align="left">text1</td>
+<td align="right">1</td>
+<td align="left">New_York_Times</td>
+<td align="left">ORG</td>
+</tr>
+<tr class="odd">
+<td align="left">text1</td>
+<td align="right">1</td>
+<td align="left">Trump</td>
+<td align="left">ORG</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ent2 &lt;- ent1 %&gt;%
+  select(doc_id, entity) %&gt;%
+  group_by(doc_id) %&gt;%
+  distinct() %&gt;%
+  mutate(n = n()) %&gt;%
+  filter( !(entity == &#39;Trump&#39; &amp; n !=1) ) %&gt;%
+  sample_n(1) %&gt;%
+  ungroup() %&gt;%
+  mutate(doc_id = as.integer(gsub(&#39;text&#39;, &#39;&#39;, doc_id)),
+         entity = paste0(&#39;#&#39;, gsub(&quot;_|,|^the|&#39;s&quot;, &#39;&#39;, entity)))
+
+eg3 &lt;- eg3 %&gt;%
+  mutate(doc_id = row_number()) %&gt;%
+  left_join(ent2, by = c(&#39;doc_id&#39;)) %&gt;%
+  mutate(txt3 = ifelse((nchar(Events) + nchar(entity)) &gt; 280, 
+                           Events, paste0(Events, &#39; &#39;, entity)),
+         nchar1 = nchar(txt3))</code></pre>
+<div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[[263,277,264,272,257],["Former CIA Director John Brennan responds to Trump's unilateral revocation of his security clearance, contending in a New York Times opinion-editorial, that \"Trump's 'no collusion' claims are hogwash\", and that Trump \"revoked [Brennan's] security ... [1 / 5] #CIA","... clearance to try to silence anyone who would dare challenge him\". In addition, William McRaven, a navy admiral best known for his role as special operations commander overseeing the raid that killed Osama bin Laden, publicly expresses a political ... [2 / 5] #OsamabinLaden","... position by authoring an opinion-editorial in The Washington Post in defense of Brennan; McRaven dares Trump to also revoke his security clearance, writing:I would consider it an honor if you would revoke my security clearance as well, so I can add ... [3 / 5]","... my name to the list of men and women who have spoken up against your presidency.In response, President Trump threatens to revoke the security clearances of more former top-level intelligence officials. Observers draw comparisons between Trump's list ... [4 / 5] #Trump","... of officials whose security clearances he threatens to revoke (which includes James Clapper, James Comey, Michael Hayden, Sally Yates, Susan Rice, Andrew McCabe, Peter Strzok, Lisa Page, and Bruce Ohr) and Richard Nixon's Enemies List. [5 / 5] #BruceOhr"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>nchar1<\/th>\n      <th>txt3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":5,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="posting-thread-using-rtweet" class="section level2">
+<h2>Posting thread using <code>rtweet</code></h2>
+<p>We can piece together these different workflows as a <a href="">simple script</a> to be run daily via <a href="https://github.com/bnosac/cronR">cron</a>. The daily script (not detailed here) filters the Event timeline to the day’s date four years ago, and then applies our <strong>tweet re-sizing functions</strong> to address any potential character-count issues. The code below illustrates how threads are composed based on Event features (ie, sentence and character counts).</p>
+<pre class="r"><code>rowwise() %&gt;%
+mutate (THREAD = case_when (nchar1 &lt; 251 ~ Events, 
+                            nchar1 &gt; 250 &amp; nsent &gt; 1 ~ extract_sent1(Events),
+                            nchar1 &gt; 250 &amp; nsent == 1 ~to_thread(Events)</code></pre>
+<p>Lastly, we build threads by looping through our list of tweet-readied events, replying to each previously posted tweet via the <code>in_reply_to_status_id</code> parameter of the <code>rtweet::post_tweet()</code> function.</p>
+<pre class="r"><code>rtweet::post_tweet(tred2$txt3[1], token = tk)
+
+if(nrow(tred1) &gt; 1) {
+  for(i in 2:length(tred2$txt3)) {
+    Sys.sleep(1)
+    last_tweet &lt;- rtweet::get_timeline(user = &#39;MemoryHistoric&#39;)$status_id[1]
+    
+    rtweet::post_tweet(tred2$txt3[i],
+                       in_reply_to_status_id = last_tweet,
+                       token = tk) } 
+} else {NULL}</code></pre>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>See and follow <a href="https://twitter.com/MemoryHistoric">MemoryHistoric</a> on Twitter!</p>
+</div>
