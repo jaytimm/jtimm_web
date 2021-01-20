@@ -1,7 +1,7 @@
 ---
 title: twitter for historic memory
 author: ''
-date: '2021-01-18'
+date: '2021-01-20'
 slug: historic-memory
 output:
   blogdown::html_page:
