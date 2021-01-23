@@ -36,12 +36,12 @@ banner: banners/mnem.jpg
 
 <div id="thoughts" class="section level2">
 <h2>Thoughts</h2>
-<p>A previous post <a href="https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/">here</a> detailed a simple function (from the <code>uspols</code> package) for <a href="https://github.com/jaytimm/A-timeline-of-the-Trump-presidency">extracting the timeline of the Trump presidency</a> from Wikipedia. In this post, then, we turn this timeline into a Twitter bot – one that <a href="https://twitter.com/MemoryHistoric">remembers daily</a> what happened four years ago in the Trump presidency.</p>
-<p>A fairly trivial task; what is a bit tricky, however, is (1) dealing with Twitter’s 280 character limit, and (2) automating the posting of <strong>Twitter threads</strong>, as Wikipedia’s daily accounting of the last four years can be fairly detailed. Via the <code>rtweet</code> package. For good measure, we demonstrate an unsupervised approach to adding hashtags to our tweet-threads in the form of named entities via <code>spacy</code> / <code>spacyr</code>.</p>
+<p>A previous post <a href="https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/">here</a> detailed a simple function (from the <code>uspols</code> package) for <a href="https://github.com/jaytimm/A-timeline-of-the-Trump-presidency">extracting the timeline of the Trump presidency</a> from Wikipedia. In this post, then, we turn this timeline into a Twitter bot – one that <a href="https://twitter.com/MemoryHistoric">remembers daily</a> the happenings of four years ago.</p>
+<p>Some tasks, then: (1) dealing with Twitter’s 280 character limit, (2) automating the posting of <strong>Twitter threads</strong>, and (3) using named entity recognition via <code>spacy</code> / <code>spacyr</code> to automate hashtag extraction.</p>
 </div>
 <div id="timeline-content" class="section level2">
 <h2>Timeline content</h2>
-<p>The Trump timeline can be extracted using the <code>uspols::uspols_wiki_timeline()</code> function. A static table will shortly suffice.</p>
+<p>The Trump timeline can be extracted using the <code>uspols::uspols_wiki_timeline()</code> function.</p>
 <pre class="r"><code># devtools::install_github(&quot;jaytimm/uspols&quot;)
 library(tidyverse)
 locals1 &lt;- uspols::uspols_wiki_timeline()
@@ -89,7 +89,7 @@ eg %&gt;% select(quarter:dow) %&gt;% slice(1) %&gt;% knitr::kable()</code></pre>
 <h3>Sentence-based</h3>
 <p>One approach to “tweet-sizing” Wikipedia-based events is simply to extract sentences up until we exceed some character threshold. An easy solution. Below we eliminate stops as markers of abbreviation (eg, honorifics <code>Ms.</code> or <code>Dr.</code>) – which makes sentence tokenizers infinitely more useful.</p>
 <pre class="r"><code>locals1$Events &lt;- gsub(&#39;([A-Z])(\\.)&#39;, &#39;\\1&#39;, locals1$Events) </code></pre>
-<p>The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the <code>chars</code> parameter. As we want to add some affixal matter to our tweet threads, we set this at 250.</p>
+<p>The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the <code>chars</code> parameter.</p>
 <pre class="r"><code>extract_sent1 &lt;- function(x, chars = 250) { 
   z1 &lt;- data.frame(ts = tokenizers::tokenize_sentences(x)[[1]])
   z1$nchar_sent &lt;- nchar(z1$ts) + 1
@@ -97,7 +97,7 @@ eg %&gt;% select(quarter:dow) %&gt;% slice(1) %&gt;% knitr::kable()</code></pre>
   z2 &lt;- subset(z1, cum_char &lt; chars)
   paste0(z2$ts, collapse = &#39; &#39;)
   }</code></pre>
-<p>The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure. Per this method, we lose some (perhaps useful) detail from our thread.</p>
+<p>The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure.</p>
 <pre class="r"><code>Events &lt;- unlist(lapply(eg$Events, extract_sent1, chars = 250))
 
 data.frame(nsent = tokenizers::count_sentences(Events),
@@ -112,7 +112,7 @@ data.frame(nsent = tokenizers::count_sentences(Events),
 </div>
 <div id="via-ellipses" class="section level3">
 <h3>Via ellipses</h3>
-<p>If, instead, we wanted to preserve full event content, one approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses. The function below is taken directly from this <a href="https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset">SO post</a>.</p>
+<p>If, instead, we wanted to preserve full event content, another approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses. The function below is taken directly from this <a href="https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset">SO post</a>.</p>
 <pre class="r"><code>cumsum_reset &lt;- function(x, thresh = 4) {
     ans &lt;- numeric()
     i &lt;- 0
@@ -231,7 +231,7 @@ eg3 &lt;- eg3 %&gt;%
                            Events, paste0(Events, &#39; &#39;, entity)),
          nchar1 = nchar(txt3))</code></pre>
 <div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[[271,277,273,272,261],["Former CIA Director John Brennan responds to Trump's unilateral revocation of his security clearance, contending in a New York Times opinion-editorial, that \"Trump's 'no collusion' claims are hogwash\", and that Trump \"revoked [Brennan's] security ... [1 / 5] #JohnBrennan","... clearance to try to silence anyone who would dare challenge him\". In addition, William McRaven, a navy admiral best known for his role as special operations commander overseeing the raid that killed Osama bin Laden, publicly expresses a political ... [2 / 5] #OsamabinLaden","... position by authoring an opinion-editorial in The Washington Post in defense of Brennan; McRaven dares Trump to also revoke his security clearance, writing:I would consider it an honor if you would revoke my security clearance as well, so I can add ... [3 / 5] #McRaven","... my name to the list of men and women who have spoken up against your presidency.In response, President Trump threatens to revoke the security clearances of more former top-level intelligence officials. Observers draw comparisons between Trump's list ... [4 / 5] #Trump","... of officials whose security clearances he threatens to revoke (which includes James Clapper, James Comey, Michael Hayden, Sally Yates, Susan Rice, Andrew McCabe, Peter Strzok, Lisa Page, and Bruce Ohr) and Richard Nixon's Enemies List. [5 / 5] #JamesClapper"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>nchar1<\/th>\n      <th>txt3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":5,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[[272,278,273,272,257],["Former CIA Director John Brennan responds to Trump's unilateral revocation of his security clearance, contending in a New York Times opinion-editorial, that \"Trump's 'no collusion' claims are hogwash\", and that Trump \"revoked [Brennan's] security ... [1 / 5] #NewYorkTimes","... clearance to try to silence anyone who would dare challenge him\". In addition, William McRaven, a navy admiral best known for his role as special operations commander overseeing the raid that killed Osama bin Laden, publicly expresses a political ... [2 / 5] #WilliamMcRaven","... position by authoring an opinion-editorial in The Washington Post in defense of Brennan; McRaven dares Trump to also revoke his security clearance, writing:I would consider it an honor if you would revoke my security clearance as well, so I can add ... [3 / 5] #McRaven","... my name to the list of men and women who have spoken up against your presidency.In response, President Trump threatens to revoke the security clearances of more former top-level intelligence officials. Observers draw comparisons between Trump's list ... [4 / 5] #Trump","... of officials whose security clearances he threatens to revoke (which includes James Clapper, James Comey, Michael Hayden, Sally Yates, Susan Rice, Andrew McCabe, Peter Strzok, Lisa Page, and Bruce Ohr) and Richard Nixon's Enemies List. [5 / 5] #LisaPage"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>nchar1<\/th>\n      <th>txt3<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":5,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="posting-thread-using-rtweet" class="section level2">
 <h2>Posting thread using <code>rtweet</code></h2>

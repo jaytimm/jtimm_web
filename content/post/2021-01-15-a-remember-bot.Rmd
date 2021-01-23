@@ -17,16 +17,17 @@ banner: banners/mnem.jpg
 
 ## Thoughts
 
-A previous post [here](https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/) detailed a simple function (from the `uspols` package) for [extracting the timeline of the Trump presidency](https://github.com/jaytimm/A-timeline-of-the-Trump-presidency) from Wikipedia. In this post, then, we turn this timeline into a Twitter bot -- one that [remembers daily](https://twitter.com/MemoryHistoric) what happened four years ago in the Trump presidency.  
+A previous post [here](https://www.jtimm.net/2020/11/06/time-lining-trump-presidency/) detailed a simple function (from the `uspols` package) for [extracting the timeline of the Trump presidency](https://github.com/jaytimm/A-timeline-of-the-Trump-presidency) from Wikipedia. In this post, then, we turn this timeline into a Twitter bot -- one that [remembers daily](https://twitter.com/MemoryHistoric) the happenings of four years ago.  
 
 
-A fairly trivial task; what is a bit tricky, however, is (1) dealing with Twitter's 280 character limit, and (2) automating the posting of **Twitter threads**, as Wikipedia's daily accounting of the last four years can be fairly detailed.  Via the `rtweet` package.   For good measure, we demonstrate an unsupervised approach to adding hashtags to our tweet-threads in the form of named entities via `spacy` / `spacyr`. 
+Some tasks, then: (1) dealing with Twitter's 280 character limit, (2) automating the posting of **Twitter threads**, and (3) using named entity recognition via `spacy` / `spacyr` to automate hashtag extraction. 
+
 
 
 
 ## Timeline content
 
-The Trump timeline can be extracted using the `uspols::uspols_wiki_timeline()` function.  A static table will shortly suffice.  
+The Trump timeline can be extracted using the `uspols::uspols_wiki_timeline()` function.  
 
 ```{r message=FALSE, warning=FALSE}
 # devtools::install_github("jaytimm/uspols")
@@ -39,11 +40,6 @@ locals1$nchar1 <- nchar(locals1$Events)
 locals1 <- subset(locals1, nchar1 > 0)
 ```
 
-
-
-```{r}
-
-```
 
 
 Details of table content returned from `uspols_wiki_timeline()`: we consider the 699th day of the Trump presidency.  A Thursday.  
@@ -81,7 +77,7 @@ locals1$Events <- gsub('([A-Z])(\\.)', '\\1', locals1$Events)
 ```
 
 
-The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the `chars` parameter.  As we want to add some affixal matter to our tweet threads, we set this at 250.  
+The function below extracts sentences from a larger text until the cumulative character count exceeds some number, as specified by the `chars` parameter.  
 
 ```{r}
 extract_sent1 <- function(x, chars = 250) { 
@@ -94,7 +90,7 @@ extract_sent1 <- function(x, chars = 250) {
 ```
 
 
-The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure.  Per this method, we lose some (perhaps useful) detail from our thread.
+The table below details the Events of Day 699 in tweet-ready length per our sentence extraction procedure.
 
 ```{r}
 Events <- unlist(lapply(eg$Events, extract_sent1, chars = 250))
@@ -111,7 +107,7 @@ data.frame(nsent = tokenizers::count_sentences(Events),
 
 ### Via ellipses
 
-If, instead, we wanted to preserve full event content, one approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses.  The function below is taken directly from this [SO post](https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset). 
+If, instead, we wanted to preserve full event content, another approach would be to split text into ~280 character chunks (ideally respecting word boundaries), and piece thread together via ellipses.  The function below is taken directly from this [SO post](https://stackoverflow.com/questions/49076769/dplyr-r-cumulative-sum-with-reset). 
 
 ```{r}
 cumsum_reset <- function(x, thresh = 4) {
