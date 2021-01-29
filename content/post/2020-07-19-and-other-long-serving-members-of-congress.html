@@ -54,7 +54,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpCrLhOs/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmpkS6eIm/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -100,7 +100,7 @@ house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
   select(bioname, state_abbrev, party_code, label, since) </code></pre>
 <p>The <strong>Old Guard</strong> is presented in the table below. These members have held office since 1975 ~ 1989.</p>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["YOUNG, Donald Edwin","SENSENBRENNER, Frank James, Jr.","ROGERS, Harold Dallas (Hal)","SMITH, Christopher Henry","HOYER, Steny Hamilton","KAPTUR, Marcia Carolyn (Marcy)","VISCLOSKY, Peter","DeFAZIO, Peter Anthony","LEWIS, John R.","UPTON, Frederick Stephen","ENGEL, Eliot Lance","LOWEY, Nita M.","NEAL, Richard Edmund","PALLONE, Frank, Jr.","PELOSI, Nancy"],["AK","WI","KY","NJ","MD","OH","IN","OR","GA","MI","NY","NY","MA","NJ","CA"],["R","R","R","R","D","D","D","D","D","R","D","D","D","D","D"],[1975,1979,1981,1981,1983,1983,1985,1987,1987,1987,1989,1989,1989,1989,1989]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bioname<\/th>\n      <th>state_abbrev<\/th>\n      <th>party_code<\/th>\n      <th>since<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":15,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,15,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["YOUNG, Donald Edwin","ROGERS, Harold Dallas (Hal)","SENSENBRENNER, Frank James, Jr.","SMITH, Christopher Henry","HOYER, Steny Hamilton","KAPTUR, Marcia Carolyn (Marcy)","DeFAZIO, Peter Anthony","UPTON, Frederick Stephen","VISCLOSKY, Peter","LEWIS, John R.","NEAL, Richard Edmund","PALLONE, Frank, Jr.","PELOSI, Nancy","DeLAURO, Rosa L.","ENGEL, Eliot Lance","LOWEY, Nita M.","WATERS, Maxine"],["AK","KY","WI","NJ","MD","OH","OR","MI","IN","GA","MA","NJ","CA","CT","NY","NY","CA"],["R","R","R","R","D","D","D","R","D","D","D","D","D","D","D","D","D"],[1973,1979,1979,1979,1981,1981,1985,1985,1985,1987,1987,1987,1987,1989,1989,1989,1989]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bioname<\/th>\n      <th>state_abbrev<\/th>\n      <th>party_code<\/th>\n      <th>since<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":17,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,17,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="longest-serving-members-political-ideology" class="section level2">
 <h2>Longest-serving members &amp; political ideology</h2>
@@ -313,13 +313,13 @@ p.value
 (Intercept)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-1.203
+1.209
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.126
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-9.579
+9.632
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -336,10 +336,10 @@ decade80s
 0.117
 </td>
 <td style="text-align:right;">
-1.869
+1.870
 </td>
 <td style="text-align:right;">
-0.062
+0.061
 </td>
 </tr>
 <tr>
@@ -353,7 +353,7 @@ decade90s
 0.113
 </td>
 <td style="text-align:right;">
--1.221
+-1.220
 </td>
 <td style="text-align:right;">
 0.222
@@ -364,16 +364,16 @@ decade90s
 decadeAughts
 </td>
 <td style="text-align:right;">
-0.028
+0.029
 </td>
 <td style="text-align:right;">
 0.116
 </td>
 <td style="text-align:right;">
-0.245
+0.250
 </td>
 <td style="text-align:right;">
-0.807
+0.803
 </td>
 </tr>
 <tr>
@@ -381,13 +381,13 @@ decadeAughts
 decadeTeens
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.377
+-0.380
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.117
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.230
+-3.256
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.001
@@ -398,16 +398,16 @@ decadeTeens
 partyRepublican Party
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.146
+-0.145
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.060
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--2.425
+-2.396
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.015
+0.017
 </td>
 </tr>
 <tr>
@@ -421,7 +421,7 @@ congs_served
 0.007
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--11.256
+-11.305
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.000
@@ -438,7 +438,7 @@ abs(margins)
 0.002
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-12.071
+12.029
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -449,13 +449,13 @@ abs(margins)
 abs(nokken_poole_dim1)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.689
+0.683
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.186
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-3.697
+3.665
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -466,13 +466,13 @@ abs(nokken_poole_dim1)
 abs(residuals)
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.929
+-0.938
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.288
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.222
+-3.256
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.001
