@@ -7,7 +7,7 @@ nodateline = true
 banner = 'banners/about.png'
 +++
 
-My name is Jason Timm. I am parts linguist + data scientist + computational social scientist, with a [PhD in Linguistics](http://digitalrepository.unm.edu/ling_etds/45/)) from the University of New Mexico. Very broadly, my research interests include: 
+My name is Jason Timm. I am parts linguist + data scientist + computational social scientist, with a [PhD in Linguistics](http://digitalrepository.unm.edu/ling_etds/45/) from the University of New Mexico. Presently, and very broadly, my research interests include: 
 
 * linguistic innovation and change in online speech communities;
 * political communication on social media;
