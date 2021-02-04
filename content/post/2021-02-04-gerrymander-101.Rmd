@@ -91,7 +91,7 @@ f1a %>%
 ```
 
 
-So, if we were to ascribe some agency to how individuals in our simulation were assigned to districts, and perhaps call them a "decennial redistricting panel," for example, we would say that they created district boundaries such that Republicans did not have the numbers to win in most of the state's districts, and achieved this by creating two districts (1 & 10) in which Republicans were many.  The first part of this plan is traditionally called "cracking"; the second, "packing." 
+So, if we were to ascribe some agency to how individuals in our simulation were assigned to districts, and perhaps call it a "decennial redistricting panel," for example, we would say that they created district boundaries such that Republicans did not have the numbers to win in most of the state's districts, and achieved this by creating two districts (1 & 10) in which Republicans were many.  The first part of this plan is traditionally called "cracking"; the second, "packing." 
 
 
 
