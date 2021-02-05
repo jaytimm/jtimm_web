@@ -31,7 +31,7 @@ banner: banners/seats-curve.png
 </blockquote>
 <div id="state-legislative-election-results" class="section level2">
 <h2>State legislative election results</h2>
-<p>State House election results are made available here by Princeton University folks – which is apart of a <a href="https://gerrymander.princeton.edu/resources">larger ecosystem of tools/resources</a> for investigating gerrymandering. Results are limited to lower houses for states with bicameral state legislatures.</p>
+<p>State House election results are made available <a href="https://github.com/PrincetonUniversity/historic_state_legislative_election_results">here</a> by Princeton University folks – which is apart of a <a href="https://gerrymander.princeton.edu/resources">larger ecosystem of tools/resources</a> for investigating gerrymandering. Results are limited to lower houses for states with bicameral state legislatures.</p>
 <pre class="r"><code>library(tidyverse)
 election_results &lt;- read.csv(url(git_url)) %&gt;% 
   janitor::clean_names() %&gt;%

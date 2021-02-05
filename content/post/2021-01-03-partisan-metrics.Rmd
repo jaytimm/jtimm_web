@@ -22,7 +22,7 @@ banner: banners/seats-curve.png
 
 ## State legislative election results
 
-State House election results are made available here by Princeton University folks -- which is apart of a [larger ecosystem of tools/resources](https://gerrymander.princeton.edu/resources) for investigating gerrymandering.  Results are limited to lower houses for states with bicameral state legislatures.  
+State House election results are made available [here](https://github.com/PrincetonUniversity/historic_state_legislative_election_results) by Princeton University folks -- which is apart of a [larger ecosystem of tools/resources](https://gerrymander.princeton.edu/resources) for investigating gerrymandering.  Results are limited to lower houses for states with bicameral state legislatures.  
 
 
 ```{r include=FALSE}
