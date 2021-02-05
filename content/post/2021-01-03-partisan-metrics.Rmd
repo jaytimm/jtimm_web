@@ -11,7 +11,7 @@ output:
     toc_depth: 2 
 bibliography: biblio.bib
 link-citations: yes
-description: 'Some spatial data analyses per #Election2020 in New Mexico.'
+description: 'Some additional notes on vote distributions.'
 banner: banners/seats-curve.png
 ---
 
@@ -210,7 +210,7 @@ xmm %>% select(-state, -year, -r_seats)  %>%
 
 
 
-Per plot below, the green bar specifies the mean-median value; the red bar specifies the partisan bias score.  So, if a seats-votes curve populates quadrant I, Democrats are over-represented in the legislature based on their statewide vote share; quadrant III, under-represented.  The star specifies actual election results.
+Per plot below, the green bar specifies the mean-median value; the red bar specifies the partisan bias score.  So, if a seats-votes curve populates quadrant I, Democrats are over-represented in the legislature based on their statewide vote share; quadrant III, under-represented.  The star specifies actual election results.  **Extreme values in either quadrant are symptomatic of gerrymandering**.  
 
 ```{r fig.height=6}
 see <- details1 %>%
