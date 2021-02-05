@@ -22,7 +22,7 @@ banner: banners/seats-curve.png
 
 ## State legislative election results
 
-State House election results are made available here by Princeton University folks -- which is apart of a [larger ecosystem of tools/resources](https://gerrymander.princeton.edu/resources) for investigating gerrymandering.  Results are limited to lower houses for states with bicameral state legislatures.
+State House election results are made available here by Princeton University folks -- which is apart of a [larger ecosystem of tools/resources](https://gerrymander.princeton.edu/resources) for investigating gerrymandering.  Results are limited to lower houses for states with bicameral state legislatures.  
 
 
 ```{r include=FALSE}
@@ -254,7 +254,7 @@ see %>%
 
 
 
-**A historical example** from the state of Colorado -- 
+**A historical example** from the state of Colorado --  
 
 ```{r echo=FALSE, fig.height=6}
 details1 %>%
@@ -283,7 +283,7 @@ details1 %>%
   coord_equal(xlim = c(0.3, 0.7),
               ylim = c(0.3, 0.7)) + 
   #facet_wrap(~state, ncol = 3)+
-  ggtitle('Seate-Votes Curve') +
+  ggtitle('Seate-votes curve: Colorado') +
   ylab('Democratic share of lower house seats') +
   xlab('Democratic vote share')
 ```
