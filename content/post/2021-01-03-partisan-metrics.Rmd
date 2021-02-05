@@ -1,0 +1,335 @@
+---
+title: 'Partisan metrics: some notes'
+author: ''
+date: '2021-02-05'
+slug: partisan-metrics
+categories: []
+tags: []
+output: 
+  blogdown::html_page: 
+    toc: true 
+    toc_depth: 2 
+bibliography: biblio.bib
+link-citations: yes
+description: 'Some spatial data analyses per #Election2020 in New Mexico.'
+banner: banners/seats-curve.png
+---
+
+
+> Some notes on mean-median & partisan bias scores, and building **seats-votes curves** using [lower house state legislative election results](https://github.com/PrincetonUniversity/historic_state_legislative_election_results) in the USA from 1971-2018.  Also a place to organize some different non-geographical approaches to identifying partisan gerrymandering -- eg -- @warrington2019comparison; @warrington2018quantifying; @gelman1994unified; @katz2020theoretical. 
+
+
+
+## State legislative election results
+
+State House election results are made available here by Princeton University folks -- which is apart of a [larger ecosystem of tools/resources](https://gerrymander.princeton.edu/resources) for investigating gerrymandering.  Results are limited to lower houses for states with bicameral state legislatures.
+
+
+```{r include=FALSE}
+git_url <- 'https://rawgit.com/PrincetonUniversity/historic_state_legislative_election_results/master/state_legislative_election_results_post1971.csv'
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+election_results <- read.csv(url(git_url)) %>% 
+  janitor::clean_names() %>%
+  mutate(d_voteshare = round(d_voteshare, 3))
+```
+
+
+A sample of the data set is detailed below.  Results are presented year, state, and state house district; the `d_voteshare` column specifies the vote share received by the Democratic candidate.  
+
+```{r}
+election_results %>%
+  filter(state == 'CA', year == 1980) %>%
+  slice(1:5) %>%
+  select(-incumbent) %>%
+  knitr::kable()
+```
+
+
+A super simple imputation method: Per approach described in @gelman1994unified, winning parties of uncontested elections are re-assigned a vote share of 0.75, and losing parties 0.25.   
+
+```{r}
+election_results1 <- election_results %>%
+  mutate(d_voteshare = ifelse(d_voteshare == 1, 0.75, d_voteshare),
+         d_voteshare = ifelse(d_voteshare == 0, 0.25, d_voteshare))
+```
+
+
+
+
+
+## Summarizing election results
+
+Next, we summarize election results per legislature.  Summary stats include:
+
+* the number of seats in legislature, 
+* the number/proportion of seats won by Democrats,  
+* the average vote share received by Democratic candidates; and 
+* the median Democratic vote share.
+
+
+Important to emphasize here is that the `v_mean` value specifies the average Democratic vote share across  individual state house races in a given year, and not the aggregate statewide house results.    
+
+```{r message=FALSE, warning=FALSE}
+full_summary <- election_results1 %>%
+  group_by(state, year) %>%
+  mutate(dseat = ifelse(dem_votes > gop_votes, 1, 0),
+         rseat = ifelse(dem_votes < gop_votes, 1, 0),
+         d_above = ifelse(d_voteshare > mean(d_voteshare),
+                          1, 0)) %>%
+  
+  summarize(district_n = n(),
+            d_seats = sum(dseat),
+            r_seats = sum(rseat),
+            v_mean = mean(d_voteshare),
+            v_median = median(d_voteshare),
+            d_above = sum(d_above)) %>%
+  mutate(seat_bar = d_seats/district_n) %>%
+  ungroup()
+```
+
+
+
+
+**Election results for Colorado during the 2010s** are presented below.  So, Dems took the majority - and then some - in the Colorado State House during the previous decade.  
+
+```{r}
+full_summary %>%
+  filter(state == 'CO',
+         year > 2008) %>%
+  select(-r_seats) %>% 
+  mutate(across(c(v_mean, v_median, seat_bar), ~round(., 2))) %>%
+  knitr::kable()
+```
+
+
+
+**The plots below** illustrate the shifting partisan balance for a selection of state houses since 1972.  
+
+```{r}
+south <- c('CO', 'FL', 'AL', 'TX', 
+           'AR', 'TN', 'OK', 'KY')
+
+full_summary %>%
+  filter(state %in% south) %>%
+  ggplot() +
+  geom_line(aes(x = year, 
+                y = d_seats/district_n * 100), 
+            color = '#437193', size = 1) +
+  geom_line(aes(x = year, 
+                y = r_seats/district_n * 100), 
+            color = '#ae4952', size = 1) +
+  facet_wrap(~state, ncol = 4) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_x_continuous(breaks=seq(1972, 2018, 8)) +
+  ggtitle('State house partisan trends')
+```
+
+
+
+
+
+## Historical vote distributions
+
+```{r message=FALSE, warning=FALSE}
+details1 <- election_results1 %>%
+  #filter(party %in% c('D', 'R')) %>% 
+  
+  left_join(full_summary) %>%
+  group_by(state, year) %>%
+  
+  mutate(swing = 0.5 + v_mean - d_voteshare,
+         rank = rank(d_voteshare, ties.method = 'first'),
+         seat_share = rank/n(),
+         seat_share = 1 - seat_share) %>%
+  
+  ## still not correct exactly --
+  mutate(swing = ifelse(seat_share == seat_bar, v_mean, swing)) %>%
+  arrange(seat_share) %>%
+  ungroup()
+```
+
+
+Vote distributions for election results in Wisconsin since 1972 are illustrated below. Districts have been sorted in increasing order of **Democratic vote share**.
+
+```{r fig.height=8, message=FALSE, warning=FALSE}
+details1 %>% 
+  filter(state == 'WI') %>%
+  
+  ggplot() +
+  geom_point(aes(x = factor(rank), 
+                 y = d_voteshare),
+             color = 'steelblue',
+             size = .5) + 
+  
+  geom_hline(yintercept = 0.5, lty = 3) +
+  facet_wrap(~year, ncol = 6) +
+  theme_minimal() +
+  theme(axis.text.x=element_blank()) +
+  xlab('Districts ordered from least to most Democratic') +
+  ylab('Percentage of votes for a Democrat') +
+  labs(title = 'Wisconsin State House election results',
+       subtitle = 'Democratic vote share by district, ranked')
+```
+
+
+
+
+
+
+## Seats-votes curves
+
+There are a host of metrics that aim to capture partisan asymmetries in vote distributions [see @warrington2019comparison for a comparison].  Here, we focus on mean-median scores and partisan bias scores, mainly because they are closely tied to the seats-votes curve.  
+
+The **mean-median score** is the difference between a party’s median *vote share* and its mean *vote share* -- divergence between these two values suggests a vote distribution that is skewed in favor of a particular party.  In contrast, the **partisan bias score** is the difference between (1) a party's actual *seat share* and (2) that party's hypothetical *seat share* if it garnered 50% of the statewide *vote share*.  Both metrics are calculated below:  
+
+```{r}
+full_summary1 <- full_summary %>%
+  mutate(mm = 0.5 + v_mean - v_median,
+         pb = (d_above - 1) /district_n) ## 
+```
+
+
+As an example, we consider results from the **Wisconsin State House in 2018**.  Again, results are presented from the perspective of Democrats. 
+
+```{r}
+xmm <- full_summary1 %>% filter(state == 'WI', year == 2018) 
+```
+
+
+```{r echo=FALSE}
+xmm %>% select(-state, -year, -r_seats)  %>% 
+  mutate(across(c(v_mean, v_median, seat_bar, mm, pb), ~round(., 2))) %>%
+  knitr::kable()
+```
+
+
+
+Per plot below, the green bar specifies the mean-median value; the red bar specifies the partisan bias score.  So, if a seats-votes curve populates quadrant I, Democrats are over-represented in the legislature based on their statewide vote share; quadrant III, under-represented.  The star specifies actual election results.
+
+```{r fig.height=6}
+see <- details1 %>%
+  filter(state == 'WI', year == 2018)  
+
+see %>%
+  ggplot() +
+  geom_hline(yintercept = .50) +
+  geom_vline(xintercept = .50) +
+  geom_step(aes(x = swing, 
+                y = seat_share,
+                color = factor(year)),
+            size = 1) + 
+  geom_point(aes(x = v_mean, 
+                 y = seat_bar),
+             pch="\u2605",
+             size = 4) +
+  
+  annotate('segment', 
+           x = 0.5, 
+           y = xmm$pb, 
+           xend = 0.5, 
+           yend = 0.5,
+           color = '#913a40', size = 3, alpha = .5) +
+  annotate('segment', 
+           x = xmm$mm, 
+           y = 0.5, 
+           xend = 0.5, 
+           yend = 0.5,
+           color = '#3c811a', size = 3, alpha = .5) +
+  
+  theme_minimal() +
+  theme(legend.position = 'right')+
+  ggthemes::scale_color_stata() +
+  coord_equal(xlim = c(0.3, 0.7),
+              ylim = c(0.3, 0.7)) + 
+  ggtitle('Seate-Votes Curve: Wisconsin 2018') +
+  ylab('Democratic share of lower house seats') +
+  xlab('Democratic vote share')
+```
+
+
+
+**A historical example** from the state of Colorado -- 
+
+```{r echo=FALSE, fig.height=6}
+details1 %>%
+  # filter(state == 'CA', year == 1986) %>%
+  filter(state %in% c('CO'),
+         year %in% c(1972, 1982,
+                     1992, 2002,
+                     2012)) %>%
+  
+  ggplot() +
+  geom_hline(yintercept = .50) +
+  geom_vline(xintercept = .50) +
+  geom_step(aes(x = swing, 
+                y = seat_share, 
+                color = factor(year)),
+            size = .5) + 
+  
+  geom_point(aes(x = v_mean, 
+                 y = seat_bar, 
+                 color = factor(year)),
+             size = 1.5) +
+  
+  theme_minimal() +
+  theme(legend.position = 'right')+
+  ggthemes::scale_color_stata() +
+  coord_equal(xlim = c(0.3, 0.7),
+              ylim = c(0.3, 0.7)) + 
+  #facet_wrap(~state, ncol = 3)+
+  ggtitle('Seate-Votes Curve') +
+  ylab('Democratic share of lower house seats') +
+  xlab('Democratic vote share')
+```
+
+
+
+
+```{r eval=FALSE, include=FALSE}
+## Efficiency gap
+
+
+# Note that what we calculate here is dubbed "vote-centric efficiency gap" by Warrington ('a comparison of ...')
+# 
+# "Partisan gerrymandering is always carried out by cracking a party’s supporters among many districts, in which their preferred candidates lose by relatively narrow margins; and/or by packing a party’s backers in a few districts, in which their preferred candidates win by enormous margins. Both cracking and packing produce votes that are wasted in the sense that they do not contribute to a candidate’s election. In the case of cracking, all votes cast for the losing candidate are wasted. In the case of packing, all votes cast for the winning candidate, above the 50% (plus one) threshold needed for victory, are wasted. The efficiency gap is calculated by taking one party’s total wasted votes in an election, subtracting the other party’s total wasted votes, and dividing by the total number of votes cast. It captures in a single number the extent to which district lines crack and pack one party’s voters more than the other party’s voters."
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+## A correlation matrix
+xsum <- bugs %>%
+  select(state, year, district, d_voteshare) %>%
+  mutate(dseat = ifelse(d_voteshare > 0.5, 1, 0),
+         r_voteshare = 1 - d_voteshare,
+         d_wasted = ifelse(d_voteshare > 0.5, d_voteshare - 0.5, d_voteshare),
+         r_wasted = ifelse(r_voteshare > 0.5, r_voteshare - 0.5, r_voteshare),
+         d_delta = d_wasted - r_wasted) %>%
+  
+  group_by(state, year) %>%
+  summarize(district_n = n(),
+            d_seats = sum(dseat),
+            v_mean = round(mean(d_voteshare), 3),
+            v_median = round(mean(d_voteshare), 3),
+            EG = round(sum(d_delta) / district_n, 3)) %>%
+  ungroup() %>%
+  mutate(seat_bar = round(d_seats/district_n, 2),
+         MM = 0.5 - v_mean - v_median)
+
+
+#######
+xsum %>%
+  select(v_median:MM) %>%
+  GGally::ggpairs(title = 'Very nice summary') +
+  theme_minimal()
+```
+
+
+## Resources
+

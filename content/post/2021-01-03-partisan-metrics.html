@@ -1,0 +1,359 @@
+---
+title: 'Partisan metrics: some notes'
+author: ''
+date: '2021-02-05'
+slug: partisan-metrics
+categories: []
+tags: []
+output: 
+  blogdown::html_page: 
+    toc: true 
+    toc_depth: 2 
+bibliography: biblio.bib
+link-citations: yes
+description: 'Some spatial data analyses per #Election2020 in New Mexico.'
+banner: banners/seats-curve.png
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#state-legislative-election-results">State legislative election results</a></li>
+<li><a href="#summarizing-election-results">Summarizing election results</a></li>
+<li><a href="#historical-vote-distributions">Historical vote distributions</a></li>
+<li><a href="#seats-votes-curves">Seats-votes curves</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+</div>
+
+<blockquote>
+<p>Some notes on mean-median &amp; partisan bias scores, and building <strong>seats-votes curves</strong> using <a href="https://github.com/PrincetonUniversity/historic_state_legislative_election_results">lower house state legislative election results</a> in the USA from 1971-2018. Also a place to organize some different non-geographical approaches to identifying partisan gerrymandering – eg – <span class="citation">Warrington (<a href="#ref-warrington2019comparison" role="doc-biblioref">2019</a>)</span>; <span class="citation">Warrington (<a href="#ref-warrington2018quantifying" role="doc-biblioref">2018</a>)</span>; <span class="citation">Gelman and King (<a href="#ref-gelman1994unified" role="doc-biblioref">1994</a>)</span>; <span class="citation">Katz, King, and Rosenblatt (<a href="#ref-katz2020theoretical" role="doc-biblioref">2020</a>)</span>.</p>
+</blockquote>
+<div id="state-legislative-election-results" class="section level2">
+<h2>State legislative election results</h2>
+<p>State House election results are made available here by Princeton University folks – which is apart of a <a href="https://gerrymander.princeton.edu/resources">larger ecosystem of tools/resources</a> for investigating gerrymandering. Results are limited to lower houses for states with bicameral state legislatures.</p>
+<pre class="r"><code>library(tidyverse)
+election_results &lt;- read.csv(url(git_url)) %&gt;% 
+  janitor::clean_names() %&gt;%
+  mutate(d_voteshare = round(d_voteshare, 3))</code></pre>
+<p>A sample of the data set is detailed below. Results are presented year, state, and state house district; the <code>d_voteshare</code> column specifies the vote share received by the Democratic candidate.</p>
+<pre class="r"><code>election_results %&gt;%
+  filter(state == &#39;CA&#39;, year == 1980) %&gt;%
+  slice(1:5) %&gt;%
+  select(-incumbent) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">state</th>
+<th align="right">year</th>
+<th align="left">district</th>
+<th align="right">dem_votes</th>
+<th align="right">gop_votes</th>
+<th align="right">d_voteshare</th>
+<th align="left">party</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CA</td>
+<td align="right">1980</td>
+<td align="left">1</td>
+<td align="right">0</td>
+<td align="right">114547</td>
+<td align="right">0.000</td>
+<td align="left">R</td>
+</tr>
+<tr class="even">
+<td align="left">CA</td>
+<td align="right">1980</td>
+<td align="left">2</td>
+<td align="right">81884</td>
+<td align="right">36504</td>
+<td align="right">0.692</td>
+<td align="left">D</td>
+</tr>
+<tr class="odd">
+<td align="left">CA</td>
+<td align="right">1980</td>
+<td align="left">3</td>
+<td align="right">55339</td>
+<td align="right">75547</td>
+<td align="right">0.423</td>
+<td align="left">R</td>
+</tr>
+<tr class="even">
+<td align="left">CA</td>
+<td align="right">1980</td>
+<td align="left">4</td>
+<td align="right">76013</td>
+<td align="right">35894</td>
+<td align="right">0.679</td>
+<td align="left">D</td>
+</tr>
+<tr class="odd">
+<td align="left">CA</td>
+<td align="right">1980</td>
+<td align="left">5</td>
+<td align="right">52121</td>
+<td align="right">75998</td>
+<td align="right">0.407</td>
+<td align="left">R</td>
+</tr>
+</tbody>
+</table>
+<p>A super simple imputation method: Per approach described in <span class="citation">Gelman and King (<a href="#ref-gelman1994unified" role="doc-biblioref">1994</a>)</span>, winning parties of uncontested elections are re-assigned a vote share of 0.75, and losing parties 0.25.</p>
+<pre class="r"><code>election_results1 &lt;- election_results %&gt;%
+  mutate(d_voteshare = ifelse(d_voteshare == 1, 0.75, d_voteshare),
+         d_voteshare = ifelse(d_voteshare == 0, 0.25, d_voteshare))</code></pre>
+</div>
+<div id="summarizing-election-results" class="section level2">
+<h2>Summarizing election results</h2>
+<p>Next, we summarize election results per legislature. Summary stats include:</p>
+<ul>
+<li>the number of seats in legislature,</li>
+<li>the number/proportion of seats won by Democrats,<br />
+</li>
+<li>the average vote share received by Democratic candidates; and</li>
+<li>the median Democratic vote share.</li>
+</ul>
+<p>Important to emphasize here is that the <code>v_mean</code> value specifies the average Democratic vote share across individual state house races in a given year, and not the aggregate statewide house results.</p>
+<pre class="r"><code>full_summary &lt;- election_results1 %&gt;%
+  group_by(state, year) %&gt;%
+  mutate(dseat = ifelse(dem_votes &gt; gop_votes, 1, 0),
+         rseat = ifelse(dem_votes &lt; gop_votes, 1, 0),
+         d_above = ifelse(d_voteshare &gt; mean(d_voteshare),
+                          1, 0)) %&gt;%
+  
+  summarize(district_n = n(),
+            d_seats = sum(dseat),
+            r_seats = sum(rseat),
+            v_mean = mean(d_voteshare),
+            v_median = median(d_voteshare),
+            d_above = sum(d_above)) %&gt;%
+  mutate(seat_bar = d_seats/district_n) %&gt;%
+  ungroup()</code></pre>
+<p><strong>Election results for Colorado during the 2010s</strong> are presented below. So, Dems took the majority - and then some - in the Colorado State House during the previous decade.</p>
+<pre class="r"><code>full_summary %&gt;%
+  filter(state == &#39;CO&#39;,
+         year &gt; 2008) %&gt;%
+  select(-r_seats) %&gt;% 
+  mutate(across(c(v_mean, v_median, seat_bar), ~round(., 2))) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">state</th>
+<th align="right">year</th>
+<th align="right">district_n</th>
+<th align="right">d_seats</th>
+<th align="right">v_mean</th>
+<th align="right">v_median</th>
+<th align="right">d_above</th>
+<th align="right">seat_bar</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">CO</td>
+<td align="right">2010</td>
+<td align="right">65</td>
+<td align="right">32</td>
+<td align="right">0.48</td>
+<td align="right">0.50</td>
+<td align="right">35</td>
+<td align="right">0.49</td>
+</tr>
+<tr class="even">
+<td align="left">CO</td>
+<td align="right">2012</td>
+<td align="right">65</td>
+<td align="right">37</td>
+<td align="right">0.51</td>
+<td align="right">0.54</td>
+<td align="right">37</td>
+<td align="right">0.57</td>
+</tr>
+<tr class="odd">
+<td align="left">CO</td>
+<td align="right">2014</td>
+<td align="right">65</td>
+<td align="right">34</td>
+<td align="right">0.48</td>
+<td align="right">0.51</td>
+<td align="right">37</td>
+<td align="right">0.52</td>
+</tr>
+<tr class="even">
+<td align="left">CO</td>
+<td align="right">2016</td>
+<td align="right">65</td>
+<td align="right">37</td>
+<td align="right">0.50</td>
+<td align="right">0.54</td>
+<td align="right">37</td>
+<td align="right">0.57</td>
+</tr>
+<tr class="odd">
+<td align="left">CO</td>
+<td align="right">2018</td>
+<td align="right">65</td>
+<td align="right">41</td>
+<td align="right">0.55</td>
+<td align="right">0.59</td>
+<td align="right">36</td>
+<td align="right">0.63</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The plots below</strong> illustrate the shifting partisan balance for a selection of state houses since 1972.</p>
+<pre class="r"><code>south &lt;- c(&#39;CO&#39;, &#39;FL&#39;, &#39;AL&#39;, &#39;TX&#39;, 
+           &#39;AR&#39;, &#39;TN&#39;, &#39;OK&#39;, &#39;KY&#39;)
+
+full_summary %&gt;%
+  filter(state %in% south) %&gt;%
+  ggplot() +
+  geom_line(aes(x = year, 
+                y = d_seats/district_n * 100), 
+            color = &#39;#437193&#39;, size = 1) +
+  geom_line(aes(x = year, 
+                y = r_seats/district_n * 100), 
+            color = &#39;#ae4952&#39;, size = 1) +
+  facet_wrap(~state, ncol = 4) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_x_continuous(breaks=seq(1972, 2018, 8)) +
+  ggtitle(&#39;State house partisan trends&#39;)</code></pre>
+<p><img src="/post/2021-01-03-partisan-metrics_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="historical-vote-distributions" class="section level2">
+<h2>Historical vote distributions</h2>
+<pre class="r"><code>details1 &lt;- election_results1 %&gt;%
+  #filter(party %in% c(&#39;D&#39;, &#39;R&#39;)) %&gt;% 
+  
+  left_join(full_summary) %&gt;%
+  group_by(state, year) %&gt;%
+  
+  mutate(swing = 0.5 + v_mean - d_voteshare,
+         rank = rank(d_voteshare, ties.method = &#39;first&#39;),
+         seat_share = rank/n(),
+         seat_share = 1 - seat_share) %&gt;%
+  
+  ## still not correct exactly --
+  mutate(swing = ifelse(seat_share == seat_bar, v_mean, swing)) %&gt;%
+  arrange(seat_share) %&gt;%
+  ungroup()</code></pre>
+<p>Vote distributions for election results in Wisconsin since 1972 are illustrated below. Districts have been sorted in increasing order of <strong>Democratic vote share</strong>.</p>
+<pre class="r"><code>details1 %&gt;% 
+  filter(state == &#39;WI&#39;) %&gt;%
+  
+  ggplot() +
+  geom_point(aes(x = factor(rank), 
+                 y = d_voteshare),
+             color = &#39;steelblue&#39;,
+             size = .5) + 
+  
+  geom_hline(yintercept = 0.5, lty = 3) +
+  facet_wrap(~year, ncol = 6) +
+  theme_minimal() +
+  theme(axis.text.x=element_blank()) +
+  xlab(&#39;Districts ordered from least to most Democratic&#39;) +
+  ylab(&#39;Percentage of votes for a Democrat&#39;) +
+  labs(title = &#39;Wisconsin State House election results&#39;,
+       subtitle = &#39;Democratic vote share by district, ranked&#39;)</code></pre>
+<p><img src="/post/2021-01-03-partisan-metrics_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="seats-votes-curves" class="section level2">
+<h2>Seats-votes curves</h2>
+<p>There are a host of metrics that aim to capture partisan asymmetries in vote distributions <span class="citation">(see Warrington <a href="#ref-warrington2019comparison" role="doc-biblioref">2019</a> for a comparison)</span>. Here, we focus on mean-median scores and partisan bias scores, mainly because they are closely tied to the seats-votes curve.</p>
+<p>The <strong>mean-median score</strong> is the difference between a party’s median <em>vote share</em> and its mean <em>vote share</em> – divergence between these two values suggests a vote distribution that is skewed in favor of a particular party. In contrast, the <strong>partisan bias score</strong> is the difference between (1) a party’s actual <em>seat share</em> and (2) that party’s hypothetical <em>seat share</em> if it garnered 50% of the statewide <em>vote share</em>. Both metrics are calculated below:</p>
+<pre class="r"><code>full_summary1 &lt;- full_summary %&gt;%
+  mutate(mm = 0.5 + v_mean - v_median,
+         pb = (d_above - 1) /district_n) ## </code></pre>
+<p>As an example, we consider results from the <strong>Wisconsin State House in 2018</strong>. Again, results are presented from the perspective of Democrats.</p>
+<pre class="r"><code>xmm &lt;- full_summary1 %&gt;% filter(state == &#39;WI&#39;, year == 2018) </code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">district_n</th>
+<th align="right">d_seats</th>
+<th align="right">v_mean</th>
+<th align="right">v_median</th>
+<th align="right">d_above</th>
+<th align="right">seat_bar</th>
+<th align="right">mm</th>
+<th align="right">pb</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">99</td>
+<td align="right">36</td>
+<td align="right">0.51</td>
+<td align="right">0.44</td>
+<td align="right">35</td>
+<td align="right">0.36</td>
+<td align="right">0.57</td>
+<td align="right">0.34</td>
+</tr>
+</tbody>
+</table>
+<p>Per plot below, the green bar specifies the mean-median value; the red bar specifies the partisan bias score. So, if a seats-votes curve populates quadrant I, Democrats are over-represented in the legislature based on their statewide vote share; quadrant III, under-represented. The star specifies actual election results.</p>
+<pre class="r"><code>see &lt;- details1 %&gt;%
+  filter(state == &#39;WI&#39;, year == 2018)  
+
+see %&gt;%
+  ggplot() +
+  geom_hline(yintercept = .50) +
+  geom_vline(xintercept = .50) +
+  geom_step(aes(x = swing, 
+                y = seat_share,
+                color = factor(year)),
+            size = 1) + 
+  geom_point(aes(x = v_mean, 
+                 y = seat_bar),
+             pch=&quot;\u2605&quot;,
+             size = 4) +
+  
+  annotate(&#39;segment&#39;, 
+           x = 0.5, 
+           y = xmm$pb, 
+           xend = 0.5, 
+           yend = 0.5,
+           color = &#39;#913a40&#39;, size = 3, alpha = .5) +
+  annotate(&#39;segment&#39;, 
+           x = xmm$mm, 
+           y = 0.5, 
+           xend = 0.5, 
+           yend = 0.5,
+           color = &#39;#3c811a&#39;, size = 3, alpha = .5) +
+  
+  theme_minimal() +
+  theme(legend.position = &#39;right&#39;)+
+  ggthemes::scale_color_stata() +
+  coord_equal(xlim = c(0.3, 0.7),
+              ylim = c(0.3, 0.7)) + 
+  ggtitle(&#39;Seate-Votes Curve: Wisconsin 2018&#39;) +
+  ylab(&#39;Democratic share of lower house seats&#39;) +
+  xlab(&#39;Democratic vote share&#39;)</code></pre>
+<p><img src="/post/2021-01-03-partisan-metrics_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p><strong>A historical example</strong> from the state of Colorado –</p>
+<p><img src="/post/2021-01-03-partisan-metrics_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="resources" class="section level2 unnumbered">
+<h2>Resources</h2>
+<div id="refs" class="references">
+<div id="ref-gelman1994unified">
+<p>Gelman, Andrew, and Gary King. 1994. “A Unified Method of Evaluating Electoral Systems and Redistricting Plans.” <em>American Journal of Political Science</em>, 514–54.</p>
+</div>
+<div id="ref-katz2020theoretical">
+<p>Katz, Jonathan N, Gary King, and Elizabeth Rosenblatt. 2020. “Theoretical Foundations and Empirical Evaluations of Partisan Fairness in District-Based Democracies.” <em>American Political Science Review</em> 114 (1): 164–78.</p>
+</div>
+<div id="ref-warrington2018quantifying">
+<p>Warrington, Gregory S. 2018. “Quantifying Gerrymandering Using the Vote Distribution.” <em>Election Law Journal</em> 17 (1): 39–57.</p>
+</div>
+<div id="ref-warrington2019comparison">
+<p>———. 2019. “A Comparison of Partisan-Gerrymandering Measures.” <em>Election Law Journal: Rules, Politics, and Policy</em> 18 (3): 262–81.</p>
+</div>
+</div>
+</div>
