@@ -12,8 +12,6 @@ description: '~'
 banner: banners/gerry.png
 ---
 
-<br>
-
 > A brief note on gerrymandering, and cracking & packing. Specifically, a simple simulation demonstrating how gross partisan asymmetries in the composition of state legislatures can be crafted from statewide populations evenly split between two parties.  
 
 ```{r include=FALSE}
