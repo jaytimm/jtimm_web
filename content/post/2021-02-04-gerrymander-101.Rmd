@@ -8,7 +8,7 @@ tags: []
     
 bibliography: biblio.bib
 link-citations: yes
-description: '~'
+description: 'Gerrymandering & R: Part 1'
 banner: banners/gerry.png
 ---
 
