@@ -31,7 +31,7 @@ Here, then, some methods for investigating voting behaviors and political ideolo
 
 ```{r include=FALSE}
 library(tidyverse)
-open_states_dir <- '/home/jtimm/Desktop/open-states-nmsl-54/'
+open_states_dir <- '/home/jtimm/jt_work/GitHub/packages/nmpols/data-raw/open-states-nmsl-54'
 ```
 
 
@@ -197,7 +197,7 @@ os_bills <- lapply(bill_files, read.csv) %>% data.table::rbindlist() %>%
 
 ### /Roll-calls
 
-Next, we load roll call data.  These data are scattered across multiple tables, and to get a full picture of vote results and bill details, we need to do some table joining.  Below, we load three tables:  (1) the `votes` table, which contains meta data about the vote/bill, and helps cross votes to bill; (2) the `votes_people` table, which contains actual legislator-level roll calls; and (3) `vote_counts`, which summarizes vote results.  
+Next, we load roll call data.    These data are scattered across multiple tables, and to get a full picture of vote results and bill details, we need to do some table joining.  Below, we load three tables:  (1) the `votes` table, which contains meta data about the vote/bill, and helps cross votes to bill; (2) the `votes_people` table, which contains actual legislator-level roll calls; and (3) `vote_counts`, which summarizes vote results.  
 
 
 ```{r message=FALSE, warning=FALSE}

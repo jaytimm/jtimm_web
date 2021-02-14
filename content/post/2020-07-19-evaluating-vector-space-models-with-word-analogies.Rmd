@@ -501,7 +501,7 @@ ggplot(data = pca_2d,
 
 ## Summary & caveats 
 
-Mostly an excuse to gather some thoughts.  I use GloVe models quite a bit for exploratory purposes.  To better trust insights gained from exploration, it is generally nice to have an evaluative tool, however imperfect.  And certainly to justify parameter selection for corpus-specific tasks.  Hopefully a useful 
+Mostly an excuse to gather some thoughts.    I use GloVe models quite a bit for exploratory purposes.  To better trust insights gained from exploration, it is generally nice to have an evaluative tool, however imperfect.  And certainly to justify parameter selection for corpus-specific tasks.  Hopefully a useful 
 resource and guide.  For some innovative and more thoughtful applications of VSMs, see 
 @weston2019named and @tshitoyan2019unsupervised.
 

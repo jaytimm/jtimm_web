@@ -72,11 +72,11 @@ questions_file2 &lt;- paste0(analogy_dir, &#39;bats-questions-words.txt&#39;)
 google_analogy_set &lt;- text2vec::prepare_analogy_questions(
         questions_file_path = questions_file, 
         vocab_terms = vocab2$term) </code></pre>
-<pre><code>## INFO  [10:21:30.893] 11779 full questions found out of 19544 total</code></pre>
+<pre><code>## INFO  [18:19:44.078] 11779 full questions found out of 19544 total</code></pre>
 <pre class="r"><code>bats_analogy_set &lt;- text2vec::prepare_analogy_questions(
         questions_file_path = questions_file2, 
         vocab_terms = vocab2$term) </code></pre>
-<pre><code>## INFO  [10:21:31.307] 39378 full questions found out of 56036 total</code></pre>
+<pre><code>## INFO  [18:19:45.217] 39378 full questions found out of 56036 total</code></pre>
 <pre class="r"><code>tests &lt;- c(google_analogy_set, bats_analogy_set)</code></pre>
 <p><strong>Long &amp; short</strong> of the vector offset method applied to analogy problems. Per some analogy defined as (1) below:</p>
 <pre><code>(1)  a:a* :: b:__</code></pre>
