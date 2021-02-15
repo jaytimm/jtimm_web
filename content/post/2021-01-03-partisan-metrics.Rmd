@@ -3,8 +3,10 @@ title: 'Partisan metrics: some notes'
 author: ''
 date: '2021-02-05'
 slug: partisan-metrics
-categories: []
-tags: []
+tags: 
+  - rstats
+  - open-government
+  - gerrymandering
 output: 
   blogdown::html_page: 
     toc: true 

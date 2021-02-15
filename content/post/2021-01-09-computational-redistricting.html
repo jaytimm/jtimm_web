@@ -1,0 +1,553 @@
+---
+title: 'Some computational redistricting methods: or, how to sniff out a gerrymander in a pinch'
+author: ''
+date: '2021-02-15'
+slug: computational-redistricting
+categories: []
+tags: 
+  - rstats
+  - open-government
+  - New-Mexico
+  - gerrymandering
+output: 
+  blogdown::html_page: 
+    toc: true 
+    toc_depth: 2 
+bibliography: biblio.bib
+link-citations: yes
+description: 'Gerrymandering & R: Part 3'
+banner: banners/crack-pack.png
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#statewide-historical-election-data">Statewide historical election data</a></li>
+<li><a href="#new-mexico-state-senate">New Mexico State Senate</a></li>
+<li><a href="#building-an-ensemble">Building an ensemble</a></li>
+<li><a href="#partition-ensemble-historical-votes">Partition ensemble &amp; historical votes</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<blockquote>
+<p><strong>The last in a series of notes on gerrymandering &amp; R</strong>. Here, an R-based appendix - of sorts - for a collection of computational redistricting methods <span class="citation">(Ben Fifield et al. <a href="#ref-fifield2020cran" role="doc-biblioref">2020</a>; Benjamin Fifield, Higgins, et al. <a href="#ref-fifield2020automated" role="doc-biblioref">2020</a>; Benjamin Fifield, Imai, et al. <a href="#ref-fifield2020essential" role="doc-biblioref">2020</a>; McCartan and Imai <a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>; Herschlag et al. <a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>. More specifically, tools for comparing a proposed redistricting plan to an ensemble of non-partisan, randomly partitioned redistricting plans for the systematic investigation of gerrymandering. Using the <code>redist</code> package. The 2016 New Mexico State Senate as an example. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.</p>
+</blockquote>
+<hr />
+<div id="statewide-historical-election-data" class="section level2">
+<h2>Statewide historical election data</h2>
+<p>The <a href="https://mggg.org/">MGGG States</a> project provides an <a href="https://github.com/mggg-states">open collection of precinct shapefiles</a> for US states. Here, we consider the state of New Mexico; the <a href="https://github.com/mggg-states/NM-shapefiles">shapefile</a> for which includes precinct-level results for six statewide elections.</p>
+<pre class="r"><code>library(tidyverse)
+nm_sf &lt;- sf::st_read(dsn = paste0(gitdir, # local folder 
+                                  fname), # shapefile name from MGGG --
+                     layer = fname, 
+                     quiet = TRUE) %&gt;% 
+  sf::st_transform(crs = sf::st_crs(&#39;NAD83&#39;))
+
+## as simple df for viewing -- 
+nm_df &lt;- nm_sf %&gt;%
+  data.table::data.table() %&gt;%  
+  select(-geometry) </code></pre>
+<p>Column names below. So, lots of information compiled/included in the shapefile; in addition to district details and election returns, precinct-level race and ethnicity counts are also made available.</p>
+<pre class="r"><code>colnames(nm_sf)</code></pre>
+<pre><code>##  [1] &quot;NAME10&quot;    &quot;prec_num&quot;  &quot;County&quot;    &quot;AG18D&quot;     &quot;AG18R&quot;     &quot;AG18L&quot;    
+##  [7] &quot;SOS18D&quot;    &quot;SOS18L&quot;    &quot;SEN18R&quot;    &quot;SEN18D&quot;    &quot;SEN18L&quot;    &quot;PRES16L&quot;  
+## [13] &quot;PRES16R&quot;   &quot;PRES16D&quot;   &quot;SOS16R&quot;    &quot;SOS16D&quot;    &quot;GOV18D&quot;    &quot;GOV18R&quot;   
+## [19] &quot;CDDIST&quot;    &quot;HDIST&quot;     &quot;SDIST&quot;     &quot;TOTPOP&quot;    &quot;NH_WHITE&quot;  &quot;NH_BLACK&quot; 
+## [25] &quot;NH_AMIN&quot;   &quot;NH_ASIAN&quot;  &quot;NH_NHPI&quot;   &quot;NH_OTHER&quot;  &quot;NH_2MORE&quot;  &quot;HISP&quot;     
+## [31] &quot;H_WHITE&quot;   &quot;H_BLACK&quot;   &quot;H_AMIN&quot;    &quot;H_ASIAN&quot;   &quot;H_NHPI&quot;    &quot;H_OTHER&quot;  
+## [37] &quot;H_2MORE&quot;   &quot;VAP&quot;       &quot;HVAP&quot;      &quot;WVAP&quot;      &quot;BVAP&quot;      &quot;AMINVAP&quot;  
+## [43] &quot;ASIANVAP&quot;  &quot;NHPIVAP&quot;   &quot;OTHERVAP&quot;  &quot;X2MOREVAP&quot; &quot;Area&quot;      &quot;Perimeter&quot;
+## [49] &quot;SOS18R&quot;    &quot;geometry&quot;</code></pre>
+<p>In the following analyses, we focus on voting results from <strong>four historical statewide elections</strong>:</p>
+<pre class="r"><code>geos &lt;- c(&#39;NAME10&#39;, &#39;prec_num&#39;, &#39;County&#39;, &#39;SDIST&#39;)
+
+short &lt;- c(&#39;SEN18&#39;, &#39;GOV18&#39;, &#39;PRES16&#39;, &#39;SOS16&#39;)
+
+election &lt;- c(&#39;2018 Senate&#39;,
+              &#39;2018 Governor&#39;,
+              &#39;2016 President&#39;,
+              &#39;2016 Secretary of State&#39;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">short</th>
+<th align="left">election</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">SEN18</td>
+<td align="left">2018 Senate</td>
+</tr>
+<tr class="even">
+<td align="left">GOV18</td>
+<td align="left">2018 Governor</td>
+</tr>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="left">2016 President</td>
+</tr>
+<tr class="even">
+<td align="left">SOS16</td>
+<td align="left">2016 Secretary of State</td>
+</tr>
+</tbody>
+</table>
+<p>Lastly, some data re-structuring. The resulting <code>returns</code> data frame contains precinct-level vote returns disaggregated by party and election, in long format.</p>
+<pre class="r"><code>ecs &lt;- grep(paste0(esum$short, collapse = &#39;|&#39;), colnames(nm_df), value = T)
+
+returns &lt;- data.table::melt(nm_df, geos, ecs) %&gt;%
+  mutate(party = gsub(&#39;^.*[0-9]&#39;, &#39;&#39;, variable),
+         election = gsub(&#39;.$&#39;, &#39;&#39;, variable)) %&gt;%
+  select(-variable)</code></pre>
+</div>
+<div id="new-mexico-state-senate" class="section level2">
+<h2>New Mexico State Senate</h2>
+<p>The existing legislative map for the New Mexico State Senate was drawn during the 2010 cycle and, after a hiccup or two, went into effect in time for the general election in 2012. This partition will be referred to as <code>NM2012</code>.</p>
+<pre class="r"><code>#NAME10, partition, district
+partition2012 &lt;- nm_df %&gt;%
+  mutate(partition = &#39;NM2012&#39;) %&gt;%
+  mutate(district = as.character(as.numeric(SDIST))) %&gt;%
+  select(NAME10, partition, district)</code></pre>
+<p>Election results from 2016 are available via the <code>nmelectiondatr</code> package – an election in which all 42 seats were up for election. Dems won 26/42 seats. Note that Senate elections were most recently held in 2020; however, for our purposes here, 2016 is fine.</p>
+<pre class="r"><code>nm16 &lt;- nmelectiondatr::nmel_results_summary %&gt;%
+  filter(Type == &#39;State Senator&#39;,
+         Year == &#39;2016&#39;) %&gt;%
+  rename(district = Type_Sub,
+         value = Votes,
+         party = Party) %&gt;%
+  mutate(party = substr(party, 1,1),
+         partition = &#39;NM2016&#39;)</code></pre>
+</div>
+<div id="building-an-ensemble" class="section level2">
+<h2>Building an ensemble</h2>
+<p>The <code>redist</code> package includes multiple approaches to randomly sampling graph partitions; here, we implement the Sequential Monte Carlo (SMC) method <span class="citation">(McCartan and Imai <a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>)</span> via the <code>redist.smc</code> function. The SMC method requires two intermediary spatial data structures to build our ensemble of redistricting plans: (1) a distance matrix, which is derived from centroids of the precinct-level shapefile, and (2) an adjacency matrix.</p>
+<pre class="r"><code>centers &lt;- sf::st_centroid(nm_sf) # %&gt;% select(NAME10))
+distmat &lt;- sf::st_distance(centers)
+attr(distmat, &quot;units&quot;) &lt;- NULL
+distmat &lt;- sqrt(distmat)
+
+adj_list &lt;- redist::redist.adjacency(nm_sf)</code></pre>
+<p>Parameters of relevance: (1) <code>popvec</code>: a vector specifying precinct-level voting age population counts; (2) <code>ndists</code>: the number of legislative boundaries to create; (3) <code>nsim</code>: the number of partitions to create; (4) <code>popcons</code>: the weight of population constraint; and (5) <code>compactness</code>: the weight of the compactness constraint.</p>
+<blockquote>
+<p>Building the ensemble, then, amounts to piecing together 42 districts from 1,483 precincts – 10,000 times over – while abiding by the population &amp; compactness constraints.</p>
+</blockquote>
+<pre class="r"><code>set.seed(9999)
+smch &lt;- redist::redist.smc(adjobj = adj_list,
+                          popvec = nm_sf$VAP,
+                          nsims = 10000,
+                          ndists = 42,
+                          popcons = 0.2, 
+                          compactness = 1) 
+
+## Sampling 10000 1483-unit maps with 42 districts and population tolerance 20%.</code></pre>
+<p>The ensemble of 10K partitions is included in model output as a matrix. Partitions are not shapefiles or geometries; instead, each partition is represented as a vector in which each precinct is assigned a district number.</p>
+<pre class="r"><code>ensembles &lt;- smc$cdvec %&gt;% 
+  data.table::data.table() %&gt;%
+  mutate(NAME10 = nm_df$NAME10) %&gt;%
+  data.table::melt(., &#39;NAME10&#39;, c(1:ncol(smc$cdvec))) %&gt;%
+  rename(partition = variable,
+         district = value) %&gt;%
+  mutate(partition = as.character(partition),
+         district = as.character(district)) %&gt;%
+  bind_rows(partition2012) ###
+
+## sample --
+set.seed(99)
+samp4 &lt;- c(&#39;NM2012&#39;, 
+           sample(unique(ensembles$partition), size = 3))</code></pre>
+<p><strong>Sample</strong> of partition matrix re-structured as a data frame:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">NAME10</th>
+<th align="left">partition</th>
+<th align="left">district</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Catron County Precinct 6</td>
+<td align="left">V1</td>
+<td align="left">42</td>
+</tr>
+<tr class="even">
+<td align="left">Catron County Precinct 3</td>
+<td align="left">V1</td>
+<td align="left">42</td>
+</tr>
+<tr class="odd">
+<td align="left">Catron County Precinct 4</td>
+<td align="left">V1</td>
+<td align="left">42</td>
+</tr>
+<tr class="even">
+<td align="left">Catron County Precinct 2</td>
+<td align="left">V1</td>
+<td align="left">38</td>
+</tr>
+<tr class="odd">
+<td align="left">Catron County Precinct 1</td>
+<td align="left">V1</td>
+<td align="left">42</td>
+</tr>
+<tr class="even">
+<td align="left">Catron County Precinct 5</td>
+<td align="left">V1</td>
+<td align="left">38</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>lc &lt;- tmaptools::geocode_OSM (q = &#39;Albuquerque, NM&#39;, as.sf = T)
+lc$bbox &lt;- sf::st_set_crs(lc$bbox, sf::st_crs(nm_sf))
+cropped &lt;- sf::st_crop(nm_sf, lc$bbox)</code></pre>
+<p>The map below illustrates an example partition, <strong>zoomed into the Albuquerque Metro Area</strong> for a better look at things. Color reflects precinct-level district assignment per the SMC algorithm.</p>
+<pre class="r"><code>dists &lt;- 42
+nc &lt;- cropped %&gt;%
+  select(-prec_num:-SOS18R) %&gt;%
+  left_join(ensembles %&gt;% filter(partition %in% samp4), 
+            by = &#39;NAME10&#39;) 
+
+nc %&gt;%
+  filter(partition == samp4[[2]]) %&gt;%
+  ggplot() + 
+  geom_sf(aes(fill = district),
+          color = &#39;white&#39;,
+          alpha = .65,
+          lwd = .1) +
+  scale_fill_manual(
+    values = colorRampPalette(ggthemes::stata_pal()(8))(dists)) +
+  theme_minimal() + map_theme() +
+  labs(title = paste0(&#39;Partition &#39;, samp4[[2]]), 
+       subtitle = &#39;ABQ Metro Area&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>We then <strong>aggregate precincts by district assignment</strong> to build out formal legislative boundaries for partition <code>V5552</code>.</p>
+<pre class="r"><code>nc %&gt;% 
+  filter(partition == samp4[[2]]) %&gt;%
+  group_by(partition, district) %&gt;%
+  summarise(geometry = sf::st_union(geometry)) %&gt;%
+  ungroup() %&gt;%
+  
+  ggplot() + 
+  geom_sf(aes(fill = district),
+          color = &#39;white&#39;,
+          alpha = .65,
+          lwd = .3) +
+  geom_sf_text(aes(label = district),
+               color = &#39;black&#39;,
+               size = 2.5, 
+               check_overlap = TRUE) +
+  scale_fill_manual(
+    values = colorRampPalette(ggthemes::stata_pal()(8))(dists)) +
+  theme_minimal() + map_theme() +
+  labs(title = paste0(&#39;Partition &#39;, samp4[[2]]), 
+       subtitle = &#39;ABQ Metro Area&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+<div id="partition-ensemble-historical-votes" class="section level2">
+<h2>Partition ensemble &amp; historical votes</h2>
+<pre class="r"><code>returns1 &lt;- returns %&gt;% 
+  select(NAME10, election, party, value) %&gt;%
+  filter(party %in% c(&#39;R&#39;, &#39;D&#39;))</code></pre>
+<p>From redistricting plan to election result, then, is fairly straightforward. The first step is to assign each partition in our ensemble voting data – again, using election results from four historical elections in New Mexico.</p>
+<pre class="r"><code>ps &lt;- unique(ensembles$partition)
+fens &lt;- list()
+
+for (q in 1:length(ps)) {
+  x &lt;- subset(ensembles, partition == ps[q])
+  x1 &lt;- x[returns1, on = &#39;NAME10&#39;]
+  fens[[q]] &lt;- x1[ , list(value = sum(value)),
+      by = list(election, partition, district, party)] 
+  print(q)
+}
+
+x2 &lt;- fens %&gt;% data.table::rbindlist()</code></pre>
+<p>As a simple starting point, the map below details precinct-level election results in the ABQ Metro Area for the 2018 statewide race for Governor. The darker the shade of blue, the larger the vote margin in favor of the Democratic candidate (here <a href="https://twitter.com/GovMLG">MLG</a>).</p>
+<pre class="r"><code>c1 &lt;- cropped %&gt;% mutate(g18 = GOV18R - GOV18D)
+
+c1 %&gt;% 
+  ggplot() + 
+  geom_sf(aes(fill = g18),
+          color = &#39;black&#39;,
+          alpha = .85,
+          lwd = .05) +
+   scale_fill_distiller(palette = &quot;RdYlBu&quot;,
+                        limit = max(abs(c1$g18)) * c(-1, 1)) +
+  theme_minimal() + map_theme() +
+  labs(title = &#39;2018 Gubernatorial election results&#39;, 
+       subtitle = &#39;ABQ Metro Area&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<pre class="r"><code>nc1 &lt;- nc %&gt;% 
+  group_by(partition, district) %&gt;%
+  summarise(geometry = sf::st_union(geometry)) %&gt;%
+  ungroup() </code></pre>
+<p>Then we overlay four partitions on top of these results, three from our randomly generated ensemble, along with the actual <code>NM2012</code> partition.</p>
+<pre class="r"><code>ggplot(data = c1) +
+    geom_sf(aes(fill = g18),
+            #color = &#39;black&#39;,
+            alpha = .85,
+            lwd = .05) +
+   scale_fill_distiller(palette = &quot;RdYlBu&quot;,
+                        limit = max(abs(c1$g18)) * c(-1, 1)) +
+  geom_sf(data = nc1,
+          fill = NA,
+          color = &#39;black&#39;,
+          lwd = .25) +
+  facet_wrap(~partition) +
+  theme_minimal() + map_theme() +
+  labs(title = &#39;Redistricting plans as overlay&#39;, 
+       subtitle = &#39;ABQ Metro Area&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<pre class="r"><code>winners &lt;- x2 %&gt;%
+  filter(election == &#39;GOV18&#39;) %&gt;%
+  select(-election) %&gt;%
+  filter(partition %in% samp4) %&gt;%
+  
+  ## append Actual partition --
+  bind_rows(nm16 %&gt;% select(partition, district, party, value)) %&gt;%
+  group_by(partition, district) %&gt;%
+  filter(value == max(value))%&gt;% 
+  ungroup() </code></pre>
+<p>Lastly, we tabulate election results for our example redistricting plans by aggregating precinct-level voting outcomes from the <code>GOV18</code> election – in comparison to existing plan <code>NM2012</code>. The basic gist, then, is to (1) fix precinct-level vote counts, (2) adjust partition, and (3) tabulate results.</p>
+<pre class="r"><code>nc1 %&gt;%
+  left_join(winners) %&gt;%
+  ggplot() +
+  
+  geom_sf(aes(fill = party),
+          color = &#39;white&#39;,
+          alpha = .85,
+          lwd = .25) +
+  geom_sf_text(aes(label = district),
+               color = &#39;black&#39;,
+               size = 2.5,
+               check_overlap = TRUE) +
+  
+  scale_fill_manual(values = c(&#39;#678fc3&#39;, &#39;#e76a53&#39;)) +
+  theme_minimal() + 
+  map_theme() +
+  facet_wrap(~partition) +
+  labs(title = &#39;Redistricting plans: party winners&#39;, 
+       subtitle = &#39;ABQ Metro Area&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>So, 10K redistricting plans, four historical elections. In theory, if an existing plan – or some proposed plan – is on the level, it should result in a legislature similar in partisan composition to those generated by the SMC algorithm.</p>
+<pre class="r"><code>comp &lt;- x2 %&gt;%
+  group_by(election, partition, district) %&gt;%
+  filter(party == party[which.max(value)]) %&gt;%
+  group_by(election, partition, party) %&gt;%
+  summarize(seats = n()) %&gt;%
+  ungroup()</code></pre>
+<div id="seat-distributions" class="section level3">
+<h3>Seat distributions</h3>
+<p>Recall that Dems won 26/42 New Mexico Senate seats in 2016; 27/42 in 2020.</p>
+<pre class="r"><code>ds &lt;- comp %&gt;% filter(party == &#39;D&#39;)
+
+ds1 &lt;- ds %&gt;%
+  group_by(election, seats) %&gt;%
+  count() %&gt;%
+  group_by(election) %&gt;%
+  mutate(pertot = round(n/sum(n)*100, 2))</code></pre>
+<p>The distribution of the number of elected Democrats using vote outcomes from <code>PRES16</code> is summarized in the table below. Per these outcomes, ~57% of the 10K redistricting plans resulted in a legislature comprised of more than 27 Dems.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">election</th>
+<th align="right">seats</th>
+<th align="right">n</th>
+<th align="right">pertot</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="right">23</td>
+<td align="right">2</td>
+<td align="right">0.02</td>
+</tr>
+<tr class="even">
+<td align="left">PRES16</td>
+<td align="right">24</td>
+<td align="right">39</td>
+<td align="right">0.39</td>
+</tr>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="right">25</td>
+<td align="right">879</td>
+<td align="right">8.79</td>
+</tr>
+<tr class="even">
+<td align="left">PRES16</td>
+<td align="right">26</td>
+<td align="right">1392</td>
+<td align="right">13.92</td>
+</tr>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="right">27</td>
+<td align="right">1991</td>
+<td align="right">19.91</td>
+</tr>
+<tr class="even">
+<td align="left">PRES16</td>
+<td align="right">28</td>
+<td align="right">4102</td>
+<td align="right">41.02</td>
+</tr>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="right">29</td>
+<td align="right">1436</td>
+<td align="right">14.36</td>
+</tr>
+<tr class="even">
+<td align="left">PRES16</td>
+<td align="right">30</td>
+<td align="right">155</td>
+<td align="right">1.55</td>
+</tr>
+<tr class="odd">
+<td align="left">PRES16</td>
+<td align="right">31</td>
+<td align="right">5</td>
+<td align="right">0.05</td>
+</tr>
+</tbody>
+</table>
+<p>The faceted plot below details distributions of the number of Democratic wins using vote counts from four historical elections. For context, the number of Democrats actually elected to office in 2016 (26) is highlighted in orange.</p>
+<pre class="r"><code>ds %&gt;%
+  ggplot() +
+  geom_histogram(aes(seats, fill = election), 
+                 binwidth = .5) +
+  
+  geom_vline(xintercept = 26, 
+             linetype = 3, 
+             color = &#39;#e37e00&#39;,
+             size = 1) +
+  scale_x_continuous(breaks=seq(min(ds$seats), max(ds$seats),1)) +
+  facet_wrap(~election) + #, scales = &#39;free&#39;) +
+  ggthemes::scale_fill_economist()+
+  theme_minimal()+
+  theme(legend.position = &#39;none&#39;) +
+  xlab(&#39;Number of Democrats Elected&#39;) +
+  ggtitle(&#39;Distributions of elected Democrats&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<p>Interesting results for sure. The 26-seat Dem outcome only really occurs when using <code>PRES16</code> election results; while a handful of partitions result in 26 Dem seats for <code>GOV18</code> and <code>SOS16</code>, over 99% of all plans outside of <code>PRES16</code> result in legislatures comprised of more than 26 Democrats. For <code>GOV18</code> and <code>SOS16</code>, elections with very similar result-profiles, the plurality of redistricting plans result in 31 Dem seats. For <code>SEN18</code>, the overwhelming majority of redistricting plans results in 33/42 seats for Dems.</p>
+<p>No real explanations here – other than (1) candidates matter, (2) New Mexico’s politics dash leftward, (3) <code>PRES16</code> was a weird election in NM, as hometown third-party pol Gary Johnson won ~10% statewide, and (4) folks vote differently in statewide-federal elections than in state rep elections. All that said, results from our generated redistricting plans suggest Dems are due a seat or two.</p>
+</div>
+<div id="marginal-distributions" class="section level3">
+<h3>Marginal distributions</h3>
+<p>Another way to contextualize a given redistricting plan in relation to our cache of generated plans is by investigating the structure of ordered marginal vote fractions <span class="citation">(see, eg, Herschlag et al. <a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>.</p>
+<pre class="r"><code>x3 &lt;- x2 %&gt;%
+  group_by(election, partition, district) %&gt;%
+  mutate(per = round(value/sum(value)*100, 3)) %&gt;%
+  #ungroup() %&gt;%
+  select(-value) %&gt;%
+  spread(party, per) %&gt;%
+  group_by(election, partition) %&gt;%
+  mutate(rank = rank(D)) %&gt;%
+  ungroup()</code></pre>
+<p>We have discussed some in previous posts the convention of summarizing election results for a given legislature as a <em>vote distribution</em>; in which Democratic vote shares are plot in ranked order from least to most Democratic. The marginal distribution, then, is the ranked order of vote fractions over the entire ensemble of partitions. The idea being that if a given plan is on the level, its vote distribution should look similar to the marginal distribution of the entire ensemble.</p>
+<pre class="r"><code>vote_dist &lt;- nm16 %&gt;%
+  filter(Winner == &#39;Winner&#39;)  %&gt;% 
+  select(district, party, Percent) %&gt;%
+  mutate(D = ifelse(party == &#39;R&#39;, 1 - Percent, Percent),
+         # D = ifelse(D == 1, 0.75, D),
+         # D = ifelse(D == 0, 0.25, D),
+         rank = rank(D, ties.method = &#39;first&#39;))</code></pre>
+<p>Here, we compare 2016 NM State Senate election results (based on the <code>NM2012</code> partition) to those of the full ensemble. For each of our four statewide elections, comparisons are illustrated below. Lots of uncontested races in NM Senate 2016 make this particular set of comparisons less than fantastic.</p>
+<p>We are basically on the lookout for potential gerrymanders, here in the form of <a href="https://www.jtimm.net/2021/02/04/gerrymander-101/">cracking &amp; packing</a>. In theory, rank voting distribution plots should increase ~linearly. Deviations from a linear slope hint at a suspect plan.</p>
+<p>While there is nothing definitive along these lines in the plots below, there is a bit of a “wiggle” in the marginal distribution (of our randomly partitioned ensemble) at the transition of Republican-held seats to Democratic-held seats, which suggests a natural gerry/packing of Republicans in (likely) more rural districts in the state. A big maybe.</p>
+<pre class="r"><code>x3 %&gt;%
+  ggplot() +
+  geom_boxplot(aes(factor(rank), 
+                   D, 
+                   color = election), 
+               size = 0.5, 
+               outlier.size = 0.2) + 
+  
+  geom_point(data = vote_dist,
+             aes(x = factor(rank), 
+                 y = D * 100),
+             color = &#39;#e37e00&#39;,
+             size = 1) +
+  
+  ggthemes::scale_color_economist() +
+  geom_hline(yintercept = 50, lty = 2, color = &#39;steelblue&#39;) +
+  facet_wrap(~election, ncol = 2) +
+  theme_minimal() +
+  theme(axis.text.x=element_blank(),
+        legend.position = &#39;none&#39;) +
+  xlab(&#39;Districts ordered from least to most Democratic&#39;) +
+  ylab(&#39;Percentage of votes for a Democrat&#39;) +
+  
+  ggtitle(&#39;Marginal distributions&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
+</div>
+<div id="ranked-marginal-deviation" class="section level3">
+<h3>Ranked-marginal deviation</h3>
+<p>Lastly, we consider a partisan metric introduced in <span class="citation">Herschlag et al. (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span> dubbed <code>ranked-marginal distribution</code>. A simple metric, and a natural extension from the marginal distribution plots above, ranked-marginal distribution measures the distance between a given plan and the ordered marginal medians. Any plan, then, can be compared to the ensemble and assigned a similarity score – of sorts. The higher the ranked-marginal deviation, the more likely the plan is suspect.</p>
+<p>In-line with the findings from the seat distribution results, the existing <code>NM2012</code> seems a bit unrepresentative of the state’s politics 10 years on, and likely biased some against Democrats, despite the fact that Dems already hold a sizable 27-15 majority. With caveats galore.</p>
+<pre class="r"><code>x4 &lt;- x3 %&gt;%
+  group_by(election, rank) %&gt;%
+  
+  mutate(med = median(D),
+         diff = (D - med) ^ 2) %&gt;%
+  group_by(election, partition) %&gt;%
+  
+  summarize(marg_dev = sqrt(sum(diff))) 
+
+x5 &lt;- x4 %&gt;% filter(partition %in% c(samp4))
+
+x4 %&gt;%
+  ggplot() +
+  geom_density(aes(marg_dev, fill = election),
+               alpha = .5, color = &#39;gray&#39;) +
+  geom_vline(data = x5,
+             aes(xintercept = marg_dev), 
+             color = &#39;#e37e00&#39;, 
+             linetype = 2,    
+             size = .5) +
+  
+  geom_text(data = x5,
+            aes(x = marg_dev, y = 0.3, label = partition), 
+            color = &#39;#e37e00&#39;, size = 3,
+            check_overlap = TRUE) +
+  
+  theme_minimal() + 
+  theme(legend.position = &#39;none&#39;)+
+  ggthemes::scale_fill_economist() +
+  facet_wrap(~election) +
+  ggtitle(&#39;Ranked-Marginal Deviation&#39;)</code></pre>
+<p><img src="/post/2021-01-09-computational-redistricting_files/figure-html/unnamed-chunk-35-1.png" width="672" /></p>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>So, hopefully a useful resource. Again, best utilized as an R-based appendix for the work highlighted in the reference section. The end of this three-part post. opefully timely, with the decennial census complete and redistricting in progress.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-fifield2020automated">
+<p>Fifield, Benjamin, Michael Higgins, Kosuke Imai, and Alexander Tarr. 2020. “Automated Redistricting Simulation Using Markov Chain Monte Carlo.” <em>Journal of Computational and Graphical Statistics</em> 29 (4): 715–28.</p>
+</div>
+<div id="ref-fifield2020essential">
+<p>Fifield, Benjamin, Kosuke Imai, Jun Kawahara, and Christopher T Kenny. 2020. “The Essential Role of Empirical Validation in Legislative Redistricting Simulation.” <em>Statistics and Public Policy</em> 7 (1): 52–68.</p>
+</div>
+<div id="ref-fifield2020cran">
+<p>Fifield, Ben, Christopher T. Kenny, Cory McCartan, Alexander Tarr, and Kosuke Imai. 2020. “redist: Simulation Methods for Legislative Redistricting.” Available at The Comprehensive R Archive Network(CRAN). <a href="https://CRAN.R-project.org/package=redist">https://CRAN.R-project.org/package=redist</a>.</p>
+</div>
+<div id="ref-herschlag2020quantifying">
+<p>Herschlag, Gregory, Han Sung Kang, Justin Luo, Christy Vaughn Graves, Sachet Bangia, Robert Ravier, and Jonathan C Mattingly. 2020. “Quantifying Gerrymandering in North Carolina.” <em>Statistics and Public Policy</em> 7 (1): 30–38.</p>
+</div>
+<div id="ref-mccartan2020sequential">
+<p>McCartan, Cory, and Kosuke Imai. 2020. “Sequential Monte Carlo for Sampling Balanced and Compact Redistricting Plans.” <em>arXiv Preprint arXiv:2008.06131</em>.</p>
+</div>
+</div>
+</div>
