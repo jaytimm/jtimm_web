@@ -20,7 +20,7 @@ banner: banners/crack-pack.png
 ---
 
 
-> **The last in a series of notes on gerrymandering & R**. Here, an R-based appendix - of sorts - for a collection of computational redistricting methods [@fifield2020cran; @fifield2020automated; @fifield2020essential; @mccartan2020sequential; @herschlag2020quantifying].  More specifically, tools for comparing a proposed redistricting plan to an ensemble of non-partisan, randomly partitioned redistricting plans for the systematic investigation of gerrymandering.  Using the `redist` package. The 2016 New Mexico State Senate as an example.  Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.   
+> **The last in a series of notes on gerrymandering & R**. Here, an example application of some of the computational redistricting methods presented in @fifield2020cran; @fifield2020automated; @fifield2020essential; @mccartan2020sequential; @herschlag2020quantifying, and an implementation of [redist](http://kosukeimai.github.io/redist/), a redistricting simulation package in R.  || For demonstration purposes: legislative boundaries (2012) and election results (2016) for the **New Mexico State Senate**. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies. 
 
 
 ---
@@ -402,7 +402,7 @@ winners <- x2 %>%
 
 
 
-Lastly, we tabulate election results for our example redistricting plans by aggregating precinct-level voting outcomes from the `GOV18` election -- in comparison to existing plan `NM2012`.  The basic gist, then, is to (1) fix precinct-level vote counts, (2) adjust partition, and (3) tabulate results.     
+Lastly, we tabulate election results for our example redistricting plans by aggregating precinct-level voting outcomes from the `GOV18` election.  The basic gist, then, is to (1) fix precinct-level vote counts, (2) adjust partition, and (3) tabulate results.     
 
 ```{r fig.height=6, message=FALSE, warning=FALSE}
 nc1 %>%
@@ -613,7 +613,8 @@ x4 %>%
 
 ## Summary 
 
-So, hopefully a useful resource.  Again, best utilized as an R-based appendix for the work highlighted in the reference section.  The end of this three-part post.  opefully timely, with the decennial census complete and redistricting in progress.  
+So, hopefully a useful resource, with the decennial census complete and redistricting in progress.  The [redist](http://kosukeimai.github.io/redist/) package is a beast of a tool for fair representation -- and we only touch the surface of its functionality here.  These are basically my learning notes -- check out the references for a deeper & proper delve into some fantastic research!!
+
 
 
 ## References

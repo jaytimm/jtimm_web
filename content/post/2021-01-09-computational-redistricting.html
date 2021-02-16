@@ -33,7 +33,7 @@ banner: banners/crack-pack.png
 </div>
 
 <blockquote>
-<p><strong>The last in a series of notes on gerrymandering &amp; R</strong>. Here, an R-based appendix - of sorts - for a collection of computational redistricting methods <span class="citation">(Ben Fifield et al. <a href="#ref-fifield2020cran" role="doc-biblioref">2020</a>; Benjamin Fifield, Higgins, et al. <a href="#ref-fifield2020automated" role="doc-biblioref">2020</a>; Benjamin Fifield, Imai, et al. <a href="#ref-fifield2020essential" role="doc-biblioref">2020</a>; McCartan and Imai <a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>; Herschlag et al. <a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>. More specifically, tools for comparing a proposed redistricting plan to an ensemble of non-partisan, randomly partitioned redistricting plans for the systematic investigation of gerrymandering. Using the <code>redist</code> package. The 2016 New Mexico State Senate as an example. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.</p>
+<p><strong>The last in a series of notes on gerrymandering &amp; R</strong>. Here, an example application of some of the computational redistricting methods presented in <span class="citation">Ben Fifield et al. (<a href="#ref-fifield2020cran" role="doc-biblioref">2020</a>)</span>; <span class="citation">Benjamin Fifield, Higgins, et al. (<a href="#ref-fifield2020automated" role="doc-biblioref">2020</a>)</span>; <span class="citation">Benjamin Fifield, Imai, et al. (<a href="#ref-fifield2020essential" role="doc-biblioref">2020</a>)</span>; <span class="citation">McCartan and Imai (<a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>)</span>; <span class="citation">Herschlag et al. (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>, and an implementation of <a href="http://kosukeimai.github.io/redist/">redist</a>, a redistricting simulation package in R. || For demonstration purposes: legislative boundaries (2012) and election results (2016) for the <strong>New Mexico State Senate</strong>. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.</p>
 </blockquote>
 <hr />
 <div id="statewide-historical-election-data" class="section level2">
@@ -311,7 +311,7 @@ c1 %&gt;%
   group_by(partition, district) %&gt;%
   filter(value == max(value))%&gt;% 
   ungroup() </code></pre>
-<p>Lastly, we tabulate election results for our example redistricting plans by aggregating precinct-level voting outcomes from the <code>GOV18</code> election – in comparison to existing plan <code>NM2012</code>. The basic gist, then, is to (1) fix precinct-level vote counts, (2) adjust partition, and (3) tabulate results.</p>
+<p>Lastly, we tabulate election results for our example redistricting plans by aggregating precinct-level voting outcomes from the <code>GOV18</code> election. The basic gist, then, is to (1) fix precinct-level vote counts, (2) adjust partition, and (3) tabulate results.</p>
 <pre class="r"><code>nc1 %&gt;%
   left_join(winners) %&gt;%
   ggplot() +
@@ -529,7 +529,7 @@ x4 %&gt;%
 </div>
 <div id="summary" class="section level2">
 <h2>Summary</h2>
-<p>So, hopefully a useful resource. Again, best utilized as an R-based appendix for the work highlighted in the reference section. The end of this three-part post. opefully timely, with the decennial census complete and redistricting in progress.</p>
+<p>So, hopefully a useful resource, with the decennial census complete and redistricting in progress. The <a href="http://kosukeimai.github.io/redist/">redist</a> package is a beast of a tool for fair representation – and we only touch the surface of its functionality here. These are basically my learning notes – check out the references for a deeper &amp; proper delve into some fantastic research!!</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
