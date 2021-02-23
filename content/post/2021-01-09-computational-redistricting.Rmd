@@ -22,6 +22,9 @@ banner: banners/crack-pack.png
 
 > **The last in a series of notes on gerrymandering & R**. Here, an example application of some of the computational redistricting methods presented in @fifield2020cran; @fifield2020automated; @fifield2020essential; @mccartan2020sequential; @herschlag2020quantifying, and an implementation of [redist](http://kosukeimai.github.io/redist/), a redistricting simulation package in R.  || For demonstration purposes: legislative boundaries (2012) and election results (2016) for the **New Mexico State Senate**. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies. 
 
+---
+
+Basic gist:  investigate the representativeness of a proposed redistricting plan by comparing (1) the vote outcome based on proposed plan, and (2) vote outcomes based on an ensemble of randomly partitioned redistricting plans -- where a "vote outcome" is a simulated election result based on precinct-level returns from some  historical election.  
 
 ---
 
