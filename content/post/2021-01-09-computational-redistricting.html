@@ -19,6 +19,7 @@ description: 'Gerrymandering & R: Part 3'
 banner: banners/crack-pack.png
 ---
 
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 <div id="TOC">
 <ul>
@@ -33,7 +34,7 @@ banner: banners/crack-pack.png
 </div>
 
 <blockquote>
-<p><strong>The last in a series of notes on gerrymandering &amp; R</strong>. Here, an example application of some of the computational redistricting methods presented in <span class="citation">Ben Fifield et al. (<a href="#ref-fifield2020cran" role="doc-biblioref">2020</a>)</span>; <span class="citation">Benjamin Fifield, Higgins, et al. (<a href="#ref-fifield2020automated" role="doc-biblioref">2020</a>)</span>; <span class="citation">Benjamin Fifield, Imai, et al. (<a href="#ref-fifield2020essential" role="doc-biblioref">2020</a>)</span>; <span class="citation">McCartan and Imai (<a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>)</span>; <span class="citation">Herschlag et al. (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>, and an implementation of <a href="http://kosukeimai.github.io/redist/">redist</a>, a redistricting simulation package in R. || For demonstration purposes: legislative boundaries (2012) and election results (2016) for the <strong>New Mexico State Senate</strong>. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.</p>
+<p><strong>The last in a series of notes on gerrymandering &amp; R</strong>. Here, an example application of some of the computational redistricting methods presented in <span class="citation"><a href="#ref-fifield2020cran" role="doc-biblioref">Ben Fifield et al.</a> (<a href="#ref-fifield2020cran" role="doc-biblioref">2020</a>)</span>; <span class="citation"><a href="#ref-fifield2020automated" role="doc-biblioref">Benjamin Fifield, Higgins, et al.</a> (<a href="#ref-fifield2020automated" role="doc-biblioref">2020</a>)</span>; <span class="citation"><a href="#ref-fifield2020essential" role="doc-biblioref">Benjamin Fifield, Imai, et al.</a> (<a href="#ref-fifield2020essential" role="doc-biblioref">2020</a>)</span>; <span class="citation"><a href="#ref-mccartan2020sequential" role="doc-biblioref">McCartan and Imai</a> (<a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>)</span>; <span class="citation"><a href="#ref-herschlag2020quantifying" role="doc-biblioref">Herschlag et al.</a> (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>, and an implementation of <a href="http://kosukeimai.github.io/redist/">redist</a>, a redistricting simulation package in R. || For demonstration purposes: legislative boundaries (2012) and election results (2016) for the <strong>New Mexico State Senate</strong>. Importantly, code presented here is super-flexible, and will easily scale to different states and different legislative bodies.</p>
 </blockquote>
 <hr />
 <p>Basic gist: investigate the representativeness of a proposed redistricting plan by comparing (1) the vote outcome based on proposed plan, and (2) vote outcomes based on an ensemble of randomly partitioned redistricting plans – where a “vote outcome” is a simulated election result based on precinct-level returns from some historical election.</p>
@@ -126,7 +127,7 @@ partition2012 &lt;- nm_df %&gt;%
 </div>
 <div id="building-an-ensemble" class="section level2">
 <h2>Building an ensemble</h2>
-<p>The <code>redist</code> package includes multiple approaches to randomly sampling graph partitions; here, we implement the Sequential Monte Carlo (SMC) method <span class="citation">(McCartan and Imai <a href="#ref-mccartan2020sequential" role="doc-biblioref">2020</a>)</span> via the <code>redist.smc</code> function. The SMC method requires two intermediary spatial data structures to build our ensemble of redistricting plans: (1) a distance matrix, which is derived from centroids of the precinct-level shapefile, and (2) an adjacency matrix.</p>
+<p>The <code>redist</code> package includes multiple approaches to randomly sampling graph partitions; here, we implement the Sequential Monte Carlo (SMC) method <span class="citation">(<a href="#ref-mccartan2020sequential" role="doc-biblioref">McCartan and Imai 2020</a>)</span> via the <code>redist.smc</code> function. The SMC method requires two intermediary spatial data structures to build our ensemble of redistricting plans: (1) a distance matrix, which is derived from centroids of the precinct-level shapefile, and (2) an adjacency matrix.</p>
 <pre class="r"><code>centers &lt;- sf::st_centroid(nm_sf) # %&gt;% select(NAME10))
 distmat &lt;- sf::st_distance(centers)
 attr(distmat, &quot;units&quot;) &lt;- NULL
@@ -444,7 +445,7 @@ ds1 &lt;- ds %&gt;%
 </div>
 <div id="marginal-distributions" class="section level3">
 <h3>Marginal distributions</h3>
-<p>Another way to contextualize a given redistricting plan in relation to our cache of generated plans is by investigating the structure of ordered marginal vote fractions <span class="citation">(see, eg, Herschlag et al. <a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span>.</p>
+<p>Another way to contextualize a given redistricting plan in relation to our cache of generated plans is by investigating the structure of ordered marginal vote fractions <span class="citation">(see, eg, <a href="#ref-herschlag2020quantifying" role="doc-biblioref">Herschlag et al. 2020</a>)</span>.</p>
 <pre class="r"><code>x3 &lt;- x2 %&gt;%
   group_by(election, partition, district) %&gt;%
   mutate(per = round(value/sum(value)*100, 3)) %&gt;%
@@ -464,7 +465,7 @@ ds1 &lt;- ds %&gt;%
          rank = rank(D, ties.method = &#39;first&#39;))</code></pre>
 <p>Here, we compare 2016 NM State Senate election results (based on the <code>NM2012</code> partition) to those of the full ensemble. For each of our four statewide elections, comparisons are illustrated below. Lots of uncontested races in NM Senate 2016 make this particular set of comparisons less than fantastic.</p>
 <p>We are basically on the lookout for potential gerrymanders, here in the form of <a href="https://www.jtimm.net/2021/02/04/gerrymander-101/">cracking &amp; packing</a>. In theory, rank voting distribution plots should increase ~linearly. Deviations from a linear slope hint at a suspect plan.</p>
-<p>While there is nothing definitive along these lines in the plots below, there is a bit of a “wiggle” in the marginal distribution (of our randomly partitioned ensemble) at the transition of Republican-held seats to Democratic-held seats, which suggests a natural gerry/packing of Republicans in (likely) more rural districts in the state. A big maybe.</p>
+<p>While there is nothing definitive along these lines in the plots below, there is a bit of a “wiggle” in the marginal distribution (of our randomly partitioned ensemble) at the transition of Republican-held seats to Democratic-held seats, which suggests a natural gerry/packing of Republicans in (likely) more rural districts in the state.</p>
 <pre class="r"><code>x3 %&gt;%
   ggplot() +
   geom_boxplot(aes(factor(rank), 
@@ -493,7 +494,7 @@ ds1 &lt;- ds %&gt;%
 </div>
 <div id="ranked-marginal-deviation" class="section level3">
 <h3>Ranked-marginal deviation</h3>
-<p>Lastly, we consider a partisan metric introduced in <span class="citation">Herschlag et al. (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span> dubbed <code>ranked-marginal distribution</code>. A simple metric, and a natural extension from the marginal distribution plots above, ranked-marginal distribution measures the distance between a given plan and the ordered marginal medians. Any plan, then, can be compared to the ensemble and assigned a similarity score – of sorts. The higher the ranked-marginal deviation, the more likely the plan is suspect.</p>
+<p>Lastly, we consider a partisan metric introduced in <span class="citation"><a href="#ref-herschlag2020quantifying" role="doc-biblioref">Herschlag et al.</a> (<a href="#ref-herschlag2020quantifying" role="doc-biblioref">2020</a>)</span> dubbed <code>ranked-marginal deviation</code>. A simple metric, and a natural extension from the marginal distribution plots above, ranked-marginal deviation measures the distance between a given plan and the ordered marginal medians. Any plan, then, can be compared to the ensemble and assigned a similarity score – of sorts. The higher the ranked-marginal deviation, the more likely the plan is suspect.</p>
 <p>In-line with the findings from the seat distribution results, the existing <code>NM2012</code> seems a bit unrepresentative of the state’s politics 10 years on, and likely biased some against Democrats, despite the fact that Dems already hold a sizable 27-15 majority. With caveats galore.</p>
 <pre class="r"><code>x4 &lt;- x3 %&gt;%
   group_by(election, rank) %&gt;%
@@ -535,21 +536,21 @@ x4 %&gt;%
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
-<div id="refs" class="references">
-<div id="ref-fifield2020automated">
-<p>Fifield, Benjamin, Michael Higgins, Kosuke Imai, and Alexander Tarr. 2020. “Automated Redistricting Simulation Using Markov Chain Monte Carlo.” <em>Journal of Computational and Graphical Statistics</em> 29 (4): 715–28.</p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-fifield2020automated" class="csl-entry">
+Fifield, Benjamin, Michael Higgins, Kosuke Imai, and Alexander Tarr. 2020. <span>“Automated Redistricting Simulation Using Markov Chain Monte Carlo.”</span> <em>Journal of Computational and Graphical Statistics</em> 29 (4): 715–28.
 </div>
-<div id="ref-fifield2020essential">
-<p>Fifield, Benjamin, Kosuke Imai, Jun Kawahara, and Christopher T Kenny. 2020. “The Essential Role of Empirical Validation in Legislative Redistricting Simulation.” <em>Statistics and Public Policy</em> 7 (1): 52–68.</p>
+<div id="ref-fifield2020essential" class="csl-entry">
+Fifield, Benjamin, Kosuke Imai, Jun Kawahara, and Christopher T Kenny. 2020. <span>“The Essential Role of Empirical Validation in Legislative Redistricting Simulation.”</span> <em>Statistics and Public Policy</em> 7 (1): 52–68.
 </div>
-<div id="ref-fifield2020cran">
-<p>Fifield, Ben, Christopher T. Kenny, Cory McCartan, Alexander Tarr, and Kosuke Imai. 2020. “redist: Simulation Methods for Legislative Redistricting.” Available at The Comprehensive R Archive Network(CRAN). <a href="https://CRAN.R-project.org/package=redist">https://CRAN.R-project.org/package=redist</a>.</p>
+<div id="ref-fifield2020cran" class="csl-entry">
+Fifield, Ben, Christopher T. Kenny, Cory McCartan, Alexander Tarr, and Kosuke Imai. 2020. <span>“<span class="nocase">redist</span>: Simulation Methods for Legislative Redistricting.”</span> Available at The Comprehensive R Archive Network(CRAN). <a href="https://CRAN.R-project.org/package=redist">https://CRAN.R-project.org/package=redist</a>.
 </div>
-<div id="ref-herschlag2020quantifying">
-<p>Herschlag, Gregory, Han Sung Kang, Justin Luo, Christy Vaughn Graves, Sachet Bangia, Robert Ravier, and Jonathan C Mattingly. 2020. “Quantifying Gerrymandering in North Carolina.” <em>Statistics and Public Policy</em> 7 (1): 30–38.</p>
+<div id="ref-herschlag2020quantifying" class="csl-entry">
+Herschlag, Gregory, Han Sung Kang, Justin Luo, Christy Vaughn Graves, Sachet Bangia, Robert Ravier, and Jonathan C Mattingly. 2020. <span>“Quantifying Gerrymandering in North Carolina.”</span> <em>Statistics and Public Policy</em> 7 (1): 30–38.
 </div>
-<div id="ref-mccartan2020sequential">
-<p>McCartan, Cory, and Kosuke Imai. 2020. “Sequential Monte Carlo for Sampling Balanced and Compact Redistricting Plans.” <em>arXiv Preprint arXiv:2008.06131</em>.</p>
+<div id="ref-mccartan2020sequential" class="csl-entry">
+McCartan, Cory, and Kosuke Imai. 2020. <span>“Sequential Monte Carlo for Sampling Balanced and Compact Redistricting Plans.”</span> <em>arXiv Preprint arXiv:2008.06131</em>.
 </div>
 </div>
 </div>

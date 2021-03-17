@@ -538,7 +538,7 @@ Here, we compare 2016 NM State Senate election results (based on the `NM2012` pa
 
 We are basically on the lookout for potential gerrymanders, here in the form of [cracking & packing](https://www.jtimm.net/2021/02/04/gerrymander-101/).  In theory, rank voting distribution plots should increase ~linearly.  Deviations from a linear slope hint at a suspect plan. 
 
-While there is nothing definitive along these lines in the plots below, there is a bit of a "wiggle" in the marginal distribution (of our randomly partitioned ensemble) at the transition of Republican-held seats to Democratic-held seats, which suggests a natural gerry/packing of Republicans in (likely) more rural districts in the state.  A big maybe.
+While there is nothing definitive along these lines in the plots below, there is a bit of a "wiggle" in the marginal distribution (of our randomly partitioned ensemble) at the transition of Republican-held seats to Democratic-held seats, which suggests a natural gerry/packing of Republicans in (likely) more rural districts in the state.
 
 
 ```{r fig.height=6.5}
@@ -573,7 +573,7 @@ x3 %>%
 
 ### Ranked-marginal deviation
 
-Lastly, we consider a partisan metric introduced in @herschlag2020quantifying dubbed `ranked-marginal distribution`.  A simple metric, and a natural extension from the marginal distribution plots above, ranked-marginal distribution measures the distance between a given plan and the ordered marginal medians.  Any plan, then, can be compared to the ensemble and assigned a similarity score -- of sorts.  The higher the ranked-marginal deviation, the more likely the plan is suspect.   
+Lastly, we consider a partisan metric introduced in @herschlag2020quantifying dubbed `ranked-marginal deviation`.  A simple metric, and a natural extension from the marginal distribution plots above, ranked-marginal deviation measures the distance between a given plan and the ordered marginal medians.  Any plan, then, can be compared to the ensemble and assigned a similarity score -- of sorts.  The higher the ranked-marginal deviation, the more likely the plan is suspect.   
 
 In-line with the findings from the seat distribution results, the existing `NM2012` seems a bit unrepresentative of the state's politics 10 years on, and likely biased some against Democrats, despite the fact that Dems already hold a sizable 27-15 majority.  With caveats galore.   
 
