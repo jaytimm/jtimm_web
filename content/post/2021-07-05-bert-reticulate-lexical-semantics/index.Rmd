@@ -1,0 +1,208 @@
+---
+title: 'BERT, reticulate & lexical semantics'
+author: ''
+date: '2021-07-09'
+slug: bert-reticulate-lexical-semantics
+categories: []
+tags:
+  - rstats
+  - python
+  - lexical-semantics
+  - corpus-ling
+banner: banners/bert.png
+description: 'Some notes on implementing reticulate, spacy, and BERT'
+---
+
+## Intro
+
+This post provides some quick details on using `reticulate` to interface Python from RStudio; and, more specifically, using the `spacy` library and BERT for fine-grained lexical semantic investigation.   Here we present a (very cursory) usage-based/BERT-based perspective on the semantic distinction between `further` and `farther`, using example contexts extracted from the [Corpus of Contemporary American English](https://www.english-corpora.org/coca/) (COCA).  
+
+
+
+## Python & reticulate set-up 
+
+The Python code below sets up a conda environment and installs relevant libraries, as well as the BERT transformer, *en_core_web_trf*.
+
+```{bash eval=FALSE}
+conda create -n poly1
+source activate poly1
+conda install -c conda-forge spacy
+python -m spacy download en_core_web_trf
+conda install numpy scipy pandas
+```
+
+
+
+The R code below directs R to our Python environment and Python installation.
+
+```{r}
+reticulate::use_python("/usr/local/bin/python")  
+reticulate::use_condaenv("poly1", "/home/jtimm/anaconda3/bin/conda")
+```
+
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+ld <- '/home/jtimm/pCloudDrive/GitHub/data_sets/bert-post/'
+```
+
+
+
+
+## COCA
+
+The Corpus of Contemporary American English (COCA) is an absolutely lovely resource, and is one of [many corpora](https://www.english-corpora.org/) made available by the folks at BYU. Here, we utilize COCA to build a simple data set of `further`-`farther` example usages.  I have copied/pasted from COCA's online search interface -- the data set includes ~500 contexts of usage per form.
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+gw <- read.csv(paste0(ld, 'further-farther.csv'), sep = '\t')
+gw$sent <- tolower(gsub("([[:punct:]])", " \\1 ", gw$text))
+gw$sent <- gsub("^ *|(?<= ) | *$", "", gw$sent, perl = TRUE)
+
+gw$count <- stringr::str_count(gw$sent, 'further|farther')
+gw0 <- subset(gw, count == 1)
+```
+
+
+For a nice discussion on the semantics of `further`-`farther`, see this [Merriam-Webster post](https://www.merriam-webster.com/words-at-play/is-it-further-or-farther-usage-how-to-use).  The standard semantic distinction drawn between the two forms is physical versus metaphorical distance.    
+
+Some highlighting & sample data below. 
+
+
+```{r}
+fu <- '\\1 <span style="background-color:lightgreen">\\2</span> \\3'
+fa <- '\\1 <span style="background-color:lightblue">\\2</span> \\3'
+
+gw0$text <- gsub('(^.+)(further)(.+$)', fu, gw0$text, ignore.case = T)
+gw0$text <- gsub('(^.+)(farther)(.+$)', fa, gw0$text, ignore.case = T)
+gw0$text <- paste0('... ', gw0$text, ' ...')
+
+set.seed(99)
+gw0 %>% select(year, genre, text) %>% sample_n(10) %>% 
+  DT::datatable(rownames = F, escape = F,
+                options = list(dom = 't',
+                               pageLength = 10,
+                               scrollX = TRUE))
+```
+
+
+Lastly, we identify the location (ie, context position) of the target token within each context (as *token index*).
+
+```{r}
+gw0$idx <- sapply(gsub(' (farther|further).*$', '', gw0$sent, ignore.case = T), 
+                  function(x){
+                    length(corpus::text_tokens(x)[[1]]) })
+```
+
+
+
+## BERT & contextual embeddings
+
+Using BERT and `spacy` for computing contextual word embeddings is actually fairly straightforward.  A very nice resource for some theoretical overview as well as code demo with BERT/spacy is available [here](https://applied-language-technology.readthedocs.io/en/latest/notebooks/part_iii/04_embeddings_continued.html#visualising-word-embeddings).
+
+Getting started, we pass our data set from R to Python via the `r_to_py` function.  
+
+```{r}
+df <- reticulate::r_to_py(gw0)
+```
+
+
+Then, from a Python console, we load the BERT transformer using `spacy`.
+
+```{python}
+import spacy
+nlp = spacy.load('en_core_web_trf')
+```
+
+
+
+**The stretch of Python code below does all the work here**.  The transformer computes a 768 dimension vector per token/sub-token comprising each context -- then we extract the tensor for either `further`/`farther` using the token index.  The resulting data structure is matrix-like, with each instantiation of `further`-`farther` represented in 768 dimensions. 
+
+```{python eval=FALSE}
+def encode(sent, index):
+  doc = nlp(sent.lower())
+  tensor_ix = doc._.trf_data.align[index].data.flatten()
+  out_dim = doc._.trf_data.tensors[0].shape[-1]
+  tensor = doc._.trf_data.tensors[0].reshape(-1, out_dim)[tensor_ix]
+  ## tensor.__len__()
+  return tensor.mean(axis=0)
+
+r.df["emb"] = r.df[["sent", "idx"]].apply(lambda x: encode(x[0], x[1]), axis = 1)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+# df2 <- reticulate::py_to_r(df)
+# saveRDS(df2, '/home/jtimm/pCloudDrive/GitHub/data_sets/bert-post/further.rds')
+```
+
+
+
+```{r include=FALSE}
+df <- readRDS('/home/jtimm/pCloudDrive/GitHub/data_sets/bert-post/further.rds')
+df <- reticulate::r_to_py(df)
+```
+
+
+
+
+## tSNE
+
+To plot these contexts in two dimensions, we use tSNE to reduce the 768-dimension word embeddings to two.  Via Python and `numpy`, we create a matrix-proper from the `further`-`farther` token embeddings extracted above.
+
+```{python}
+import numpy as np
+X, y  = r.df["emb"].values, r.df["id"].values
+X = np.vstack(X)
+```
+
+
+For good measure, we switch back to R to run tSNE. The matrix X, built in Python, is accessed in the R console below via `reticulate::py$X`.
+
+```{r}
+set.seed(999) ## 
+tsne <- Rtsne::Rtsne(X = as.matrix(reticulate::py$X), 
+                     check_duplicates = FALSE)
+
+tsne_clean <- data.frame(reticulate::py_to_r(df), tsne$Y) %>%
+  
+  mutate(t1 = gsub('(further|farther)', '\\<\\1\\>', text, ignore.case = T),
+         t2 = stringr::str_wrap(string = t1,
+                                  width = 20,
+                                  indent = 1,
+                                  exdent = 1),
+         id = row_number()) %>%
+  select(id, form, X1, X2, t1, t2) 
+```
+
+
+
+The scatter plot below summarizes contextual embeddings for individual tokens of `further`-`farther`. So, a nice space for `further` used adjectivally on the right side of the plot. Other spaces less obviously structured, and some confused spaces as well where speakers seem to have quite a bit of leeway.
+
+```{r}
+p <- ggplot2::ggplot(tsne_clean, 
+                          aes(x = X1, 
+                              y = X2,
+                              color = form,
+                              text = t2,
+                              key = id )) + 
+  
+  geom_hline(yintercept = 0, color = 'gray') +
+  geom_vline(xintercept = 0, color = 'gray') +
+  
+  geom_point(alpha = 0.5) +
+  theme_minimal() +
+  ggthemes::scale_colour_economist() +
+  ggtitle('further-farther') 
+
+plotly::ggplotly(p,
+                 tooltip = 'text') %>% 
+  plotly::layout(autosize = T)
+```
+
+
+
+## Summary
+
+So, some notes on `reticulate` and Python environments, and `spacy` and BERT.  While a computational beast, BERT seems fantastically suited for more fine-grained, qualitative semantic analyses and case studies, and lexicography in general.  
+
