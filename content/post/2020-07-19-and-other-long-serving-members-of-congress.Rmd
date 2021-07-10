@@ -89,22 +89,23 @@ The longest serving members of the US House (currently holding office) since 199
 
 ```{r message=FALSE, warning=FALSE}
 longs <- vnp %>%
-  group_by(bioname, state_abbrev, party_code, label) %>%
+  group_by(icpsr, bioname, state_abbrev, party_code, label) %>%
   summarize(min = min(congress),
             max = max(congress),
             n = n()) %>%
   ungroup() %>%
   mutate(consec = ifelse(max - min + 1 == n, 'y', 'n'),
-         since = 2019 - (n - 1) * 2) %>%
+         since = 2019 - (n - 1) * 2,
+         icpsr = as.character(icpsr)) %>%
   arrange(since) %>%
   filter(consec == 'y' & since < 1990) %>%
-  select(bioname, state_abbrev, party_code, label, since) 
+  select(icpsr, bioname, state_abbrev, party_code, label, since) 
 ```
 
 
 The **Old Guard** is presented in the table below.  These members have held office since 1975 ~ 1989.
 
-```{r echo=FALSE}
+```{r}
 longs %>%
   select(-label) %>%
   #filter(since < 1987) %>%
@@ -152,10 +153,10 @@ So, each historical voting record a unique story.  A more curious example above 
 
 ## Longest-serving members & election margins
  
-The next piece, then, is election margins.  Returns for all congressional house races since 1976 are made available by the [MIT Election Data and Science Lab](https://github.com/MEDSL); I have cleaned these data and included them in my `uspoliticalextras` data package.  
+The next piece, then, is election margins.  Returns for all congressional house races since 1976 are made available by the [MIT Election Data and Science Lab](https://github.com/MEDSL); I have cleaned these data and included them in my `uspols` data package.  
 
 ```{r}
-house_returns <- uspoliticalextras::uspol_medsl_returns_house_cd 
+house_returns <- uspols::uspols_medsl_house 
 ```
 
 
@@ -164,14 +165,14 @@ The tile plot below details historical margins for members of the old guard.  Ma
 
 ```{r fig.height=7, message=FALSE, warning=FALSE}
 lrs <- house_returns %>% 
-  filter(candidate %in% longs$bioname)
+  filter(icpsr %in% longs$icpsr)
 
 for_margins_plot <- lrs  %>%
-  mutate(per = ifelse(party == 'Republican Party',
+  mutate(per = ifelse(party_win == 'republican',
                       republican, -democrat),
          per = round(per),
          marg = round(republican-democrat)) %>%
-  inner_join(longs, by = c('candidate' = 'bioname')) %>%
+  inner_join(longs, by = 'icpsr') %>%
   select(label, year, congress, marg)
 
 
@@ -271,14 +272,14 @@ h2 <- house_transitions %>%
   
   inner_join(house_members %>% select(congress, state_abbrev, district_code,
                              bioguide_id, age, congs_served, nokken_poole_dim1)) %>%
-  left_join(house_returns) %>%
+  left_join(house_returns %>% mutate(district_code = as.numeric(district_code))) %>%
   mutate(margins = republican - democrat) %>%  
   mutate(decade = case_when (year < 1980 ~ '70s',
                            year < 1990 & year > 1979 ~ '80s',
                            year < 2000 & year > 1989 ~ '90s',
                            year < 2010 & year > 1999 ~ 'Aughts',
                            year > 2009 ~ 'Teens')) %>%
-  filter(party != 'Independent') %>%
+  filter(party_win != 'other') %>%
   na.omit # mostly at-large -- 
 ```
 
@@ -294,7 +295,7 @@ h3 <- h2 %>%
 h3 %>%
   filter(decade != '70s') %>%
   ggplot(aes(y = abs(nokken_poole_dim1), 
-             x = abs(margins), color = party
+             x = abs(margins), color = party_win
              ))+ 
 
   geom_point(size = 0.15)+ # 
@@ -346,7 +347,7 @@ Using logistic regression via `glm`, we fit our model below. Again, margins, NOM
 
 ```{r}
 dset$residuals <- unname(fit$residuals)
-dset$party <- as.factor(dset$party)
+dset$party <- as.factor(dset$party_win)
 dset$decade <- as.factor(dset$decade)
 dset$re_elect <- as.factor(dset$re_elect)
 

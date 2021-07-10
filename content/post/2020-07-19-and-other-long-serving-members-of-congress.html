@@ -18,6 +18,7 @@ images: []
 menu: ''
 ---
 
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 <script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
 <script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
 <link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
@@ -54,7 +55,7 @@ menu: ''
 house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
                                               chamber = &#39;house&#39;,
                                               congress = &#39;all&#39;) </code></pre>
-<pre><code>## [1] &quot;/tmp/RtmpkS6eIm/Hall_members.csv&quot;</code></pre>
+<pre><code>## [1] &quot;/tmp/RtmplTu5fW/Hall_members.csv&quot;</code></pre>
 <pre class="r"><code>x116 &lt;- house_members %&gt;%
   filter(congress == 116, chamber == &#39;House&#39;) %&gt;%
   select(icpsr, chamber)</code></pre>
@@ -88,19 +89,26 @@ house_members &lt;- Rvoteview::download_metadata(type = &#39;members&#39;,
          label = paste0(label, &#39; (&#39;, party_code, &#39;-&#39;, state_abbrev, &#39;)&#39;))</code></pre>
 <p>The longest serving members of the US House (currently holding office) since 1990. Focusing on members that have served consecutive, ie, uninterrupted, terms.</p>
 <pre class="r"><code>longs &lt;- vnp %&gt;%
-  group_by(bioname, state_abbrev, party_code, label) %&gt;%
+  group_by(icpsr, bioname, state_abbrev, party_code, label) %&gt;%
   summarize(min = min(congress),
             max = max(congress),
             n = n()) %&gt;%
   ungroup() %&gt;%
   mutate(consec = ifelse(max - min + 1 == n, &#39;y&#39;, &#39;n&#39;),
-         since = 2019 - (n - 1) * 2) %&gt;%
+         since = 2019 - (n - 1) * 2,
+         icpsr = as.character(icpsr)) %&gt;%
   arrange(since) %&gt;%
   filter(consec == &#39;y&#39; &amp; since &lt; 1990) %&gt;%
-  select(bioname, state_abbrev, party_code, label, since) </code></pre>
+  select(icpsr, bioname, state_abbrev, party_code, label, since) </code></pre>
 <p>The <strong>Old Guard</strong> is presented in the table below. These members have held office since 1975 ~ 1989.</p>
+<pre class="r"><code>longs %&gt;%
+  select(-label) %&gt;%
+  #filter(since &lt; 1987) %&gt;%
+  DT::datatable(rownames = FALSE, options = list(dom = &#39;t&#39;,
+                                                 pageLength = nrow(longs),
+                                                 scrollX = TRUE))</code></pre>
 <div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["YOUNG, Donald Edwin","ROGERS, Harold Dallas (Hal)","SENSENBRENNER, Frank James, Jr.","SMITH, Christopher Henry","HOYER, Steny Hamilton","KAPTUR, Marcia Carolyn (Marcy)","DeFAZIO, Peter Anthony","UPTON, Frederick Stephen","VISCLOSKY, Peter","LEWIS, John R.","NEAL, Richard Edmund","PALLONE, Frank, Jr.","PELOSI, Nancy","DeLAURO, Rosa L.","ENGEL, Eliot Lance","LOWEY, Nita M.","WATERS, Maxine"],["AK","KY","WI","NJ","MD","OH","OR","MI","IN","GA","MA","NJ","CA","CT","NY","NY","CA"],["R","R","R","R","D","D","D","R","D","D","D","D","D","D","D","D","D"],[1973,1979,1979,1979,1981,1981,1985,1985,1985,1987,1987,1987,1987,1989,1989,1989,1989]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bioname<\/th>\n      <th>state_abbrev<\/th>\n      <th>party_code<\/th>\n      <th>since<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":17,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,17,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["14066","14657","14854","14863","14873","15029","15124","15410","15446","15431","15448","15454","15616","15603","15612","29106","29109"],["YOUNG, Donald Edwin","SENSENBRENNER, Frank James, Jr.","ROGERS, Harold Dallas (Hal)","SMITH, Christopher Henry","HOYER, Steny Hamilton","KAPTUR, Marcia Carolyn (Marcy)","VISCLOSKY, Peter","DeFAZIO, Peter Anthony","UPTON, Frederick Stephen","LEWIS, John R.","PELOSI, Nancy","PALLONE, Frank, Jr.","NEAL, Richard Edmund","ENGEL, Eliot Lance","LOWEY, Nita M.","WATERS, Maxine","DeLAURO, Rosa L."],["AK","WI","KY","NJ","MD","OH","IN","OR","MI","GA","CA","NJ","MA","NY","NY","CA","CT"],["R","R","R","R","D","D","D","D","R","D","D","D","D","D","D","D","D"],[1973,1979,1979,1979,1981,1981,1985,1985,1985,1987,1987,1987,1987,1989,1989,1989,1989]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>icpsr<\/th>\n      <th>bioname<\/th>\n      <th>state_abbrev<\/th>\n      <th>party_code<\/th>\n      <th>since<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","pageLength":17,"scrollX":true,"columnDefs":[{"className":"dt-right","targets":4}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,17,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="longest-serving-members-political-ideology" class="section level2">
 <h2>Longest-serving members &amp; political ideology</h2>
@@ -130,18 +138,18 @@ ggplot(data = for_plot,
 </div>
 <div id="longest-serving-members-election-margins" class="section level2">
 <h2>Longest-serving members &amp; election margins</h2>
-<p>The next piece, then, is election margins. Returns for all congressional house races since 1976 are made available by the <a href="https://github.com/MEDSL">MIT Election Data and Science Lab</a>; I have cleaned these data and included them in my <code>uspoliticalextras</code> data package.</p>
-<pre class="r"><code>house_returns &lt;- uspoliticalextras::uspol_medsl_returns_house_cd </code></pre>
+<p>The next piece, then, is election margins. Returns for all congressional house races since 1976 are made available by the <a href="https://github.com/MEDSL">MIT Election Data and Science Lab</a>; I have cleaned these data and included them in my <code>uspols</code> data package.</p>
+<pre class="r"><code>house_returns &lt;- uspols::uspols_medsl_house </code></pre>
 <p>The tile plot below details historical margins for members of the old guard. Margins for Republicans are calculated as the difference between % Republican vote and % Democratic vote; vice versa for Democrats. A nifty plot, and one that may be more interesting for districts with a bit more swing.</p>
 <pre class="r"><code>lrs &lt;- house_returns %&gt;% 
-  filter(candidate %in% longs$bioname)
+  filter(icpsr %in% longs$icpsr)
 
 for_margins_plot &lt;- lrs  %&gt;%
-  mutate(per = ifelse(party == &#39;Republican Party&#39;,
+  mutate(per = ifelse(party_win == &#39;republican&#39;,
                       republican, -democrat),
          per = round(per),
          marg = round(republican-democrat)) %&gt;%
-  inner_join(longs, by = c(&#39;candidate&#39; = &#39;bioname&#39;)) %&gt;%
+  inner_join(longs, by = &#39;icpsr&#39;) %&gt;%
   select(label, year, congress, marg)
 
 
@@ -207,14 +215,14 @@ house_transitions &lt;- lapply(1:length(y), function(j) {
   
   inner_join(house_members %&gt;% select(congress, state_abbrev, district_code,
                              bioguide_id, age, congs_served, nokken_poole_dim1)) %&gt;%
-  left_join(house_returns) %&gt;%
+  left_join(house_returns %&gt;% mutate(district_code = as.numeric(district_code))) %&gt;%
   mutate(margins = republican - democrat) %&gt;%  
   mutate(decade = case_when (year &lt; 1980 ~ &#39;70s&#39;,
                            year &lt; 1990 &amp; year &gt; 1979 ~ &#39;80s&#39;,
                            year &lt; 2000 &amp; year &gt; 1989 ~ &#39;90s&#39;,
                            year &lt; 2010 &amp; year &gt; 1999 ~ &#39;Aughts&#39;,
                            year &gt; 2009 ~ &#39;Teens&#39;)) %&gt;%
-  filter(party != &#39;Independent&#39;) %&gt;%
+  filter(party_win != &#39;other&#39;) %&gt;%
   na.omit # mostly at-large -- </code></pre>
 <p><strong>The faceted plot below</strong>, then, summarizes the relationship between election margins and political ideology scores across four decades of voting in the US House. Some variation in the details of this relationship historically, especially among Republican House members, but a fairly consistent one in the aggregate.</p>
 <pre class="r"><code>h3 &lt;- h2 %&gt;%
@@ -223,7 +231,7 @@ house_transitions &lt;- lapply(1:length(y), function(j) {
 h3 %&gt;%
   filter(decade != &#39;70s&#39;) %&gt;%
   ggplot(aes(y = abs(nokken_poole_dim1), 
-             x = abs(margins), color = party
+             x = abs(margins), color = party_win
              ))+ 
 
   geom_point(size = 0.15)+ # 
@@ -262,7 +270,7 @@ l1 +
 <h3>/Results</h3>
 <p>Using logistic regression via <code>glm</code>, we fit our model below. Again, margins, NOMINATE scores, and residuals are all transformed to absolute values. N = 7,844.</p>
 <pre class="r"><code>dset$residuals &lt;- unname(fit$residuals)
-dset$party &lt;- as.factor(dset$party)
+dset$party &lt;- as.factor(dset$party_win)
 dset$decade &lt;- as.factor(dset$decade)
 dset$re_elect &lt;- as.factor(dset$re_elect)
 
@@ -313,13 +321,13 @@ p.value
 (Intercept)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-1.209
+1.219
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.126
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-9.632
+9.706
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -330,16 +338,16 @@ p.value
 decade80s
 </td>
 <td style="text-align:right;">
-0.219
+0.210
 </td>
 <td style="text-align:right;">
 0.117
 </td>
 <td style="text-align:right;">
-1.870
+1.788
 </td>
 <td style="text-align:right;">
-0.061
+0.074
 </td>
 </tr>
 <tr>
@@ -347,16 +355,16 @@ decade80s
 decade90s
 </td>
 <td style="text-align:right;">
--0.138
+-0.156
 </td>
 <td style="text-align:right;">
 0.113
 </td>
 <td style="text-align:right;">
--1.220
+-1.375
 </td>
 <td style="text-align:right;">
-0.222
+0.169
 </td>
 </tr>
 <tr>
@@ -364,16 +372,16 @@ decade90s
 decadeAughts
 </td>
 <td style="text-align:right;">
-0.029
+0.006
 </td>
 <td style="text-align:right;">
-0.116
+0.117
 </td>
 <td style="text-align:right;">
-0.250
+0.049
 </td>
 <td style="text-align:right;">
-0.803
+0.961
 </td>
 </tr>
 <tr>
@@ -381,13 +389,13 @@ decadeAughts
 decadeTeens
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.380
+-0.398
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.117
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.256
+-3.403
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.001
@@ -395,19 +403,19 @@ decadeTeens
 </tr>
 <tr>
 <td style="text-align:left;background-color: #fcdbc7 !important;">
-partyRepublican Party
+partyrepublican
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.145
+-0.121
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.060
+0.061
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--2.396
+-2.005
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.017
+0.045
 </td>
 </tr>
 <tr>
@@ -421,7 +429,7 @@ congs_served
 0.007
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--11.305
+-11.299
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.000
@@ -432,13 +440,13 @@ congs_served
 abs(margins)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.023
+0.022
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.002
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-12.029
+11.965
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -449,13 +457,13 @@ abs(margins)
 abs(nokken_poole_dim1)
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.683
+0.667
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-0.186
+0.187
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
-3.665
+3.566
 </td>
 <td style="text-align:right;background-color: #e4eef4 !important;">
 0.000
@@ -466,16 +474,16 @@ abs(nokken_poole_dim1)
 abs(residuals)
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--0.938
+-0.914
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
 0.288
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
--3.256
+-3.171
 </td>
 <td style="text-align:right;background-color: #fcdbc7 !important;">
-0.001
+0.002
 </td>
 </tr>
 </tbody>
