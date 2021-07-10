@@ -21,7 +21,7 @@ This post provides some quick details on using `reticulate` to interface Python 
 
 ## Python & reticulate set-up 
 
-The Python code below sets up a conda environment and installs relevant libraries, as well as the BERT transformer, *en_core_web_trf*.
+The Python code below sets up a conda environment and installs relevant libraries, as well as the BERT transformer, *en_core_web_trf*.  The following should be run in the terminal.
 
 ```{bash eval=FALSE}
 conda create -n poly1
@@ -179,7 +179,7 @@ tsne_clean <- data.frame(reticulate::py_to_r(df), tsne$Y) %>%
 
 The scatter plot below summarizes contextual embeddings for individual tokens of `further`-`farther`. So, a nice space for `further` used adjectivally on the right side of the plot. Other spaces less obviously structured, and some confused spaces as well where speakers seem to have quite a bit of leeway.
 
-```{r}
+```{r out.width='100%', out.height=600}
 p <- ggplot2::ggplot(tsne_clean, 
                           aes(x = X1, 
                               y = X2,
@@ -196,8 +196,7 @@ p <- ggplot2::ggplot(tsne_clean,
   ggtitle('further-farther') 
 
 plotly::ggplotly(p,
-                 tooltip = 'text') %>% 
-  plotly::layout(autosize = T)
+                 tooltip = 'text') 
 ```
 
 
